@@ -1,0 +1,19 @@
+{
+  "source": "USGS 3DEP 1 m DEM (Minnesota DNR LiDAR); exportImage over a 1 km window, EPSG:26915",
+  "inputUrl": "https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer/exportImage?bbox=-92.228,46.712,-92.208,46.727&bboxSR=4326&imageSR=26915&size=1500,1650&format=tiff&pixelType=F32&noData=-9999&interpolation=RSP_NearestNeighbor&f=image",
+  "inputSha256": "c87efb72bc843ccd661245cd8069c455665b41236b739a9070c9912073d577dc",
+  "validCells": 2475000,
+  "summit": {
+    "elevM": 407.0683288574219,
+    "easting26915": 559303.1232584582,
+    "northing26915": 5174026.80785436,
+    "lon": -92.224042,
+    "lat": 46.717165
+  },
+  "crossCheck": {
+    "service": "epqs.nationalmap.gov",
+    "elevM": 406.968322754,
+    "acquisitionDate": "4/2/2021"
+  },
+  "note": "Recorded 2026-10-06 from the probe run in the session scratchpad; the Wikipedia point 46.71944,-92.21806 reads 371.06 m on the same raster, so its 396 m figure does not describe that coordinate. Nearest OSM lift top (Spirit Express II / Summit Chair station) is about 290 m from the maximum."
+}
