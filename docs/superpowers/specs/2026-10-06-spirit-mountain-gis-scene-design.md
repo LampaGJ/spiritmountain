@@ -252,9 +252,12 @@ plus a JSON header, so the browser loads one Float32 file of about 7.5 MB
   replaced pixels is recorded in the header.
 - Byte-identical across two runs (test).
 - The summit test takes the maximum heightfield value within a 150 m radius
-  of the known summit location (46.71944 N, 92.21806 W, projected through
-  the local frame) and asserts it within 10 m of the recorded summit
-  elevation of 396 m, which is a secondary-source value (Wikipedia) (D-03).
+  of the LiDAR-derived summit (46.717165 N, 92.224042 W, projected through
+  the local frame) and asserts it within 10 m of 407.07 m, the maximum of
+  the USGS 3DEP 1 m DEM (Minnesota DNR LiDAR, acquired 2021) recorded by
+  the committed probe `scripts/probes/summit-max.mjs` in
+  `data/probes/summit-max.json`, cross-checked by the USGS point service
+  at 406.97 m (D-03).
 - The header's `plausibleRangeM` of 150 to 500 is labelled "sanity bound,
   not surveyed" (D-03).
 
@@ -262,9 +265,7 @@ plus a JSON header, so the browser loads one Float32 file of about 7.5 MB
 `scripts/ingest/terrain-replay-schema.ts`, `data/terrain.f32`,
 `data/terrain.json`, `tests/ingest/terrain.test.ts`
 
-**Open gaps**: D-03 summit source: find a primary source for summit
-elevation (USGS benchmark or NGS datasheet) to replace the secondary-source
-396 m value; the test cites the source it uses.
+**Open gaps**: none. The former D-03 summit-source gap closed on 2026-10-06 with the LiDAR probe; the Wikipedia coordinate reads 371 m on the same raster.
 
 ## terrain-mesh — three.js terrain mesh from the heightfield
 
@@ -455,7 +456,7 @@ wave starts from a measured map instead of memory.
 
 - D-01: 3DEP request uses imageSR 26915 at 5 m per pixel, the size Open gap is resolved, and the terrain Goal changes from a few hundred kilobytes to about 7.5 MB (7,494,880 bytes); decided by #7 and #9, 2026-10-06.
 - D-02: Transforms read manifest.json and frame.json as consumer-gate inputs, and the frame lives in data/frame.json as a third terrain artifact; decided by #7 (emitter) with #8, #9 and #11 (consumers), 2026-10-06.
-- D-03: The summit test is the max within a 150 m radius, within 10 m of 396 m, a secondary-source value, and the primary-source question stays open; decided by #9, 2026-10-06.
+- D-03: The summit test is the max within a 150 m radius, within 10 m of 407.07 m, the USGS 3DEP 1 m LiDAR maximum recorded by scripts/probes/summit-max.mjs (cross-check 406.97 m); the earlier Wikipedia 396 m value is retired; decided by #9 and amended 2026-10-06.
 - D-04: Organization has seven fields and six types, and the activity enum gains adaptive; decided by #6 and #10, 2026-10-06.
 - D-05: generatedFrom omits outputHash, which lives in the replay sidecar; decided by #6 (Decision 4), 2026-10-06.
 - D-06: Unverified orgs are seeded with verified:false, which replaces the Open gap that left them unseeded; decided by #10, 2026-10-06.
