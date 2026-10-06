@@ -1,0 +1,11 @@
+Date\.now
+new Date\(\)
+Math\.random
+crypto\.(randomUUID|randomBytes|randomInt|getRandomValues)
+localeCompare
+toLocale
+new (Set|Map)\(.*await
+Promise\.(race|any|allSettled)
+for await
+fetch\(|fetchImpl|XMLHttpRequest|node:https?|node:net
+@anthropic-ai|openai|messages\.create|chat\.completions|generateText|streamText

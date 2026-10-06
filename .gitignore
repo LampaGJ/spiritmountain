@@ -4,4 +4,5 @@ dist/
 *.log
 .DS_Store
 .env
-reports/.progress/
+reports/.progress/*
+!reports/.progress/.gitkeep
