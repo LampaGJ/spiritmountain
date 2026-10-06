@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "bbox": {
+    "south": 46.68,
+    "west": -92.26,
+    "north": 46.74,
+    "east": -92.17
+  },
+  "overpass": {
+    "name": "overpass",
+    "path": "data/raw/overpass.json",
+    "url": "https://overpass-api.de/api/interpreter",
+    "method": "POST",
+    "requestBody": "[out:json][timeout:60];\n(\n  way[\"piste:type\"](46.68,-92.26,46.74,-92.17);\n  way[\"aerialway\"](46.68,-92.26,46.74,-92.17);\n  way[\"highway\"~\"path|track|cycleway\"][\"mtb:scale\"](46.68,-92.26,46.74,-92.17);\n  way[\"route\"=\"mtb\"](46.68,-92.26,46.74,-92.17);\n  relation[\"route\"~\"mtb|piste|ski\"](46.68,-92.26,46.74,-92.17);\n    node[\"aerialway\"](46.68,-92.26,46.74,-92.17);\n);\nout geom;\n",
+    "requestHeaders": {
+      "userAgent": "spiritmountain-poc/0.1"
+    },
+    "httpStatus": 200,
+    "contentType": "application/json",
+    "fetchedAt": "2026-10-06T20:38:17.374Z",
+    "byteLength": 242146,
+    "sha256": "a32e333486c894fee7720da56423ac052ca7b4429c59e56cd06de2057d92002d",
+    "osm3sTimestampBase": "2026-10-06T20:37:11Z",
+    "queryFileSha256": "4a0f2fbf9bfad303d409ba2792ca8538362646dfe68b9ab15b677e4a6d771005",
+    "counts": {
+      "nodes": 25,
+      "ways": 85,
+      "relations": 2,
+      "pisteType": 63,
+      "aerialway": 33,
+      "mtbScale": 15
+    }
+  },
+  "threeDep": {
+    "name": "3dep",
+    "path": "data/raw/3dep.tif",
+    "url": "https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer/exportImage",
+    "method": "GET",
+    "requestParams": {
+      "bbox": "556530,5169870,563480,5176610",
+      "bboxSR": "26915",
+      "imageSR": "26915",
+      "size": "1390,1348",
+      "format": "tiff",
+      "pixelType": "F32",
+      "compression": "LZ77",
+      "f": "image"
+    },
+    "httpStatus": 200,
+    "contentType": "image/tiff",
+    "fetchedAt": "2026-10-06T20:38:17.374Z",
+    "byteLength": 5812367,
+    "sha256": "e02594182ef6b5547c54232de300fc875893115d3c75be601f2535fde1b3ffb9",
+    "epsg": 26915,
+    "metresPerPixel": 5,
+    "compression": "LZ77",
+    "width": 1390,
+    "height": 1348,
+    "requestedBbox26915": {
+      "xmin": 556530,
+      "ymin": 5169870,
+      "xmax": 563480,
+      "ymax": 5176610
+    },
+    "decodedBbox26915": {
+      "xmin": 556530,
+      "ymin": 5169870,
+      "xmax": 563480,
+      "ymax": 5176610
+    },
+    "byteOrder": "little",
+    "bitsPerSample": 32,
+    "sampleFormat": 3,
+    "noData": {
+      "declared": null,
+      "floor": -1000,
+      "policy": "abort if any pixel is non-finite or below floor"
+    },
+    "stats": {
+      "min": 183.07884216308594,
+      "max": 414.35345458984375,
+      "nanCount": 0,
+      "nonFiniteCount": 0,
+      "belowFloorCount": 0
+    }
+  }
+}
