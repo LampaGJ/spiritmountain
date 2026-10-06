@@ -1,0 +1,2355 @@
+{
+  "version": 1,
+  "generatedFrom": {
+    "inputHash": "7a0ee2f7ee4f13ab2e229a90bdb0278bc5e2bd5836c3b62a1fbbb685f998e89e",
+    "codeCommit": "b6e75a4bfccb0672a8e7b64fa6d8b337a2cd056c",
+    "effect": "expands"
+  },
+  "organizations": [
+    {
+      "id": "city-of-duluth-parks-and-recreation",
+      "name": "City of Duluth Parks and Recreation",
+      "url": "https://duluthmn.gov",
+      "type": "municipal",
+      "activities": [
+        "hike",
+        "mountain-bike",
+        "nordic-classic",
+        "nordic-skate"
+      ],
+      "sourceUrl": "https://duluthmn.gov/parks/parks-trails/current-projects/spirit-mountain-nordic-center/",
+      "verified": true
+    },
+    {
+      "id": "cyclists-of-gitchee-gumee-shores",
+      "name": "Cyclists of Gitchee Gumee Shores (COGGS)",
+      "url": null,
+      "type": "nonprofit",
+      "activities": [
+        "mountain-bike"
+      ],
+      "sourceUrl": "https://destinationduluth.org/?p=4390",
+      "verified": true
+    },
+    {
+      "id": "duluth-climbers-coalition",
+      "name": "Duluth Climbers Coalition",
+      "url": null,
+      "type": "nonprofit",
+      "activities": [],
+      "sourceUrl": "",
+      "verified": false
+    },
+    {
+      "id": "duluth-cross-country-ski-club",
+      "name": "Duluth Cross Country Ski Club (DXC)",
+      "url": "https://duluthxc.com",
+      "type": "club",
+      "activities": [
+        "nordic-classic",
+        "nordic-skate"
+      ],
+      "sourceUrl": "https://duluthxc.com/grand-avenue-nordic-center",
+      "verified": true
+    },
+    {
+      "id": "duluth-devo-mountain-bike-program",
+      "name": "Duluth DEVO Mountain Bike Program",
+      "url": null,
+      "type": "nonprofit",
+      "activities": [
+        "mountain-bike"
+      ],
+      "sourceUrl": "https://www.northernnewsnow.com/2023/07/10/bike-duluth-festival-sees-growing-participation-ninth-year/",
+      "verified": true
+    },
+    {
+      "id": "duluth-nordic",
+      "name": "Duluth Nordic (youth)",
+      "url": null,
+      "type": "club",
+      "activities": [
+        "nordic-classic",
+        "nordic-skate"
+      ],
+      "sourceUrl": "",
+      "verified": false
+    },
+    {
+      "id": "duluth-parks-fund",
+      "name": "Duluth Parks Fund",
+      "url": null,
+      "type": "nonprofit",
+      "activities": [],
+      "sourceUrl": "",
+      "verified": false
+    },
+    {
+      "id": "earth-rider-brewery",
+      "name": "Earth Rider Brewery",
+      "url": null,
+      "type": "business",
+      "activities": [
+        "mountain-bike"
+      ],
+      "sourceUrl": "https://wdio.com/?p=30585",
+      "verified": false
+    },
+    {
+      "id": "greater-minnesota-regional-parks-and-trails-commission",
+      "name": "Greater Minnesota Regional Parks and Trails Commission",
+      "url": null,
+      "type": "state-agency",
+      "activities": [
+        "mountain-bike",
+        "nordic-classic",
+        "nordic-skate"
+      ],
+      "sourceUrl": "https://duluthmn.gov/parks/parks-trails/current-projects/spirit-mountain-off-road-cycling-trails/",
+      "verified": true
+    },
+    {
+      "id": "harbortown-rotary",
+      "name": "Duluth Harbortown Rotary",
+      "url": null,
+      "type": "club",
+      "activities": [
+        "mountain-bike"
+      ],
+      "sourceUrl": "https://www.northernnewsnow.com/2023/07/10/bike-duluth-festival-sees-growing-participation-ninth-year/",
+      "verified": true
+    },
+    {
+      "id": "kraus-anderson-community-foundation",
+      "name": "Kraus-Anderson Community Foundation",
+      "url": null,
+      "type": "nonprofit",
+      "activities": [
+        "mountain-bike"
+      ],
+      "sourceUrl": "https://www.duluthnewstribune.com/news/9th-annual-bike-duluth-festival-is-underway-at-spirit-mountain",
+      "verified": false
+    },
+    {
+      "id": "lake-superior-zoo",
+      "name": "Lake Superior Zoo",
+      "url": null,
+      "type": "nonprofit",
+      "activities": [
+        "hike"
+      ],
+      "sourceUrl": "https://midwestweekends.com/plan-a-trip/outdoors-recreation/hiking/superior-hiking-trail-duluth/",
+      "verified": false
+    },
+    {
+      "id": "minnesota-dnr",
+      "name": "Minnesota Department of Natural Resources",
+      "url": null,
+      "type": "state-agency",
+      "activities": [
+        "nordic-classic",
+        "nordic-skate"
+      ],
+      "sourceUrl": "https://duluthmn.gov/parks/parks-trails/current-projects/spirit-mountain-nordic-center/",
+      "verified": true
+    },
+    {
+      "id": "minnesota-high-school-cycling-league",
+      "name": "Minnesota High School Cycling League (NICA Minnesota)",
+      "url": null,
+      "type": "nonprofit",
+      "activities": [
+        "mountain-bike"
+      ],
+      "sourceUrl": "https://www.wdio.com/?p=847287",
+      "verified": false
+    },
+    {
+      "id": "minnesota-youth-ski-league",
+      "name": "Minnesota Youth Ski League",
+      "url": null,
+      "type": "nonprofit",
+      "activities": [
+        "nordic-classic",
+        "nordic-skate"
+      ],
+      "sourceUrl": "",
+      "verified": false
+    },
+    {
+      "id": "national-center-for-youth-development",
+      "name": "National Center for Youth Development",
+      "url": null,
+      "type": "nonprofit",
+      "activities": [
+        "mountain-bike"
+      ],
+      "sourceUrl": "https://www.northernnewsnow.com/2023/07/10/bike-duluth-festival-sees-growing-participation-ninth-year/",
+      "verified": true
+    },
+    {
+      "id": "national-ski-patrol",
+      "name": "National Ski Patrol (Spirit Mountain volunteer patrol)",
+      "url": null,
+      "type": "nonprofit",
+      "activities": [
+        "alpine-ski",
+        "snowboard"
+      ],
+      "sourceUrl": "https://spiritmt.com/?p=300",
+      "verified": true
+    },
+    {
+      "id": "northland-adaptive",
+      "name": "Northland Adaptive (formerly Courage Kenny Northland)",
+      "url": null,
+      "type": "nonprofit",
+      "activities": [
+        "adaptive",
+        "alpine-ski",
+        "snowboard"
+      ],
+      "sourceUrl": "https://spiritmt.com/?p=34",
+      "verified": true
+    },
+    {
+      "id": "ski-hut",
+      "name": "Ski Hut",
+      "url": null,
+      "type": "business",
+      "activities": [
+        "mountain-bike"
+      ],
+      "sourceUrl": "https://wdio.com/?p=30585",
+      "verified": false
+    },
+    {
+      "id": "spirit-mountain-recreation-area-authority",
+      "name": "Spirit Mountain Recreation Area Authority",
+      "url": "https://spiritmt.com",
+      "type": "authority",
+      "activities": [
+        "alpine-ski",
+        "mountain-bike",
+        "nordic-classic",
+        "nordic-skate",
+        "snowboard"
+      ],
+      "sourceUrl": "https://duluthmn.gov/parks/parks-trails/current-projects/spirit-mountain-nordic-center/",
+      "verified": true
+    },
+    {
+      "id": "st-louis-river-alliance",
+      "name": "St. Louis River Alliance",
+      "url": null,
+      "type": "nonprofit",
+      "activities": [],
+      "sourceUrl": "",
+      "verified": false
+    },
+    {
+      "id": "superior-hiking-trail-association",
+      "name": "Superior Hiking Trail Association (SHTA)",
+      "url": null,
+      "type": "nonprofit",
+      "activities": [
+        "hike"
+      ],
+      "sourceUrl": "https://duluthmn.gov/web-subscriptions/View-press-release/?prid=4998",
+      "verified": true
+    },
+    {
+      "id": "team-duluth-ski-club",
+      "name": "Team Duluth Ski Club",
+      "url": null,
+      "type": "nonprofit",
+      "activities": [
+        "alpine-ski",
+        "snowboard"
+      ],
+      "sourceUrl": "https://spiritmt.com/?p=34",
+      "verified": true
+    }
+  ],
+  "annotations": [
+    {
+      "areaId": "way/1008678100",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1016595884",
+      "activities": [
+        {
+          "activity": "alpine-ski",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "snowboard",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1016595885",
+      "activities": [
+        {
+          "activity": "alpine-ski",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "snowboard",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1016595886",
+      "activities": [
+        {
+          "activity": "alpine-ski",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "snowboard",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1016654702",
+      "activities": [
+        {
+          "activity": "alpine-ski",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "snowboard",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1016654703",
+      "activities": [
+        {
+          "activity": "alpine-ski",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "snowboard",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1016654704",
+      "activities": [
+        {
+          "activity": "alpine-ski",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "snowboard",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1016654705",
+      "activities": [
+        {
+          "activity": "alpine-ski",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "snowboard",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1016654706",
+      "activities": [
+        {
+          "activity": "alpine-ski",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "snowboard",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1016885248",
+      "activities": [
+        {
+          "activity": "alpine-ski",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "snowboard",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1016885249",
+      "activities": [
+        {
+          "activity": "alpine-ski",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "snowboard",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1016885250",
+      "activities": [
+        {
+          "activity": "alpine-ski",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "snowboard",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1016885251",
+      "activities": [
+        {
+          "activity": "alpine-ski",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "snowboard",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1016885252",
+      "activities": [
+        {
+          "activity": "alpine-ski",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "snowboard",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1016885253",
+      "activities": [
+        {
+          "activity": "alpine-ski",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "snowboard",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1016885254",
+      "activities": [
+        {
+          "activity": "alpine-ski",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "snowboard",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1016885255",
+      "activities": [
+        {
+          "activity": "alpine-ski",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "snowboard",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1016885256",
+      "activities": [
+        {
+          "activity": "alpine-ski",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "snowboard",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1016885257",
+      "activities": [
+        {
+          "activity": "alpine-ski",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "snowboard",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1016885258",
+      "activities": [
+        {
+          "activity": "alpine-ski",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "snowboard",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1016885259",
+      "activities": [
+        {
+          "activity": "alpine-ski",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "snowboard",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1016885260",
+      "activities": [
+        {
+          "activity": "lift-ride",
+          "seasons": [],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1040615400",
+      "activities": [
+        {
+          "activity": "alpine-ski",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "snowboard",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1040615401",
+      "activities": [
+        {
+          "activity": "alpine-ski",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "snowboard",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1110507433",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1110507435",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1110512558",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1110512562",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1180257595",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1182475842",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1183482171",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1183482196",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1183482198",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1183482199",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1183482200",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1183501106",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1183501108",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1183750175",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1183762515",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1183762517",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1183762518",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1183762519",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1183762520",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1183762521",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1183762522",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1183762523",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1183768129",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1183768130",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1183768131",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1183768132",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1183772195",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1183772196",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1189413241",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1189415335",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1194065570",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1250660718",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1250660719",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1250660720",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1250660721",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1250660722",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1250660723",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1250660724",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1250660725",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1250660726",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1250660727",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1250660728",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1250660729",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1250660730",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1250660731",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1250660732",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1250863776",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1250863782",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1250863783",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1250863784",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1250863786",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1394439540",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/146915068",
+      "activities": [
+        {
+          "activity": "lift-ride",
+          "seasons": [],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/146915076",
+      "activities": [
+        {
+          "activity": "lift-ride",
+          "seasons": [],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/146915080",
+      "activities": [
+        {
+          "activity": "lift-ride",
+          "seasons": [],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1470100229",
+      "activities": [
+        {
+          "activity": "lift-ride",
+          "seasons": [],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1470100230",
+      "activities": [
+        {
+          "activity": "lift-ride",
+          "seasons": [],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1470101407",
+      "activities": [
+        {
+          "activity": "lift-ride",
+          "seasons": [],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1482259542",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1482259543",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1482259544",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1482259545",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1482259546",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1482259547",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1482259548",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1482259549",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1482259551",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1482259552",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1482259555",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1494790145",
+      "activities": [
+        {
+          "activity": "lift-ride",
+          "seasons": [],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1494790146",
+      "activities": [
+        {
+          "activity": "alpine-ski",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "snowboard",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1528857279",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1528857280",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1528857283",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1529039444",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1529039445",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1530737449",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/224344206",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/224344207",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/236930697",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/236932775",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/621838330",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/621838332",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/621838337",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/621838340",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/621838344",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/621838361",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/621838363",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "nordic-skate",
+          "seasons": [
+            "winter"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/924551646",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/942312488",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/942316523",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    }
+  ]
+}

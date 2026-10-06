@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "epsg": 26915,
+  "proj4Def": "+proj=utm +zone=15 +datum=NAD83 +units=m +no_defs",
+  "origin": {
+    "easting": 560002.112255701,
+    "northing": 5173237.48355887
+  },
+  "centre": {
+    "lon": -92.215,
+    "lat": 46.71
+  },
+  "bbox": {
+    "south": 46.68,
+    "west": -92.26,
+    "north": 46.74,
+    "east": -92.17
+  },
+  "axes": "x east, y north, z elevation; metres; local = absolute UTM minus origin"
+}

@@ -12,9 +12,13 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "ingest:terrain": "tsx scripts/ingest/terrain.ts",
     "typecheck": "tsc --noEmit",
+    "ingest:annotations": "tsx scripts/ingest/annotations.ts",
     "lint": "eslint . && bash scripts/lint-determinism.sh",
     "lint:determinism": "bash scripts/lint-determinism.sh",
+    "ingest:areas": "tsx scripts/ingest/areas.ts",
+    "ingest:fetch": "tsx scripts/ingest/fetch.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

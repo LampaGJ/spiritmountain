@@ -1,0 +1,19 @@
+{"version":0.6,"generator":"Overpass API fixture","osm3s":{"timestamp_osm_base":"2026-01-01T00:00:00Z"},"elements":[
+{"type":"way","id":1,"nodes":[10,11],"geometry":[{"lat":46.71,"lon":-92.215},{"lat":46.711,"lon":-92.214}],"tags":{"2":"x","10":"y","piste:type":"downhill","piste:difficulty":"easy","name":"Run A","highway":"path"}},
+{"type":"way","id":2,"nodes":[20,21],"geometry":[{"lat":46.711,"lon":-92.215},{"lat":46.711999999999996,"lon":-92.214}],"tags":{"piste:type":"nordic","highway":"path","name":""}},
+{"type":"way","id":3,"nodes":[30,31],"geometry":[{"lat":46.71,"lon":-92.214},{"lat":46.711,"lon":-92.213}],"tags":{"aerialway":"chair_lift","name":"Lift A"}},
+{"type":"way","id":4,"nodes":[40,41],"geometry":[{"lat":46.709,"lon":-92.215},{"lat":46.71,"lon":-92.214}],"tags":{"highway":"path","mtb:scale":"1","name":"Trail A"}},
+{"type":"way","id":5,"nodes":[50,51],"geometry":[{"lat":46.71,"lon":-92.215},{"lat":46.711,"lon":-92.214}],"tags":{"piste:type":"sled"}},
+{"type":"way","id":6,"nodes":[60,61],"geometry":[{"lat":46.71,"lon":-92.215},{"lat":46.711,"lon":-92.214}],"tags":{"aerialway":"zip_line"}},
+{"type":"way","id":7,"nodes":[70,71],"geometry":[{"lat":46.71,"lon":-92.215},{"lat":46.711,"lon":-92.214}],"tags":{"highway":"path"}},
+{"type":"way","id":8,"nodes":[80,81],"geometry":[{"lat":46.5,"lon":-92.5},{"lat":46.51,"lon":-92.49}],"tags":{"piste:type":"downhill"}},
+{"type":"way","id":9,"nodes":[90,91],"geometry":[{"lat":46.71,"lon":-92.217},{"lat":46.711,"lon":-92.216}],"tags":{"piste:type":"sled","aerialway":"drag_lift"}},
+{"type":"way","id":10,"nodes":[100,101,102,103,100],"geometry":[{"lat":46.7,"lon":-92.22},{"lat":46.7,"lon":-92.219},{"lat":46.701,"lon":-92.219},{"lat":46.701,"lon":-92.22},{"lat":46.7,"lon":-92.22}],"tags":{"piste:type":"snow_park","area":"yes","name":"Park A"}},
+{"type":"node","id":7,"lat":46.7101,"lon":-92.2151,"tags":{"aerialway":"pylon"}},
+{"type":"node","id":8,"lat":46.7102,"lon":-92.2152,"tags":{"aerialway":"station"}},
+{"type":"node","id":9,"lat":46.7103,"lon":-92.2153,"tags":{"natural":"peak"}},
+{"type":"relation","id":100,"tags":{"type":"route","route":"mtb","name":"Fixture Route"},"members":[{"type":"way","ref":1,"role":"","geometry":[{"lat":46.71,"lon":-92.215},{"lat":46.711,"lon":-92.214}]},{"type":"way","ref":501,"role":"","geometry":[{"lat":46.712,"lon":-92.215},{"lat":46.713,"lon":-92.214}]},{"type":"way","ref":502,"role":"","geometry":[{"lat":46.5,"lon":-92.5},{"lat":46.51,"lon":-92.49}]},{"type":"node","ref":7,"role":""}]},
+{"type":"relation","id":101,"tags":{"type":"route","route":"mtb"},"members":[{"type":"way","ref":501,"role":"","geometry":[{"lat":46.71,"lon":-92.215},{"lat":46.711,"lon":-92.214}]},{"type":"way","ref":503,"role":"","geometry":[{"lat":46.71,"lon":-92.215}]}]},
+{"type":"relation","id":102,"tags":{"type":"route","route":"piste","piste:type":"nordic","name":"Nordic Rel"},"members":[{"type":"way","ref":2,"role":"","geometry":[{"lat":46.71,"lon":-92.215},{"lat":46.711,"lon":-92.214}]}]},
+{"type":"relation","id":103,"tags":{"type":"route","route":"bicycle"},"members":[{"type":"way","ref":7,"role":"","geometry":[{"lat":46.71,"lon":-92.215},{"lat":46.711,"lon":-92.214}]}]}
+]}
