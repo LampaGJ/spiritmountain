@@ -1,0 +1,131 @@
+{
+  "version": 1,
+  "generatedFrom": {
+    "inputHash": "2d4c2a7b834e4c568e1237f0b1047d6ce0f434281c341ef9daa29ba2e1d02e6a",
+    "codeCommit": "0000000000000000000000000000000000000000",
+    "effect": "expands"
+  },
+  "organizations": [
+    {
+      "id": "fixture-org-a",
+      "name": "Fixture Org A",
+      "url": null,
+      "type": "club",
+      "activities": [],
+      "sourceUrl": "",
+      "verified": false
+    },
+    {
+      "id": "fixture-org-b",
+      "name": "Fixture Org B",
+      "url": null,
+      "type": "municipal",
+      "activities": [],
+      "sourceUrl": "",
+      "verified": false
+    }
+  ],
+  "annotations": [
+    {
+      "areaId": "way/1001",
+      "activities": [
+        {
+          "activity": "alpine-ski",
+          "seasons": [],
+          "notes": ""
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "fixture-org-a",
+          "role": "maintains"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1002",
+      "activities": [
+        {
+          "activity": "nordic-classic",
+          "seasons": [],
+          "notes": ""
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1003",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [],
+          "notes": ""
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1005",
+      "activities": [
+        {
+          "activity": "mountain-bike",
+          "seasons": [],
+          "notes": ""
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1006",
+      "activities": [
+        {
+          "activity": "lift-ride",
+          "seasons": [],
+          "notes": ""
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1007",
+      "activities": [
+        {
+          "activity": "lift-ride",
+          "seasons": [],
+          "notes": ""
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1008",
+      "activities": [
+        {
+          "activity": "lift-ride",
+          "seasons": [],
+          "notes": ""
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1009",
+      "activities": [
+        {
+          "activity": "lift-ride",
+          "seasons": [],
+          "notes": ""
+        }
+      ],
+      "stakeholders": [],
+      "notes": ""
+    }
+  ]
+}

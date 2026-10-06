@@ -1,0 +1,39 @@
+#filters {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  max-width: calc(100vw - 16px);
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #111;
+  font:
+    13px/1.4 system-ui,
+    sans-serif;
+  border: 1px solid #555;
+}
+#filters fieldset {
+  margin: 0 0 6px;
+  padding: 0;
+  border: 0;
+}
+#filters legend {
+  font-weight: 600;
+}
+#filters button {
+  margin: 2px 4px 2px 0;
+  padding: 2px 8px;
+  border: 1px solid #333;
+  background: #fff;
+  color: #111;
+  font: inherit;
+  cursor: pointer;
+}
+#filters button[aria-pressed='true'] {
+  background: #111;
+  color: #fff;
+  font-weight: 600;
+}
+#filters .filter-count,
+#filters .filter-notice {
+  margin: 4px 0 0;
+}
