@@ -1,0 +1,14 @@
+{
+  "inputHash": "e02594182ef6b5547c54232de300fc875893115d3c75be601f2535fde1b3ffb9",
+  "codeCommit": "1ad0819f10d21360261df6c3f2af91997e23c87c",
+  "outputHash": "366f7d45b315839c6eaa6c034dbc5a5b80555ae9f5e82a6a3203f96eb23f29ee",
+  "effect": "preserves",
+  "outputs": {
+    "terrain.f32": "3d1609966e718d740816037da56233223fcbe22b4da67161a8e58d4c797bd484",
+    "terrain.json": "7cd948867991e8550cc69e22a2e0f8867cd6ec2f1f45cd67547987b567c502b4"
+  },
+  "toolVersions": {
+    "geotiff": "3.0.5"
+  },
+  "lockSubtreeSha256": "70e39a4155e68d4e88179ebe1818e7905f29b7e6a98f493ef80f6692be05d6cb"
+}

@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "width": 1390,
+  "height": 1348,
+  "originX": -3472.112256,
+  "originY": 3372.516441,
+  "originCorner": "top-left-of-top-left-pixel",
+  "cellSizeX": 5,
+  "cellSizeY": 5,
+  "rowOrder": "north-to-south",
+  "columnOrder": "west-to-east",
+  "byteOrder": "LE",
+  "dtype": "float32",
+  "byteLength": 7494880,
+  "minElev": 183.07884216308594,
+  "maxElev": 414.35345458984375,
+  "plausibleRangeM": [
+    150,
+    500
+  ],
+  "nodataValue": null,
+  "nodataRule": "non-finite-only",
+  "fillMethod": "chebyshev-bfs-fixed-order",
+  "nodataFilled": 0,
+  "frame": {
+    "file": "data/frame.json",
+    "sha256": "68400bc7bf517d7870decf26c3c4c67d720347c85c35c567629d043b51698c38"
+  },
+  "source": {
+    "path": "data/raw/3dep.tif",
+    "sha256": "e02594182ef6b5547c54232de300fc875893115d3c75be601f2535fde1b3ffb9"
+  }
+}
