@@ -1,0 +1,67 @@
+import { describe, expect, it } from 'vitest';
+import { ActivitySchema, SeasonSchema } from '../../src/schema/annotation';
+import { decodeHash, encodeHash, ignoredNotice, type HashFilter } from '../../src/ui/filter-hash';
+
+function subsets<T>(items: readonly T[], maxSize: number): T[][] {
+  const out: T[][] = [[]];
+  for (const a of items) out.push([a]);
+  if (maxSize >= 2) {
+    for (let i = 0; i < items.length; i++) {
+      for (let j = i + 1; j < items.length; j++) out.push([items[i] as T, items[j] as T]);
+    }
+  }
+  return out;
+}
+
+describe('hash codec', () => {
+  it('round trips every subset of size 0 to 2 for activity and season', () => {
+    for (const activity of subsets(ActivitySchema.options, 2)) {
+      for (const season of subsets(SeasonSchema.options, 2)) {
+        const state: HashFilter = { activity, season };
+        expect(decodeHash(encodeHash(state)).filter).toEqual(state);
+      }
+    }
+  });
+
+  it('is deterministic: insertion order does not matter, activity precedes season', () => {
+    const a = encodeHash({ activity: ['nordic-skate', 'nordic-classic'], season: ['winter'] });
+    const b = encodeHash({ activity: ['nordic-classic', 'nordic-skate'], season: ['winter'] });
+    expect(a).toBe('#activity=nordic-classic,nordic-skate&season=winter');
+    expect(b).toBe(a);
+  });
+
+  it('encodes the empty state as an empty string', () => {
+    expect(encodeHash({ activity: [], season: [] })).toBe('');
+  });
+
+  it('drops a bad token, keeps good ones, and reports the notice', () => {
+    const d = decodeHash('#activity=nordic-classic,foo&season=winter');
+    expect(d.filter).toEqual({ activity: ['nordic-classic'], season: ['winter'] });
+    expect(d.ignored).toEqual(['foo']);
+    expect(ignoredNotice(decodeHash('#activity=foo').ignored)).toBe('ignored: foo');
+    expect(ignoredNotice([])).toBeNull();
+  });
+
+  it('reports an empty value and does not fold case', () => {
+    expect(ignoredNotice(decodeHash('#activity=').ignored)).toBe('ignored: (empty)');
+    const d = decodeHash('#activity=Nordic-Classic');
+    expect(d.filter.activity).toEqual([]);
+    expect(d.ignored).toEqual(['Nordic-Classic']);
+  });
+
+  it('merges duplicated keys, dedupes repeated values, and reads %2C as a comma', () => {
+    expect(decodeHash('#activity=hike&activity=trail-run,hike').filter.activity).toEqual([
+      'hike',
+      'trail-run',
+    ]);
+    expect(decodeHash('#activity=hike%2Ctrail-run').filter.activity).toEqual(['hike', 'trail-run']);
+  });
+
+  it('ignores unknown keys, reports them in the notice, and never re-emits them', () => {
+    const d = decodeHash('#view=top&activity=hike&x=1');
+    expect(d.filter).toEqual({ activity: ['hike'], season: [] });
+    expect(d.ignored).toEqual(['view=top', 'x=1']);
+    expect(ignoredNotice(d.ignored)).toBe('ignored: view=top, x=1');
+    expect(encodeHash(d.filter)).toBe('#activity=hike');
+  });
+});
