@@ -1,0 +1,8 @@
+* text=auto eol=lf
+data/** -text
+tests/fixtures/** -text
+scripts/ingest/organizations.seed.json -text
+scripts/ingest/overpass.ql -text
+*.tif binary
+*.f32 binary
+*.sh text eol=lf
