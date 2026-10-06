@@ -1,0 +1,125 @@
+{
+  "inputHash": "a32e333486c894fee7720da56423ac052ca7b4429c59e56cd06de2057d92002d",
+  "codeCommit": "61a2fa56d9986cde012b512e159ef7d00b22aee0",
+  "outputHash": "4d4bf834ed2410471c299143eed4d58232081562eb433ebff7d13b4d9834212f",
+  "effect": "reduces",
+  "toolVersions": {
+    "osmtogeojson": "3.0.0-beta.5",
+    "proj4": "2.22.0"
+  },
+  "lockSubtreeSha256": "59aa92ae8e489559c0812f8d56d434f5374a49eda46b5d86a33c78479ebc4fde",
+  "counts": {
+    "downhill-run": 21,
+    "lift": 8,
+    "mtb-route": 29,
+    "mtb-trail": 15,
+    "nordic-trail": 40,
+    "snow-park": 2
+  },
+  "droppedCounts": {
+    "node-pylon": 23,
+    "node-station": 2
+  },
+  "dropped": [
+    {
+      "id": "node/1601376969",
+      "reason": "node-station"
+    },
+    {
+      "id": "node/1601376974",
+      "reason": "node-pylon"
+    },
+    {
+      "id": "node/1601376976",
+      "reason": "node-pylon"
+    },
+    {
+      "id": "node/1601376983",
+      "reason": "node-pylon"
+    },
+    {
+      "id": "node/1601376989",
+      "reason": "node-pylon"
+    },
+    {
+      "id": "node/1601376998",
+      "reason": "node-pylon"
+    },
+    {
+      "id": "node/1601377001",
+      "reason": "node-pylon"
+    },
+    {
+      "id": "node/1601377002",
+      "reason": "node-pylon"
+    },
+    {
+      "id": "node/1601377006",
+      "reason": "node-pylon"
+    },
+    {
+      "id": "node/1601377007",
+      "reason": "node-pylon"
+    },
+    {
+      "id": "node/1601377019",
+      "reason": "node-pylon"
+    },
+    {
+      "id": "node/1601377025",
+      "reason": "node-pylon"
+    },
+    {
+      "id": "node/1601377031",
+      "reason": "node-station"
+    },
+    {
+      "id": "node/8818885250",
+      "reason": "node-pylon"
+    },
+    {
+      "id": "node/8818885253",
+      "reason": "node-pylon"
+    },
+    {
+      "id": "node/8818885254",
+      "reason": "node-pylon"
+    },
+    {
+      "id": "node/8818885257",
+      "reason": "node-pylon"
+    },
+    {
+      "id": "node/8818885258",
+      "reason": "node-pylon"
+    },
+    {
+      "id": "node/8818885268",
+      "reason": "node-pylon"
+    },
+    {
+      "id": "node/8818885269",
+      "reason": "node-pylon"
+    },
+    {
+      "id": "node/8818885270",
+      "reason": "node-pylon"
+    },
+    {
+      "id": "node/8818885271",
+      "reason": "node-pylon"
+    },
+    {
+      "id": "node/8818885272",
+      "reason": "node-pylon"
+    },
+    {
+      "id": "node/8818885273",
+      "reason": "node-pylon"
+    },
+    {
+      "id": "node/8818885274",
+      "reason": "node-pylon"
+    }
+  ]
+}
