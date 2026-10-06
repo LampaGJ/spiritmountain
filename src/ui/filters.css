@@ -2,7 +2,9 @@
   position: fixed;
   top: 8px;
   left: 8px;
-  max-width: calc(100vw - 16px);
+  /* leave room for the 360px annotation panel on the right; never narrower than 320px */
+  max-width: max(320px, calc(100vw - 392px));
+  z-index: 5;
   padding: 8px;
   background: rgba(255, 255, 255, 0.92);
   color: #111;
