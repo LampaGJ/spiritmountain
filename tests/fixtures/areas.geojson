@@ -1,0 +1,11 @@
+{"type":"FeatureCollection","features":[
+  {"type":"Feature","properties":{"id":"way/1001","kind":"downhill-run","name":"Fixture Run","difficulty":"intermediate","osmTags":{"piste:type":"downhill","piste:difficulty":"intermediate"}},"geometry":{"type":"LineString","coordinates":[[-250,200,0],[-120,120,0],[-20,40,0],[60,-20,0],[140,-90,0],[220,-170,0],[330,-250,0]]}},
+  {"type":"Feature","properties":{"id":"way/1002","kind":"nordic-trail","name":null,"difficulty":null,"osmTags":{"piste:type":"nordic"}},"geometry":{"type":"LineString","coordinates":[[-280,-200,0],[-200,-150,0],[-100,-190,0],[0,-230,0],[100,-200,0]]}},
+  {"type":"Feature","properties":{"id":"way/1003","kind":"mtb-trail","name":null,"difficulty":"1","osmTags":{"mtb:scale":"1"}},"geometry":{"type":"LineString","coordinates":[[-300,100,0],[-220,60,0],[-150,100,0],[-80,40,0]]}},
+  {"type":"Feature","properties":{"id":"way/1004","kind":"snow-park","name":null,"difficulty":null,"osmTags":{"piste:type":"snow_park"}},"geometry":{"type":"Polygon","coordinates":[[[150,120,0],[230,120,0],[230,200,0],[150,200,0],[150,120,0]]]}},
+  {"type":"Feature","properties":{"id":"way/1005","kind":"mtb-route","name":null,"difficulty":null,"osmTags":{"route":"mtb"}},"geometry":{"type":"LineString","coordinates":[[-60,250,0],[40,200,0],[140,240,0]]}},
+  {"type":"Feature","properties":{"id":"way/1006","kind":"lift","name":null,"difficulty":null,"osmTags":{"aerialway":"chair_lift"}},"geometry":{"type":"LineString","coordinates":[[-120,-20,0],[-30,-20,0],[60,-20,0]]}},
+  {"type":"Feature","properties":{"id":"way/1007","kind":"lift","name":null,"difficulty":null,"osmTags":{"aerialway":"drag_lift"}},"geometry":{"type":"LineString","coordinates":[[200,-60,0],[260,-110,0]]}},
+  {"type":"Feature","properties":{"id":"way/1008","kind":"lift","name":null,"difficulty":null,"osmTags":{"aerialway":"rope_tow"}},"geometry":{"type":"LineString","coordinates":[[-200,230,0],[-150,200,0]]}},
+  {"type":"Feature","properties":{"id":"way/1009","kind":"lift","name":null,"difficulty":null,"osmTags":{"aerialway":"magic_carpet"}},"geometry":{"type":"LineString","coordinates":[[100,-250,0],[120,-230,0]]}}
+]}
