@@ -10,7 +10,7 @@ if (!app) {
   throw new Error('index.html is missing the #app element');
 }
 
-const { heightfield } = await loadTerrain({
+const { header, heightfield } = await loadTerrain({
   headerUrl: terrainHeaderUrl,
   binUrl: terrainBinUrl,
   frameUrl,
@@ -27,9 +27,12 @@ import { FADE_OUTER_M } from '../scripts/ingest/context-tiles';
 import { ImageryManifestSchema } from '../scripts/ingest/imagery-manifest-schema';
 import { loadContext, loadContextTextures } from './data/load-context';
 import { installContext, type ContextHandle } from './scene/context';
+import { groundSlopeColor } from './scene/ground';
 import { loadImagery } from './data/load-imagery';
 import { decodeHash } from './ui/filter-hash';
-import type { Texture } from 'three';
+import { Color, type Texture } from 'three';
+import { loadImageryStats } from './data/load-imagery-stats';
+import { loadSky } from './data/load-sky';
 
 /** Failure channel for the imagery layer: one line in its own element, and the terrain keeps its slope shading. */
 function reportImageryFailure(message: string): void {
@@ -42,11 +45,14 @@ function reportImageryFailure(message: string): void {
 }
 
 let imageryTexture: Texture | null = null;
+/** Mean linear colour of the photo, once data/imagery-stats.json has loaded; the ground uses it when imagery is on. */
+let groundMean: Color | null = null;
 /** The context ring, once it has loaded; null until then and when every tile failed. */
 let contextHandle: ContextHandle | null = null;
 let imageryWanted = decodeHash(location.hash).filter.imagery !== false;
 const applyImagery = (): void => {
   handle.setImagery(imageryWanted ? imageryTexture : null);
+  handle.setGroundColor(imageryWanted ? groundMean : null);
   contextHandle?.setImagery(imageryWanted);
 };
 /** The filter strip calls this on mount and on every toggle; it also fires before the photo has loaded. */
@@ -118,6 +124,39 @@ if (!('error' in areaLayerResult)) {
   }
 }
 handle.setFadeCentre(fadeCentre);
+
+/** One line in the shared imagery status element for the ground or sky; the scene keeps its fallback look. */
+function reportSceneFailure(what: string, message: string): void {
+  console.error(`${what}: ${message}`);
+  let status = document.getElementById('imagery-status');
+  if (!status) {
+    status = document.createElement('div');
+    status.id = 'imagery-status';
+    status.setAttribute('role', 'alert');
+    document.body.append(status);
+  }
+  status.textContent = `${what} unavailable: ${message.split('\n')[0] ?? message}`;
+}
+
+// Not awaited: ground and sky arrive after the terrain is already on screen. Failures keep the flat sky and slope-coloured ground.
+void loadImageryStats().then((stats) => {
+  if ('error' in stats) {
+    reportSceneFailure('ground colour', stats.error);
+    handle.setGround(groundSlopeColor(), header.minElev);
+    return;
+  }
+  groundMean = new Color(stats.meanLinear.r, stats.meanLinear.g, stats.meanLinear.b);
+  handle.setGround(groundMean, header.minElev);
+  handle.setGroundColor(imageryWanted ? groundMean : null);
+});
+void loadSky().then((sky) => {
+  if ('error' in sky) {
+    handle.setSkyFallback();
+    return reportSceneFailure('sky', sky.error);
+  }
+  handle.setSky(sky);
+  console.info('sky: panorama applied');
+});
 
 import buildingsUrl from '../data/buildings.geojson?url';
 import { loadBuildings } from './data/load-buildings';

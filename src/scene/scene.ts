@@ -2,6 +2,8 @@ import {
   Color,
   DirectionalLight,
   HemisphereLight,
+  type MeshStandardMaterial,
+  type ColorRepresentation,
   type Mesh,
   PerspectiveCamera,
   Scene,
@@ -11,6 +13,8 @@ import {
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { createMeshSurface, type Heightfield, type MeshSurface } from './heightfield';
 import { setFadeCentre } from './fade';
+import { createGround, groundSlopeColor } from './ground';
+import { createSkyControl, SKY_FALLBACK_COLOR } from './sky';
 import { createTerrainMesh, setTerrainImagery, terrainFade } from './terrain';
 import { computeViews, minCameraY, verticalFovDeg, type FocusBox, type ViewName } from './views';
 
@@ -28,6 +32,14 @@ export interface SceneHandle {
   setView(name: ViewName, focus?: FocusBox): void;
   /** Shows the texture on the terrain, or restores slope shading with null. */
   setImagery(texture: Texture | null): void;
+  /** Photo sky as background and environment light; the sun and hemisphere are trimmed so it is not blown out. */
+  setSky(texture: Texture): void;
+  /** Restores the flat sky colour, no environment, and the original light intensities. */
+  setSkyFallback(): void;
+  /** Installs (or replaces) the opaque ground plane at base elevation minus 0.5 m, beyond the faded terrain, in a linear-light colour. */
+  setGround(colorLinear: { r: number; g: number; b: number }, baseElevationM: number): void;
+  /** Re-tints the ground: the photo mean (colour) or the slope-shading mid colour (null). */
+  setGroundColor(color: ColorRepresentation | null): void;
   /** Moves the radial fade centre of the centre terrain (local metres east and north). */
   setFadeCentre(centre: { readonly east: number; readonly north: number }): void;
   /**
@@ -43,7 +55,6 @@ export interface SceneHandle {
 
 /** Maximum polar angle (radians from straight up): just under horizontal, so the camera stays above the target plane. */
 const MAX_POLAR_ANGLE = Math.PI / 2 - 0.05;
-const BACKGROUND_COLOR = 0x9db4c8;
 
 export function createScene(container: HTMLElement, field: Heightfield): SceneHandle {
   const surface = createMeshSurface(field);
@@ -53,15 +64,18 @@ export function createScene(container: HTMLElement, field: Heightfield): SceneHa
   container.appendChild(renderer.domElement);
 
   const scene = new Scene();
-  scene.background = new Color(BACKGROUND_COLOR);
+  scene.background = new Color(SKY_FALLBACK_COLOR);
   const terrain = createTerrainMesh(surface);
   scene.add(terrain);
 
-  scene.add(new HemisphereLight(0xdde8ff, 0x3a3a30, 1.2));
+  const hemisphere = new HemisphereLight(0xdde8ff, 0x3a3a30, 1.2);
+  scene.add(hemisphere);
   // From the south-west at low elevation, so lift corridors read as terrain shape. No shadows (cost).
   const sun = new DirectionalLight(0xfff2dd, 2.2);
   sun.position.set(-1, 0.45, 1).normalize().multiplyScalar(1000);
   scene.add(sun);
+  const sky = createSkyControl(scene, { sun, hemisphere });
+  let ground: Mesh | null = null;
 
   const aspectOf = () => container.clientWidth / Math.max(container.clientHeight, 1);
   const initial = computeViews(surface, aspectOf());
@@ -132,6 +146,29 @@ export function createScene(container: HTMLElement, field: Heightfield): SceneHa
     setImagery(texture) {
       setTerrainImagery(terrain, texture);
     },
+    setSky: sky.setSky,
+    setSkyFallback: sky.setSkyFallback,
+    setGround(colorLinear, baseElevationM) {
+      if (ground) {
+        scene.remove(ground);
+        ground.geometry.dispose();
+        (ground.material as { dispose(): void }).dispose();
+      }
+      const { extent } = surface;
+      ground = createGround(
+        new Color(colorLinear.r, colorLinear.g, colorLinear.b),
+        baseElevationM,
+        {
+          east: extent.centreEast,
+          north: extent.centreNorth,
+        },
+      );
+      scene.add(ground);
+    },
+    setGroundColor(color) {
+      if (!ground) return;
+      (ground.material as MeshStandardMaterial).color.set(color ?? groundSlopeColor());
+    },
     setFadeCentre(centre) {
       setFadeCentre(terrainFade(terrain), centre);
     },
@@ -149,6 +186,10 @@ export function createScene(container: HTMLElement, field: Heightfield): SceneHa
       renderer.setAnimationLoop(null);
       observer.disconnect();
       controls.dispose();
+      if (ground) {
+        ground.geometry.dispose();
+        (ground.material as { dispose(): void }).dispose();
+      }
       terrain.geometry.dispose();
       (terrain.material as { dispose(): void }).dispose();
       renderer.dispose();
