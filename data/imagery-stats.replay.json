@@ -1,0 +1,10 @@
+{
+  "inputHash": "d63d92a84a9b26e34f9848007de753b12a647b558e8600d289ab860a24162521",
+  "codeCommit": "9d58e5ec7c26e9ef4183bd16c2d4e13acdf7fcc8",
+  "outputHash": "9d58c75c05c33d4558a0adb22978c1d5ec1d2505a89a4629d3164c4499e4ccf6",
+  "effect": "reduces",
+  "toolVersions": {
+    "jpeg-js": "0.4.4"
+  },
+  "lockSubtreeSha256": "8bfd026cb6edd8beb3819bb5fe6ae756d2c7018a8d27b8814f2cba6f772cf03d"
+}
