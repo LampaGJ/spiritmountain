@@ -9,6 +9,8 @@ import {
   RESORT_VIEW_MAX_DISTANCE_M,
   RESORT_VIEW_MIN_DISTANCE_M,
   computeViews,
+  RESORT_PITCH_DEG,
+  RESORT_TARGET_ALONG_FRACTION,
   findSummit,
   focusBoxOf,
   type Landmarks,
@@ -262,7 +264,7 @@ describe('resort view from landmarks', () => {
   const resortAt = (aspect: number, l: Landmarks | undefined = landmarks) =>
     computeViews(surface, aspect, undefined, l).views.resort;
 
-  it('stands on the sight line beyond the lift base, away from the lift top, 2 m above the terrain', () => {
+  it('stands on the sight line beyond the lift base, away from the lift top, raised to pitch RESORT_PITCH_DEG down onto the target (#44)', () => {
     const p = fromScene(...(resortAt(16 / 9).position.toArray() as [number, number, number]));
     const away = { east: 350, north: -250 };
     const norm = Math.hypot(away.east, away.north);
@@ -271,7 +273,11 @@ describe('resort view from landmarks', () => {
     const cross = (rel.east * -away.north + rel.north * away.east) / norm;
     expect(along).toBeGreaterThanOrEqual(60 - 1e-6);
     expect(Math.abs(cross)).toBeLessThan(1e-6);
-    expect(p.elevation).toBeCloseTo(surface.sample(p.east, p.north).height + 2, 6);
+    const v = resortAt(16 / 9);
+    const horizontal = Math.hypot(v.target.x - v.position.x, v.target.z - v.position.z);
+    const pitch = (Math.atan2(v.position.y - v.target.y, horizontal) * 180) / Math.PI;
+    expect(pitch).toBeCloseTo(RESORT_PITCH_DEG, 6);
+    expect(p.elevation).toBeGreaterThan(surface.sample(p.east, p.north).height + 2);
   });
 
   it('is exactly 60 m from the base when the frame already holds both landmarks', () => {
@@ -282,14 +288,16 @@ describe('resort view from landmarks', () => {
     }
   });
 
-  it('targets the chalet centroid at terrain plus half the roof height, looking up', () => {
+  it('targets the terrain 45 percent of the way up the lift line and looks down at it (#44)', () => {
     const v = resortAt(16 / 9);
     const t = fromScene(v.target.x, v.target.y, v.target.z);
-    expect(t.east).toBeCloseTo(0, 9);
-    expect(t.north).toBeCloseTo(250, 9);
-    expect(t.elevation).toBeCloseTo(surface.sample(0, 250).height + 5, 6);
+    const east = -250 + (100 - -250) * (1 - RESORT_TARGET_ALONG_FRACTION);
+    const north = 100 + (-150 - 100) * (1 - RESORT_TARGET_ALONG_FRACTION);
+    expect(t.east).toBeCloseTo(east, 9);
+    expect(t.north).toBeCloseTo(north, 9);
+    expect(t.elevation).toBeCloseTo(surface.sample(east, north).height, 6);
     expect(v.up.toArray()).toEqual([0, 1, 0]);
-    expect(v.target.y).toBeGreaterThan(v.position.y);
+    expect(v.position.y).toBeGreaterThan(v.target.y);
   });
 
   it('without landmarks equals the focus-box construction', () => {
@@ -300,13 +308,14 @@ describe('resort view from landmarks', () => {
     expect(a.distance).toBeUndefined();
   });
 
-  it('falls back to the focus-box target when the chalet is absent', () => {
-    const plain = computeViews(surface, 16 / 9, focus).views.resort;
+  it('keeps the lift-line orbit centre when the chalet is absent; only the fit changes (#44)', () => {
+    const withChalet = computeViews(surface, 16 / 9, focus, landmarks).views.resort;
     const v = computeViews(surface, 16 / 9, focus, {
       liftBase: landmarks.liftBase,
       liftTop: landmarks.liftTop,
     }).views.resort;
-    expect(v.target.toArray()).toEqual(plain.target.toArray());
+    expect(v.target.toArray()).toEqual(withChalet.target.toArray());
+    expect(v.position.y).toBeGreaterThan(v.target.y);
   });
 
   it('backs off further in portrait, and keeps the chalet and lift top inside the frustum', () => {
