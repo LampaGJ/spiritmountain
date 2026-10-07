@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Spirit Mountain</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -29,6 +29,16 @@
           sans-serif;
         color: rgba(255, 255, 255, 0.85);
         text-shadow: var(--sm-halo, 0 0 3px rgba(0, 0, 0, 0.9), 0 0 6px rgba(0, 0, 0, 0.7));
+      }
+      /* Phone: sit above the bottom control bar (--sm-bar-h comes from rail.css) instead of under its keys. */
+      @media (max-width: 719px) {
+        #attribution {
+          left: 8px;
+          right: 8px;
+          bottom: calc(var(--sm-bar-h, 0px) + 4px);
+          font-size: 10px;
+          line-height: 1.25;
+        }
       }
       #attribution a {
         color: inherit;
