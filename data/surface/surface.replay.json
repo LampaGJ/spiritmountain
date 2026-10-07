@@ -1,0 +1,16 @@
+{
+  "inputHash": "057eb7ddf0f03d3c95e93aa70af50dc26257cf57555f5503cc993745da06b17d",
+  "codeCommit": "23b7d066c3aaa179b896eff4623c74cea4758185",
+  "outputHash": "97fd84adbf2f5e0c2da9c500e6a179d2816b6f66a504ec64e17a778ec457d775",
+  "effect": "preserves",
+  "outputs": {
+    "core.f32": "20d4097690a134554c7cd8c6ef4c361c3fa732fc00c6d691f8be38f10e296411",
+    "core.json": "5f62df697491247031731d6cb11a0e52378f7ae5e219cedfc060560d7da2394a"
+  },
+  "toolVersions": {
+    "geotiff": "3.0.5"
+  },
+  "lockSubtreeSha256": "70e39a4155e68d4e88179ebe1818e7905f29b7e6a98f493ef80f6692be05d6cb",
+  "decodeResolutionM": 2,
+  "pooling": "max"
+}
