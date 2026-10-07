@@ -34,15 +34,15 @@ export const SUMMIT_VIEW_UP_FRACTION = 0.06;
 export const CAMERA_CLEARANCE_M = 5;
 
 /** Resort view distance, as a multiple of the focus box diagonal, before clamping. */
-export const RESORT_VIEW_DISTANCE_FACTOR = 1.4;
+export const RESORT_VIEW_DISTANCE_FACTOR = 1.0;
 /** Resort view horizontal distance is never closer than this, in metres. */
 export const RESORT_VIEW_MIN_DISTANCE_M = 700;
 /** Resort view horizontal distance is never farther than this, in metres. */
 export const RESORT_VIEW_MAX_DISTANCE_M = 2500;
 /** Resort camera height above the terrain beneath it, as a fraction of the view distance. */
-export const RESORT_VIEW_HEIGHT_FRACTION = 0.1;
+export const RESORT_VIEW_HEIGHT_FRACTION = 0.02;
 /** Resort camera height above the terrain beneath it never falls below this, in metres. */
-export const RESORT_VIEW_MIN_HEIGHT_M = 60;
+export const RESORT_VIEW_MIN_HEIGHT_M = 25;
 /** Resort target sits this fraction of the focus box's height range above its lowest sampled point, so it reads as mid-slope. */
 export const RESORT_TARGET_SLOPE_FRACTION = 0.35;
 /**
@@ -50,7 +50,7 @@ export const RESORT_TARGET_SLOPE_FRACTION = 0.35;
  * Added to the specified construction: on the real resort the base-side camera sits at target height
  * (measured -0.1 degrees), so without a floor the view is level and shows no slope.
  */
-export const RESORT_VIEW_MIN_ELEVATION_DEG = 5;
+export const RESORT_VIEW_MIN_ELEVATION_DEG = -6;
 /** With no focus box, the resort view uses a box of this half-size around the summit, in metres. */
 export const RESORT_FALLBACK_HALF_SIZE_M = 400;
 
