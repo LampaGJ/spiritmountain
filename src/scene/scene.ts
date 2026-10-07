@@ -11,6 +11,8 @@ import {
   WebGLRenderer,
 } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { ElevatedGroup, effectiveScale, mapY, remapCamera } from './elevated';
+import { elevationToSceneY } from './frame';
 import { createMeshSurface, type Heightfield, type MeshSurface } from './heightfield';
 import { setFadeCentre } from './fade';
 import { createGround, groundSlopeColor } from './ground';
@@ -27,6 +29,8 @@ export interface SceneHandle {
   readonly renderer: WebGLRenderer;
   readonly controls: OrbitControls;
   readonly terrain: Mesh;
+  /** The group every elevation-bearing layer is added to (terrain, context, areas, buildings, surface). Ground and sky stay outside it. */
+  readonly elevated: ElevatedGroup;
   readonly surface: MeshSurface;
   /** Moves the camera to a named view. A focus box is remembered and reused by later calls without one. */
   setView(name: ViewName, focus?: FocusBox): void;
@@ -47,6 +51,13 @@ export interface SceneHandle {
    * grows by 2 x radiusM, the same rule computeViews applies to the centre tile's own radius, and controls.maxDistance follows.
    */
   setContextExtent(radiusM: number): void;
+  /**
+   * Vertical exaggeration k (0 to 10, 1 = true scale) applied as a group scale about lake level: y' = base + k * (y - base).
+   * The camera and orbit target are carried through the same map so the framing holds. Instant; no geometry is rebuilt.
+   */
+  setExaggeration(k: number): void;
+  /** The current exaggeration factor. */
+  readonly exaggeration: number;
   /** Registers a per-frame callback; returns an unsubscribe function. */
   onFrame(callback: FrameCallback): () => void;
   /** Stops the loop and releases geometry, material, renderer, controls and the resize observer. */
@@ -56,7 +67,18 @@ export interface SceneHandle {
 /** Maximum polar angle (radians from straight up): just under horizontal, so the camera stays above the target plane. */
 const MAX_POLAR_ANGLE = Math.PI / 2 - 0.05;
 
-export function createScene(container: HTMLElement, field: Heightfield): SceneHandle {
+export interface SceneOptions {
+  /** Lake level in metres (the terrain header minElev); the water line the exaggeration pivots about. Defaults to the lowest sample. */
+  readonly lakeLevelM?: number;
+}
+
+export const MAX_EXAGGERATION = 10;
+
+export function createScene(
+  container: HTMLElement,
+  field: Heightfield,
+  options: SceneOptions = {},
+): SceneHandle {
   const surface = createMeshSurface(field);
   const renderer = new WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -66,7 +88,14 @@ export function createScene(container: HTMLElement, field: Heightfield): SceneHa
   const scene = new Scene();
   scene.background = new Color(SKY_FALLBACK_COLOR);
   const terrain = createTerrainMesh(surface);
-  scene.add(terrain);
+  const elevated = new ElevatedGroup();
+  scene.add(elevated);
+  elevated.add(terrain);
+  const lakeLevelM =
+    options.lakeLevelM ??
+    field.data.reduce((lowest, h) => Math.min(lowest, h), Number.POSITIVE_INFINITY);
+  const baseSceneY = elevationToSceneY(lakeLevelM);
+  let exaggeration = 1;
 
   const hemisphere = new HemisphereLight(0xdde8ff, 0x3a3a30, 1.2);
   scene.add(hemisphere);
@@ -99,9 +128,12 @@ export function createScene(container: HTMLElement, field: Heightfield): SceneHa
     controls.maxDistance = camera.far * 0.9;
     camera.fov = set.fov;
     camera.up.copy(view.up);
+    // Views are computed in true metres, then carried through the live exaggeration map.
     camera.position.copy(view.position);
     controls.target.copy(view.target);
-    camera.lookAt(view.target);
+    camera.position.y = mapY(view.position.y, effectiveScale(exaggeration), baseSceneY);
+    controls.target.y = mapY(view.target.y, effectiveScale(exaggeration), baseSceneY);
+    camera.lookAt(controls.target);
     camera.updateProjectionMatrix();
     controls.update();
   };
@@ -121,7 +153,10 @@ export function createScene(container: HTMLElement, field: Heightfield): SceneHa
   let logged = false;
   renderer.setAnimationLoop((now: number) => {
     controls.update();
-    const floor = minCameraY(surface, camera.position.x, camera.position.z);
+    const floor = minCameraY(surface, camera.position.x, camera.position.z, {
+      k: effectiveScale(exaggeration),
+      base: baseSceneY,
+    });
     if (camera.position.y < floor) camera.position.y = floor;
     for (const callback of callbacks) callback(now - last);
     last = now;
@@ -141,8 +176,20 @@ export function createScene(container: HTMLElement, field: Heightfield): SceneHa
     renderer,
     controls,
     terrain,
+    elevated,
     surface,
     setView,
+    get exaggeration() {
+      return exaggeration;
+    },
+    setExaggeration(k) {
+      const next = Math.min(Math.max(Number.isFinite(k) ? k : 1, 0), MAX_EXAGGERATION);
+      if (next === exaggeration) return;
+      remapCamera(camera, controls, exaggeration, next, baseSceneY);
+      exaggeration = next;
+      elevated.setExaggeration(next, baseSceneY);
+      controls.update();
+    },
     setImagery(texture) {
       setTerrainImagery(terrain, texture);
     },

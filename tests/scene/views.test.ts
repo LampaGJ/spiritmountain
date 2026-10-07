@@ -15,6 +15,7 @@ import {
   minCameraY,
   type ViewName,
 } from '../../src/scene/views';
+import { mapY } from '../../src/scene/elevated';
 import { makeFixtureField } from '../fixtures/make-field';
 
 const field = makeFixtureField();
@@ -120,6 +121,25 @@ describe('minCameraY', () => {
     const p = toScene(60, -20, 0);
     expect(minCameraY(surface, p.x, p.z)).toBeCloseTo(
       surface.sample(60, -20).height + CAMERA_CLEARANCE_M,
+      9,
+    );
+  });
+});
+
+describe('minCameraY with exaggeration', () => {
+  it('maps the sampled height about the base before adding the clearance', () => {
+    const p = toScene(60, -20, 0);
+    const height = surface.sample(60, -20).height;
+    const base = height - 10;
+    expect(minCameraY(surface, p.x, p.z, { k: 3, base })).toBeCloseTo(
+      mapY(height, 3, base) + CAMERA_CLEARANCE_M,
+      9,
+    );
+  });
+  it('is unchanged at k = 1', () => {
+    const p = toScene(60, -20, 0);
+    expect(minCameraY(surface, p.x, p.z, { k: 1, base: 5 })).toBeCloseTo(
+      minCameraY(surface, p.x, p.z),
       9,
     );
   });

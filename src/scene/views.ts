@@ -1,4 +1,5 @@
 import { Box3, Sphere, Vector3 } from 'three';
+import { mapY } from './elevated';
 import { elevationToSceneY, fromScene, toScene } from './frame';
 import type { AreaEntry } from './areas';
 import type { Heightfield, MeshSurface } from './heightfield';
@@ -268,8 +269,24 @@ function resortView(surface: MeshSurface, focus: FocusBox): CameraView {
   return { position: new Vector3(x, y, z), target, up: new Vector3(0, 1, 0) };
 }
 
-/** Lowest allowed scene y for a camera at scene (x, z): terrain surface plus CAMERA_CLEARANCE_M. */
-export function minCameraY(surface: MeshSurface, x: number, z: number): number {
+/** The live vertical map (see elevated.ts): scene y' = base + k * (y - base). */
+export interface ExaggerationMap {
+  readonly k: number;
+  readonly base: number;
+}
+
+/**
+ * Lowest allowed scene y for a camera at scene (x, z): the terrain surface as drawn plus CAMERA_CLEARANCE_M.
+ * With an exaggeration the sampled height goes through the same map as the drawn terrain, then the clearance is added.
+ */
+export function minCameraY(
+  surface: MeshSurface,
+  x: number,
+  z: number,
+  exaggeration?: ExaggerationMap,
+): number {
   const { east, north } = fromScene(x, 0, z);
-  return elevationToSceneY(surface.sample(east, north).height) + CAMERA_CLEARANCE_M;
+  const y = elevationToSceneY(surface.sample(east, north).height);
+  const drawn = exaggeration ? mapY(y, exaggeration.k, exaggeration.base) : y;
+  return drawn + CAMERA_CLEARANCE_M;
 }

@@ -1,4 +1,4 @@
-import { Group, type Scene } from 'three';
+import { Group, type Object3D } from 'three';
 import { Line2 } from 'three/addons/lines/Line2.js';
 import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
@@ -180,7 +180,7 @@ export function buildAreaLayer(
 
 /** Wire the layer into a scene and report, once, anything that makes the drape suspect. */
 export function installAreas(
-  scene: Scene,
+  scene: Object3D,
   areas: readonly Area[],
   surface: MeshSurface,
   toScene: SceneMapper,

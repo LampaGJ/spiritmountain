@@ -29,7 +29,9 @@ function setup(
   withImagery = false,
   withBuildings = false,
   withSurface = false,
+  withExag = false,
 ) {
+  const exagCalls: number[] = [];
   const surfaceCalls: boolean[] = [];
   let hash = initialHash;
   const imageryCalls: boolean[] = [];
@@ -47,6 +49,7 @@ function setup(
     ...(withImagery ? { setImagery: (on: boolean) => void imageryCalls.push(on) } : {}),
     ...(withBuildings ? { setBuildings: (on: boolean) => void buildingsCalls.push(on) } : {}),
     ...(withSurface ? { setSurface: (on: boolean) => void surfaceCalls.push(on) } : {}),
+    ...(withExag ? { setExaggeration: (k: number) => void exagCalls.push(k) } : {}),
     readHash: () => hash,
     writeHash: (h) => {
       hash = h;
@@ -69,6 +72,7 @@ function setup(
     imageryCalls,
     buildingsCalls,
     surfaceCalls,
+    exagCalls,
     getHash: () => hash,
     calls: () => applyCalls,
   };
@@ -325,6 +329,108 @@ describe('surface toggle', () => {
     button('Clear Filters').click();
     expect(getHash()).toBe('#surface=on');
     expect(surfaceCalls).toEqual([true]);
+  });
+});
+
+describe('terrain exaggeration slider', () => {
+  const slider = (host: HTMLElement): HTMLInputElement => {
+    const input = host.querySelector<HTMLInputElement>('input[type="range"]');
+    if (input === null) throw new Error('no slider');
+    return input;
+  };
+  const valueText = (host: HTMLElement): string =>
+    host.querySelector('.exag-value')?.textContent ?? '';
+  const drag = (input: HTMLInputElement, value: string): void => {
+    input.value = value;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  };
+
+  it('has no slider unless setExaggeration is wired', () => {
+    const { host } = setup('', true, true, true);
+    expect(host.querySelector('input[type="range"]')).toBeNull();
+  });
+
+  it('sits after Surface in the Layers group with the icon, label, 0 to 10 range and x1.0 at default', () => {
+    const { host, getHash, exagCalls } = setup('', true, true, true, true);
+    const layers = host.querySelector('[data-slot="imagery"]');
+    const input = slider(host);
+    expect(layers?.contains(input)).toBe(true);
+    const surface = [...host.querySelectorAll('button')].find(
+      (b) => b.querySelector('.btn-label')?.textContent === 'Surface',
+    );
+    expect(surface?.compareDocumentPosition(input)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expect([input.min, input.max, input.step, input.value]).toEqual(['0', '10', '0.1', '1']);
+    const icon = layers?.querySelector('.exag-key .ms');
+    expect(icon?.textContent).toBe(iconFor('terrain-exaggeration').symbol);
+    expect(icon?.getAttribute('aria-hidden')).toBe('true');
+    expect(host.querySelector('.exag-key')?.textContent).toContain('Terrain');
+    expect(iconFor('terrain-exaggeration').symbol).toBe('height');
+    expect(valueText(host)).toBe('x1.0');
+    expect(getHash()).toBe('');
+    expect(exagCalls).toEqual([1]);
+  });
+
+  it('is labelled for assistive technology and reports its value as text', () => {
+    const { host } = setup('', false, false, false, true);
+    const input = slider(host);
+    expect(input.getAttribute('aria-label')).toBe('Terrain');
+    drag(input, '2.5');
+    expect(input.getAttribute('aria-valuetext')).toBe('x2.5');
+  });
+
+  it('updates the value text live, writes exag=<n> and calls setExaggeration', () => {
+    const { host, getHash, exagCalls } = setup('', false, false, false, true);
+    drag(slider(host), '2.5');
+    expect(valueText(host)).toBe('x2.5');
+    expect(getHash()).toBe('#exag=2.5');
+    expect(exagCalls).toEqual([1, 2.5]);
+    drag(slider(host), '0');
+    expect(valueText(host)).toBe('x0.0');
+    expect(getHash()).toBe('#exag=0');
+    expect(exagCalls).toEqual([1, 2.5, 0]);
+  });
+
+  it('writes nothing for 1 and clears a previous exag', () => {
+    const { host, getHash } = setup('', false, false, false, true);
+    drag(slider(host), '3');
+    expect(getHash()).toBe('#exag=3');
+    drag(slider(host), '1');
+    expect(getHash()).toBe('');
+  });
+
+  it('double-click resets to 1', () => {
+    const { host, getHash, exagCalls } = setup('#exag=4', false, false, false, true);
+    expect(slider(host).value).toBe('4');
+    expect(exagCalls).toEqual([4]);
+    slider(host).dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+    expect(slider(host).value).toBe('1');
+    expect(valueText(host)).toBe('x1.0');
+    expect(getHash()).toBe('');
+    expect(exagCalls).toEqual([4, 1]);
+  });
+
+  it('starts from #exag=2.5, and Clear leaves it alone', () => {
+    const { host, button, getHash, exagCalls } = setup(
+      '#exag=2.5&activity=hike',
+      false,
+      false,
+      false,
+      true,
+    );
+    expect(slider(host).value).toBe('2.5');
+    expect(valueText(host)).toBe('x2.5');
+    button('Clear Filters').click();
+    expect(getHash()).toBe('#exag=2.5');
+    expect(slider(host).value).toBe('2.5');
+    expect(exagCalls).toEqual([2.5]);
+  });
+
+  it('drops exag=11 with the ignored notice and keeps the default', () => {
+    const { host, getHash, exagCalls } = setup('#exag=11', false, false, false, true);
+    expect(slider(host).value).toBe('1');
+    expect(host.querySelector('.filter-notice')?.textContent).toBe('ignored: exag=11');
+    expect(getHash()).toBe('');
+    expect(exagCalls).toEqual([1]);
   });
 });
 

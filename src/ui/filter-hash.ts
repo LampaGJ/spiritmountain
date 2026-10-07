@@ -16,6 +16,8 @@ export const HashFilterSchema = z.strictObject({
   buildings: z.boolean().optional(),
   /** Absent means the default (surface off); only true is ever encoded, as `surface=on`. */
   surface: z.boolean().optional(),
+  /** Absent means the default (true scale, 1); any other value in 0 to 10 is encoded, as `exag=<number>`. */
+  exag: z.number().min(0).max(10).optional(),
 });
 
 /** The imagery hash token: `off` or `on`, parsed to a boolean. Anything else is dropped and reported. */
@@ -24,6 +26,12 @@ export const ImageryTokenSchema = z.enum(['on', 'off']).transform((token) => tok
 export const BuildingsTokenSchema = ImageryTokenSchema;
 /** The surface hash token: the same on/off vocabulary. */
 export const SurfaceTokenSchema = ImageryTokenSchema;
+/** The exaggeration hash token: a plain decimal in 0 to 10, rounded to one decimal. Anything else is dropped and reported. */
+export const ExaggerationTokenSchema = z
+  .string()
+  .regex(/^\d+(\.\d+)?$/)
+  .transform((token) => Math.round(Number(token) * 10) / 10)
+  .pipe(z.number().min(0).max(10));
 export type HashFilter = z.infer<typeof HashFilterSchema>;
 
 export interface DecodedHash {
@@ -43,6 +51,7 @@ export function decodeHash(hash: string): DecodedHash {
   let imagery = true;
   let buildings = true;
   let surface = false;
+  let exag: number | undefined;
   for (const pair of hash.replace(/^#/, '').split('&').filter(Boolean)) {
     const eq = pair.indexOf('=');
     const key = eq < 0 ? pair : pair.slice(0, eq);
@@ -65,6 +74,12 @@ export function decodeHash(hash: string): DecodedHash {
       else surface = token.data;
       continue;
     }
+    if (key === 'exag') {
+      const token = ExaggerationTokenSchema.safeParse(value);
+      if (!token.success) ignored.push(pair);
+      else exag = token.data === 1 ? undefined : token.data;
+      continue;
+    }
     if (key !== 'activity' && key !== 'season') {
       ignored.push(pair);
       continue;
@@ -81,12 +96,13 @@ export function decodeHash(hash: string): DecodedHash {
     ...(imagery ? {} : { imagery: false }),
     ...(buildings ? {} : { buildings: false }),
     ...(surface ? { surface: true } : {}),
+    ...(exag === undefined ? {} : { exag }),
   });
   return { filter, ignored };
 }
 
 // Emitter gate skipped by decision (CLAUDE.md:29 "the out"): encodeHash emits only the owned keys activity and season, derived from an already-parsed HashFilter, and hands off in-process to decodeHash, which parses. It never assembles from raw input: unknown keys are dropped, not re-emitted.
-/** Canonical string: activity, season in schema option order, then `imagery=off` and `buildings=off` when those layers are off, then `surface=on` when that layer is on; "" when empty. */
+/** Canonical string: activity, season in schema option order, then `imagery=off` and `buildings=off` when those layers are off, then `surface=on` when that layer is on, then `exag=<number>` when it is not 1; "" when empty. */
 export function encodeHash(filter: HashFilter): string {
   const owned: [string, string][] = [];
   const activity = inOrder(ActivitySchema.options, filter.activity);
@@ -96,6 +112,7 @@ export function encodeHash(filter: HashFilter): string {
   if (filter.imagery === false) owned.push(['imagery', 'off']);
   if (filter.buildings === false) owned.push(['buildings', 'off']);
   if (filter.surface === true) owned.push(['surface', 'on']);
+  if (filter.exag !== undefined && filter.exag !== 1) owned.push(['exag', String(filter.exag)]);
   const pairs = owned.map(([k, v]) => `${k}=${v}`).join('&');
   return pairs === '' ? '' : `#${pairs}`;
 }

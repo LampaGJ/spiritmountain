@@ -148,3 +148,42 @@ describe('surface key', () => {
     expect(decodeHash(encodeHash(state)).filter).toEqual(state);
   });
 });
+
+describe('exag key', () => {
+  it('round trips exag=2.5 and encodes it last', () => {
+    expect(decodeHash('#exag=2.5').filter.exag).toBe(2.5);
+    expect(encodeHash({ activity: [], season: [], exag: 2.5 })).toBe('#exag=2.5');
+    expect(encodeHash({ activity: [], season: [], surface: true, exag: 2.5 })).toBe(
+      '#surface=on&exag=2.5',
+    );
+    const state: HashFilter = { activity: ['hike'], season: ['winter'], exag: 2.5 };
+    expect(decodeHash(encodeHash(state)).filter).toEqual(state);
+  });
+
+  it('accepts the 0 and 10 ends', () => {
+    expect(decodeHash('#exag=0').filter.exag).toBe(0);
+    expect(decodeHash('#exag=10').filter.exag).toBe(10);
+  });
+
+  it('drops exag=11 and reports it', () => {
+    const decoded = decodeHash('#exag=11');
+    expect(decoded.filter.exag).toBeUndefined();
+    expect(decoded.ignored).toEqual(['exag=11']);
+  });
+
+  it.each(['exag=-1', 'exag=abc', 'exag=', 'exag=1e1', 'exag=Infinity'])('drops %s', (pair) => {
+    const decoded = decodeHash('#' + pair);
+    expect(decoded.filter.exag).toBeUndefined();
+    expect(decoded.ignored).toEqual([pair]);
+  });
+
+  it('treats exag=1 as the default: absent, and never encoded', () => {
+    expect(decodeHash('#exag=1').filter.exag).toBeUndefined();
+    expect(encodeHash({ activity: [], season: [], exag: 1 })).toBe('');
+    expect(encodeHash({ activity: [], season: [] })).toBe('');
+  });
+
+  it('rounds to one decimal', () => {
+    expect(decodeHash('#exag=2.54').filter.exag).toBe(2.5);
+  });
+});
