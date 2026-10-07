@@ -27,12 +27,14 @@ import { FADE_OUTER_M } from '../scripts/ingest/context-tiles';
 import { ImageryManifestSchema } from '../scripts/ingest/imagery-manifest-schema';
 import { loadContext, loadContextTextures } from './data/load-context';
 import { installContext, type ContextHandle } from './scene/context';
+import { headerBox, installSurfaceAsync, type SurfaceHandle } from './scene/surface';
 import { groundSlopeColor } from './scene/ground';
 import { loadImagery } from './data/load-imagery';
 import { decodeHash } from './ui/filter-hash';
 import { Color, type Texture } from 'three';
 import { loadImageryStats } from './data/load-imagery-stats';
 import { loadSky } from './data/load-sky';
+import { loadSurface } from './data/load-surface';
 
 /** Failure channel for the imagery layer: one line in its own element, and the terrain keeps its slope shading. */
 function reportImageryFailure(message: string): void {
@@ -49,11 +51,14 @@ let imageryTexture: Texture | null = null;
 let groundMean: Color | null = null;
 /** The context ring, once it has loaded; null until then and when every tile failed. */
 let contextHandle: ContextHandle | null = null;
+/** The first-return surface layer, once it has loaded; null until then and when both heightfields failed. */
+let surfaceHandle: SurfaceHandle | null = null;
 let imageryWanted = decodeHash(location.hash).filter.imagery !== false;
 const applyImagery = (): void => {
   handle.setImagery(imageryWanted ? imageryTexture : null);
   handle.setGroundColor(imageryWanted ? groundMean : null);
   contextHandle?.setImagery(imageryWanted);
+  surfaceHandle?.setImagery(imageryWanted);
 };
 /** The filter strip calls this on mount and on every toggle; it also fires before the photo has loaded. */
 export const setImageryWanted = (on: boolean): void => {
@@ -73,6 +78,7 @@ if (!imageryManifest.success) {
   }).then((result) => {
     if (result.texture === null) return reportImageryFailure(result.reason);
     imageryTexture = result.texture;
+    surfaceHandle?.setTexture(result.texture);
     applyImagery();
   });
 }
@@ -201,6 +207,95 @@ void loadBuildings(buildingsUrl)
     reportBuildingsFailure(error instanceof Error ? error.message : String(error));
   });
 
+/** One line in the imagery status element for the surface layer; the terrain, buildings and areas are never touched. */
+function reportSurfaceFailure(message: string): void {
+  console.error(`surface: ${message}`);
+  let status = document.getElementById('imagery-status');
+  if (!status) {
+    status = document.createElement('div');
+    status.id = 'imagery-status';
+    status.setAttribute('role', 'alert');
+    document.body.append(status);
+  }
+  status.textContent = `surface unavailable: ${message.split('\n')[0] ?? message}`;
+}
+
+/** Writes the transient "loading surface…" line, and clears it only if nothing else has replaced it. */
+const LOADING_SURFACE_TEXT = 'loading surface…';
+function setSurfaceLoading(on: boolean): void {
+  let status = document.getElementById('imagery-status');
+  if (on) {
+    if (!status) {
+      status = document.createElement('div');
+      status.id = 'imagery-status';
+      status.setAttribute('role', 'alert');
+      document.body.append(status);
+    }
+    status.textContent = LOADING_SURFACE_TEXT;
+  } else if (status?.textContent === LOADING_SURFACE_TEXT) {
+    status.textContent = '';
+  }
+}
+
+/** Lets the browser paint and handle input between the two heavy geometry builds. */
+const yieldToBrowser = (): Promise<void> =>
+  new Promise((resolve) => {
+    if (typeof requestIdleCallback === 'function')
+      requestIdleCallback(() => resolve(), { timeout: 200 });
+    else setTimeout(resolve, 0);
+  });
+
+let surfaceWanted = decodeHash(location.hash).filter.surface === true;
+let surfaceRequested = false;
+/** Area lines follow the drawn surface while it is visible, and return to bare earth when it is hidden. */
+const applySurfaceDrape = (): void => {
+  if ('error' in areaLayerResult) return;
+  areaLayerResult.redrape(
+    surfaceWanted && surfaceHandle ? surfaceHandle.sampler(meshSurface) : meshSurface,
+  );
+};
+
+/** Loads and builds the surface the first time it is wanted; the default page with Surface off never pays for it. */
+function requestSurface(): void {
+  if (surfaceRequested) return;
+  surfaceRequested = true;
+  setSurfaceLoading(true);
+  void loadSurface({ frameUrl })
+    .then(async (result) => {
+      const failures = [result.square, result.core].flatMap((layer) =>
+        'error' in layer ? [layer.error] : [],
+      );
+      if (failures.length === 2) return reportSurfaceFailure(failures.join('; '));
+      surfaceHandle = await installSurfaceAsync(
+        handle.scene,
+        result,
+        { fadeCentre, imageryBox: headerBox(header), imagery: imageryTexture },
+        yieldToBrowser,
+      );
+      surfaceHandle.setImagery(imageryWanted);
+      surfaceHandle.setVisible(surfaceWanted);
+      applySurfaceDrape();
+      setSurfaceLoading(false);
+      if (failures.length > 0) reportSurfaceFailure(failures.join('; '));
+      console.info(
+        'surface: imagery edge delta (m, positive = inside the photo)',
+        surfaceHandle.imageryDelta,
+      );
+    })
+    .catch((error: unknown) => {
+      reportSurfaceFailure(error instanceof Error ? error.message : String(error));
+    });
+}
+
+/** The filter strip calls this on mount and on every toggle; the first on starts the lazy load. */
+export const setSurfaceWanted = (on: boolean): void => {
+  surfaceWanted = on;
+  if (on) requestSurface();
+  surfaceHandle?.setVisible(on);
+  applySurfaceDrape();
+};
+if (surfaceWanted) requestSurface();
+
 /** One line in the imagery status element for the context ring; a failure here never touches the centre terrain. */
 function reportContextFailure(message: string): void {
   console.error(`context: ${message}`);
@@ -296,7 +391,15 @@ void annotationsReady.then((handle) => {
     handle,
     setImagery: setImageryWanted,
     setBuildings: setBuildingsWanted,
+    setSurface: setSurfaceWanted,
   });
 });
+
+if (import.meta.env.DEV) {
+  (window as unknown as { __spirit: unknown }).__spirit = {
+    renderer: handle.renderer,
+    scene: handle.scene,
+  };
+}
 
 export { handle, heightfield, toScene };

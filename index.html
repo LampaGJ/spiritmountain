@@ -19,6 +19,20 @@
         height: 100%;
         overflow: hidden;
       }
+      #attribution {
+        position: fixed;
+        right: 8px;
+        bottom: 6px;
+        z-index: 5;
+        font:
+          11px/1.3 system-ui,
+          sans-serif;
+        color: rgba(255, 255, 255, 0.85);
+        text-shadow: var(--sm-halo, 0 0 3px rgba(0, 0, 0, 0.9), 0 0 6px rgba(0, 0, 0, 0.7));
+      }
+      #attribution a {
+        color: inherit;
+      }
     </style>
   </head>
   <body>
@@ -26,5 +40,11 @@
     <script type="module" src="/src/main.ts"></script>
     <aside id="annotation-panel" class="sm-plate" hidden></aside>
     <div id="pick-tooltip" class="sm-plate" role="tooltip" hidden></div>
+    <footer id="attribution">
+      <a href="https://www.openstreetmap.org/copyright"
+        >Map data © OpenStreetMap contributors (ODbL)</a
+      >
+      · Imagery and elevation: USGS 3DEP and NAIP (public domain) · Sky: Poly Haven (CC0)
+    </footer>
   </body>
 </html>

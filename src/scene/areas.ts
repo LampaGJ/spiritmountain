@@ -105,6 +105,11 @@ export interface AreaLayer {
   readonly registry: ReadonlyMap<string, AreaEntry>;
   readonly materials: Readonly<Record<AreaKind, LineMaterial>>;
   readonly stats: AreaLayerStats;
+  /**
+   * Rewrites every non-lift line's positions in place from another surface (the composite from surfaceSampler, or the
+   * bare-earth mesh surface to restore). Line2 objects, userData.areaId and visibility are kept. Lifts keep their straight cables.
+   */
+  redrape(surface: MeshSurface): void;
 }
 
 /**
@@ -155,11 +160,21 @@ export function buildAreaLayer(
       );
     }
   }
+  const redrape = (next: MeshSurface): void => {
+    for (const { area, lines } of registry.values()) {
+      if (area.kind === 'lift') continue;
+      const built = buildAreaPositions(area, next, toScene);
+      built.scene.forEach((positions, i) => {
+        (lines[i] as Line2).geometry.setPositions(positions);
+      });
+    }
+  };
   return {
     group,
     registry,
     materials,
     stats: { lineCount, clampedVertexCount, liftMinClearanceM },
+    redrape,
   };
 }
 
