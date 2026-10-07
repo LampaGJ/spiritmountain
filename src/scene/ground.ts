@@ -2,8 +2,8 @@ import { Color, Mesh, MeshStandardMaterial, PlaneGeometry, type ColorRepresentat
 import { elevationToSceneY, toScene } from './frame';
 import { TERRAIN_FLAT_COLOR, TERRAIN_STEEP_COLOR } from './palette';
 
-/** Side of the ground plane in metres; well past the fade outer radius. */
-export const GROUND_SIZE_M = 60_000;
+/** Side of the ground plane in metres; past the horizon of a 200 m camera (about 50 km). */
+export const GROUND_SIZE_M = 300_000;
 /** The plane sits this far (scene metres) under the lake level so it never z-fights the terrain's lowest cells. */
 export const GROUND_DROP_M = 0.5;
 
