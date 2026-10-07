@@ -128,6 +128,11 @@ export function buildAreaLayer(
   for (const kind of Object.keys(AREA_KIND_COLOR) as AreaKind[]) {
     const material = new LineMaterial({ color: AREA_KIND_COLOR[kind], linewidth: LINE_WIDTH_PX });
     material.resolution.set(resolution.width, resolution.height);
+    // The trail ribbon top is level with the line; a constant depth bias (units only, no slope term, so a grazing view
+    // cannot push it behind the terrain) keeps the line drawn over the ribbon.
+    material.polygonOffset = true;
+    material.polygonOffsetFactor = 0;
+    material.polygonOffsetUnits = -4;
     materials[kind] = material;
   }
 

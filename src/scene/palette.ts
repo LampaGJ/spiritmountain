@@ -22,5 +22,8 @@ export const AREA_KIND_COLOR: Record<AreaKind, number> = {
   'mtb-route': 0xb9a0f5,
 };
 
-/** Line width in CSS pixels (LineMaterial linewidth with worldUnits false). */
-export const LINE_WIDTH_PX = 3;
+/**
+ * Line width in CSS pixels (LineMaterial linewidth with worldUnits false). Thin on purpose: the trail ribbons carry the
+ * pattern, and the Line2 stays visible as the kind colour, the highlight and the pick target (see LINE2_PICK_THRESHOLD_PX).
+ */
+export const LINE_WIDTH_PX = 2;

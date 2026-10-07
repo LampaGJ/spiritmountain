@@ -3,10 +3,10 @@ import type { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 /**
  * Screen-space pick threshold for Line2. three adds it to the full line width (LineSegments2.js:345),
- * so linewidth 3 plus threshold 6 gives a hit band of about +/-4.5 px around the line centre.
- * Tuned manually; the final value is recorded in the PR.
+ * so linewidth 2 plus threshold 7 gives a hit band of about +/-4.5 px around the line centre (the band the
+ * 3 px line with threshold 6 had before the ribbons thinned the lines). Ribbons are never raycast: picking stays on the Line2s.
  */
-export const LINE2_PICK_THRESHOLD_PX = 6;
+export const LINE2_PICK_THRESHOLD_PX = 7;
 /** A pointerup counts as a click only if the pointer moved fewer than this many px since pointerdown. */
 export const CLICK_MAX_DISTANCE_PX = 5;
 /** ...and fewer than this many ms elapsed. A long press never opens the panel. */
