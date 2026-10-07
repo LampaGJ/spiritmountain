@@ -4,22 +4,35 @@ import terrainHeaderUrl from '../data/terrain.json?url';
 import { loadTerrain } from './data/load-terrain';
 import { toScene } from './scene/frame';
 import { createScene } from './scene/scene';
+import { createReadiness, createRevealOverlay } from './ui/reveal';
 
 const app = document.querySelector<HTMLDivElement>('#app');
 if (!app) {
   throw new Error('index.html is missing the #app element');
 }
 
+const overlay = createRevealOverlay(document);
+
 const { header, heightfield } = await loadTerrain({
   headerUrl: terrainHeaderUrl,
   binUrl: terrainBinUrl,
   frameUrl,
 }).catch((error: unknown) => {
+  overlay.dismiss();
   app.textContent = `Terrain failed to load: ${String(error)}`;
   throw error;
 });
 
 const handle = createScene(app, heightfield, { lakeLevelM: header.minElev });
+/** Tracks every layer the hash asked for; the black cover lifts once all have settled and two frames have rendered. */
+export const readiness = createReadiness({
+  onFrame: (callback) => handle.onFrame(callback),
+  onReady: () => overlay.open(),
+  onChange: (unsettled) => overlay.setLabel(unsettled),
+  onTimeout: (unsettled) =>
+    reportSceneFailure('reveal', `timed out waiting for ${unsettled.join(', ')}`),
+});
+readiness.register('terrain', Promise.resolve());
 
 import imageryManifestJson from '../data/raw/imagery-manifest.json';
 import naipUrl from '../data/raw/naip.jpg?url';
@@ -62,7 +75,7 @@ let treesHandle: TreesHandle | null = null;
 let treesData: LoadedTrees | null = null;
 let noCanopyLayer: LoadedTerrain | null = null;
 let treesWanted = decodeHash(location.hash).filter.trees === true;
-let treesRequested = false;
+let treesRequest: Promise<void> | null = null;
 let imageryWanted = decodeHash(location.hash).filter.imagery !== false;
 const applyImagery = (): void => {
   handle.setImagery(imageryWanted ? imageryTexture : null);
@@ -80,8 +93,9 @@ export const setImageryWanted = (on: boolean): void => {
 const imageryManifest = ImageryManifestSchema.safeParse(imageryManifestJson);
 if (!imageryManifest.success) {
   reportImageryFailure(imageryManifest.error.issues.map((i) => i.message).join('; '));
+  if (imageryWanted) readiness.register('imagery', Promise.resolve());
 } else {
-  void loadImagery({
+  const imageryLoad = loadImagery({
     url: naipUrl,
     capabilities: handle.renderer.capabilities,
     expectedWidth: imageryManifest.data.width,
@@ -91,6 +105,8 @@ if (!imageryManifest.success) {
     surfaceHandle?.setTexture(result.texture);
     applyImagery();
   });
+  // With imagery=off the photo loads but is never applied, so the first view does not wait on it.
+  if (imageryWanted) readiness.register('imagery', imageryLoad);
 }
 
 import areasUrl from '../data/areas.geojson?url';
@@ -146,6 +162,7 @@ if (!('error' in areaLayerResult)) {
     };
   }
 }
+readiness.register('areas', Promise.resolve());
 handle.setFadeCentre(fadeCentre);
 
 // Sport billboards (#43): one sign per same-sport cluster, inside the elevated group. A failure only loses the signs.
@@ -189,26 +206,32 @@ function reportSceneFailure(what: string, message: string): void {
 }
 
 // Not awaited: ground and sky arrive after the terrain is already on screen. Failures keep the flat sky and slope-coloured ground.
-void loadImageryStats().then((stats) => {
-  if ('error' in stats) {
-    reportSceneFailure('ground colour', stats.error);
-    handle.setGround(groundSlopeColor(), header.minElev);
-    return;
-  }
-  groundMean = new Color(stats.meanLinear.r, stats.meanLinear.g, stats.meanLinear.b);
-  handle.setGround(groundMean, header.minElev);
-  handle.setGroundColor(imageryWanted ? groundMean : null);
-});
-void loadSky().then((sky) => {
-  if ('error' in sky) {
-    handle.setSkyFallback();
-    handle.setHorizonSky(null);
-    return reportSceneFailure('sky', sky.error);
-  }
-  handle.setSky(sky);
-  handle.setHorizonSky(sky);
-  console.info('sky: panorama applied');
-});
+readiness.register(
+  'ground-colour',
+  loadImageryStats().then((stats) => {
+    if ('error' in stats) {
+      reportSceneFailure('ground colour', stats.error);
+      handle.setGround(groundSlopeColor(), header.minElev);
+      return;
+    }
+    groundMean = new Color(stats.meanLinear.r, stats.meanLinear.g, stats.meanLinear.b);
+    handle.setGround(groundMean, header.minElev);
+    handle.setGroundColor(imageryWanted ? groundMean : null);
+  }),
+);
+readiness.register(
+  'sky',
+  loadSky().then((sky) => {
+    if ('error' in sky) {
+      handle.setSkyFallback();
+      handle.setHorizonSky(null);
+      return reportSceneFailure('sky', sky.error);
+    }
+    handle.setSky(sky);
+    handle.setHorizonSky(sky);
+    console.info('sky: panorama applied');
+  }),
+);
 
 import buildingsUrl from '../data/buildings.geojson?url';
 import { loadBuildings } from './data/load-buildings';
@@ -241,7 +264,8 @@ handle.controls.addEventListener('start', () => {
   resortMoved = true;
 });
 // Not awaited: the terrain and areas are already usable, and a failure here only adds a status line.
-void loadBuildings(buildingsUrl)
+// Always registered: a successful load re-applies the resort view whatever buildings=off says.
+const buildingsLoad = loadBuildings(buildingsUrl)
   .then((result) => {
     if ('error' in result) return reportBuildingsFailure(result.error);
     if (resortFocus && !('error' in areaLayerResult) && !resortMoved) {
@@ -266,6 +290,7 @@ void loadBuildings(buildingsUrl)
   .catch((error: unknown) => {
     reportBuildingsFailure(error instanceof Error ? error.message : String(error));
   });
+readiness.register('buildings', buildingsLoad);
 
 /** One line in the imagery status element for the surface layer; the terrain, buildings and areas are never touched. */
 function reportSurfaceFailure(message: string): void {
@@ -306,7 +331,7 @@ const yieldToBrowser = (): Promise<void> =>
   });
 
 let surfaceWanted = decodeHash(location.hash).filter.surface === true;
-let surfaceRequested = false;
+let surfaceRequest: Promise<void> | null = null;
 /** Area lines follow the drawn surface while it is visible, and return to bare earth when it is hidden. */
 const applySurfaceDrape = (): void => {
   if ('error' in areaLayerResult) return;
@@ -316,11 +341,10 @@ const applySurfaceDrape = (): void => {
 };
 
 /** Loads and builds the surface the first time it is wanted; the default page with Surface off never pays for it. */
-function requestSurface(): void {
-  if (surfaceRequested) return;
-  surfaceRequested = true;
+function requestSurface(): Promise<void> {
+  if (surfaceRequest) return surfaceRequest;
   setSurfaceLoading(true);
-  void loadSurface({ frameUrl })
+  surfaceRequest = loadSurface({ frameUrl })
     .then(async (result) => {
       const failures = [result.square, result.core].flatMap((layer) =>
         'error' in layer ? [layer.error] : [],
@@ -348,16 +372,17 @@ function requestSurface(): void {
     .catch((error: unknown) => {
       reportSurfaceFailure(error instanceof Error ? error.message : String(error));
     });
+  return surfaceRequest;
 }
 
 /** The filter strip calls this on mount and on every toggle; the first on starts the lazy load. */
 export const setSurfaceWanted = (on: boolean): void => {
   surfaceWanted = on;
-  if (on) requestSurface();
+  if (on) readiness.track('surface', requestSurface());
   surfaceHandle?.setVisible(on);
   applyTreesMode();
 };
-if (surfaceWanted) requestSurface();
+if (surfaceWanted) readiness.register('surface', requestSurface());
 
 /**
  * Trees on: the instanced trees are built (from the cached records) and shown, and while the Surface layer is also on the
@@ -394,10 +419,9 @@ function reportTreesFailure(message: string): void {
 }
 
 /** Loads the trees the first time they are wanted; the default page with Trees off never pays for them. */
-function requestTrees(): void {
-  if (treesRequested) return;
-  treesRequested = true;
-  void loadTrees({ frameUrl })
+function requestTrees(): Promise<void> {
+  if (treesRequest) return treesRequest;
+  treesRequest = loadTrees({ frameUrl })
     .then((result) => {
       if ('error' in result.trees) return reportTreesFailure(result.trees.error);
       treesData = result.trees;
@@ -408,15 +432,16 @@ function requestTrees(): void {
     .catch((error: unknown) => {
       reportTreesFailure(error instanceof Error ? error.message : String(error));
     });
+  return treesRequest;
 }
 
 /** The filter strip calls this on mount and on every toggle; the first on starts the lazy load. */
 export const setTreesWanted = (on: boolean): void => {
   treesWanted = on;
-  if (on) requestTrees();
+  if (on) readiness.track('trees', requestTrees());
   applyTreesMode();
 };
-if (treesWanted) requestTrees();
+if (treesWanted) readiness.register('trees', requestTrees());
 
 /** One line in the imagery status element for the context ring; a failure here never touches the centre terrain. */
 function reportContextFailure(message: string): void {
@@ -432,7 +457,7 @@ function reportContextFailure(message: string): void {
 }
 
 // Not awaited: the centre terrain, areas and panel are already usable; tiles that fail just stay out of the ring.
-void loadContext({ frameUrl })
+const contextLoad = loadContext({ frameUrl })
   .then((context) => {
     if (context.missing.length > 0) {
       reportContextFailure(
@@ -462,6 +487,7 @@ void loadContext({ frameUrl })
   .catch((error: unknown) => {
     reportContextFailure(error instanceof Error ? error.message : String(error));
   });
+readiness.register('context', contextLoad);
 export const areaLayer: AreaLayer | { error: string } = areaLayerResult;
 
 import annotationsUrl from '../data/annotations.json?url';
@@ -508,21 +534,26 @@ mountViews({
 });
 
 // annotationsReady never rejects, so this needs no catch, and the .then keeps a slow annotations load from blocking the module.
-void annotationsReady.then((handle) => {
-  const registry: ReadonlyMap<string, AreaEntry> =
-    'error' in areaLayer ? new Map() : areaLayer.registry;
-  mountFilters({
-    registry,
-    handle,
-    setImagery: setImageryWanted,
-    setBuildings: setBuildingsWanted,
-    setSurface: setSurfaceWanted,
-    setTrees: setTreesWanted,
-    setExaggeration: setSceneExaggeration,
-    ...('error' in areaLayer ? {} : { routeSport: areaLayer.route }),
-    ...(billboardLayer ? { billboards: billboardLayer } : {}),
-  });
-});
+// Registered so the rail and the hash filters are in place before the cover lifts.
+readiness.register(
+  'annotations',
+  annotationsReady.then((handle) => {
+    const registry: ReadonlyMap<string, AreaEntry> =
+      'error' in areaLayer ? new Map() : areaLayer.registry;
+    mountFilters({
+      registry,
+      handle,
+      setImagery: setImageryWanted,
+      setBuildings: setBuildingsWanted,
+      setSurface: setSurfaceWanted,
+      setTrees: setTreesWanted,
+      setExaggeration: setSceneExaggeration,
+      ...('error' in areaLayer ? {} : { routeSport: areaLayer.route }),
+      ...(billboardLayer ? { billboards: billboardLayer } : {}),
+    });
+  }),
+);
+readiness.seal();
 
 if (import.meta.env.DEV) {
   (window as unknown as { __spirit: unknown }).__spirit = {
