@@ -132,7 +132,7 @@ describe('surface terrain on a synthetic 4x4 TIFF', () => {
       nodataFilled: 1,
       nodataValue: -9999,
       minElev: 310,
-      maxElev: 331,
+      maxElev: 313,
       byteLength: 16,
     });
     expect(header.source.path).toBe('data/raw/surface-core.tif');
@@ -143,12 +143,21 @@ describe('surface terrain on a synthetic 4x4 TIFF', () => {
     const f32 = readFileSync(join(dir, 'surface', 'core.f32'));
     expect(f32.byteLength).toBe(16);
     const view = new DataView(f32.buffer, f32.byteOffset, f32.byteLength);
-    // block maxima, north-west first; the all-nodata SE block takes its first valid neighbour in fixed order (north-west, 310)
-    expect([0, 1, 2, 3].map((i) => view.getFloat32(i * 4, true))).toEqual([310, 313, 331, 310]);
+    // block maxima are 310, 313, 331; the 331 block is an 18 m isolated spike over the median 313 and is removed before the fill,
+    // then the all-nodata SE block takes its first valid neighbour in fixed order (north-west, 310)
+    expect([0, 1, 2, 3].map((i) => view.getFloat32(i * 4, true))).toEqual([310, 313, 313, 310]);
     expect(replay.pooling).toBe('max');
     expect(replay.decodeResolutionM).toBe(2);
     expect(SurfaceReplaySchema.safeParse(replay).success).toBe(true);
     expect(replay.effect).toBe('preserves');
+    expect(replay.despike).toEqual({
+      passes: [
+        { spikesRemoved: 1, maxDelta: 18 },
+        { spikesRemoved: 0, maxDelta: 0 },
+      ],
+      maxBefore: 331,
+      maxAfter: 313,
+    });
     expect(JSON.parse(readFileSync(join(dir, 'surface', 'surface.replay.json'), 'utf8'))).toEqual(
       replay,
     );
@@ -158,6 +167,18 @@ describe('surface terrain on a synthetic 4x4 TIFF', () => {
     const dir = stage([300, 900, 310, 320], 2);
     const { header } = await runSurfaceTerrain(options(dir));
     expect(header).toMatchObject({ width: 1, height: 1, maxElev: 320, nodataFilled: 0 });
+  });
+
+  it('removes an isolated needle before the fill and records it in the replay despike block', async () => {
+    const cells = new Array<number>(16).fill(300);
+    cells[0] = 340; // north-west 2x2 block pools to 340, one needle on a 300 m surface
+    const dir = stage(cells);
+    const { header, replay } = await runSurfaceTerrain(options(dir));
+    expect(header).toMatchObject({ minElev: 300, maxElev: 300 });
+    expect(replay.despike.passes[0]).toEqual({ spikesRemoved: 1, maxDelta: 40 });
+    expect(replay.despike.maxBefore).toBe(340);
+    expect(replay.despike.maxAfter).toBe(300);
+    expect(SurfaceReplaySchema.safeParse(replay).success).toBe(true);
   });
 
   it('is byte-identical on a rerun', async () => {
