@@ -109,7 +109,7 @@ export function applyHorizonBlend(material: Material, shared: HorizonUniforms): 
       .replace('#include <common>', '#include <common>\nvarying vec3 vHorizonPos;')
       .replace(
         '#include <begin_vertex>',
-        // An InstancedMesh (the trail symbols) places each copy with instanceMatrix, applied after this chunk.
+        // An InstancedMesh (the trees, src/scene/trees.ts:124) places each copy with instanceMatrix, applied after this chunk.
         '#include <begin_vertex>\n#ifdef USE_INSTANCING\nvHorizonPos = (modelMatrix * instanceMatrix * vec4(transformed, 1.0)).xyz;\n#else\nvHorizonPos = (modelMatrix * vec4(transformed, 1.0)).xyz;\n#endif',
       );
     const declarations = [

@@ -1,13 +1,11 @@
 import './filters.css';
 import type { AreaEntry } from '../scene/areas';
 import { applyFilter } from '../scene/filter-apply';
-import type { RibbonLayer } from '../scene/ribbons';
-import type { SymbolLayer } from '../scene/symbols';
 import type { AnnotationsHandle } from '../wire-annotations';
-import { SeasonSchema } from '../schema/annotation';
+import { SeasonSchema, type Annotation } from '../schema/annotation';
 import { browserHash, mountFilterStrip, TOGGLE_ACTIVITIES, type FilterStrip } from './filters';
 import { getRail } from './rail';
-import { facetCounts } from './filter-predicate';
+import { facetCounts, type Activity } from './filter-predicate';
 
 export interface MountFiltersDeps {
   readonly registry: ReadonlyMap<string, AreaEntry>;
@@ -23,10 +21,14 @@ export interface MountFiltersDeps {
   readonly setTrees?: (on: boolean) => void;
   /** Sets the terrain exaggeration factor (0 to 10). Absent means no slider. */
   readonly setExaggeration?: (k: number) => void;
-  /** The trail ribbons. Every filter change re-routes them: hidden areas lose their ribbon, the Activity selection picks each area's tile. */
-  readonly ribbons?: RibbonLayer;
-  /** The extruded trail symbols, routed exactly as the ribbons on every filter change. */
-  readonly symbols?: SymbolLayer;
+  /**
+   * Re-colours the trail lines by sport (AreaLayer.route) after every filter change. Runs after applyFilter; never runs
+   * when the annotations load failed, so the kind-default colours stay. Absent means colours never change.
+   */
+  readonly routeSport?: (
+    annotations: ReadonlyMap<string, Annotation>,
+    selected: ReadonlySet<Activity>,
+  ) => void;
 }
 
 /** Shown instead of the strip when the annotations load failed (#13 Decision 5). */
@@ -41,8 +43,7 @@ export function mountFilters(deps: MountFiltersDeps): FilterStrip {
     setSurface,
     setTrees,
     setExaggeration,
-    ribbons,
-    symbols,
+    routeSport,
   } = deps;
   const host = document.createElement('div');
   host.id = 'filters';
@@ -67,8 +68,7 @@ export function mountFilters(deps: MountFiltersDeps): FilterStrip {
     ...(setExaggeration ? { setExaggeration } : {}),
     apply: (filter) => {
       const result = applyFilter(registry, annotations, filter);
-      ribbons?.applyFilter(annotations, filter.activities, result.visibleIds);
-      symbols?.applyFilter(annotations, filter.activities, result.visibleIds);
+      routeSport?.(annotations, filter.activities);
       handle.onFilterApplied(result.visibleIds);
       return {
         ...result,

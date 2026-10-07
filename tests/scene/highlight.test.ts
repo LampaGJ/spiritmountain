@@ -2,6 +2,12 @@ import { Line2 } from 'three/addons/lines/Line2.js';
 import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
 import { describe, expect, it } from 'vitest';
+import { buildAreaLayer } from '../../src/scene/areas';
+import { createMeshSurface } from '../../src/scene/heightfield';
+import type { Activity } from '../../src/scene/sport-routing';
+import type { Annotation } from '../../src/schema/annotation';
+import type { Area } from '../../src/schema/area';
+import { makeFixtureField } from '../fixtures/make-field';
 import {
   HIGHLIGHT_COLOR,
   INITIAL_STATE,
@@ -82,5 +88,72 @@ describe('createHighlighter', () => {
     expect(lineA.material).not.toBe(shared);
     highlighter.apply(reduce(state, { type: 'clear-selection' }));
     expect(lineA.material).toBe(shared);
+  });
+});
+
+describe('highlight after route (#40)', () => {
+  const run: Area = {
+    id: 'way/1',
+    kind: 'downhill-run',
+    name: null,
+    difficulty: null,
+    osmTags: {},
+    geometry: {
+      type: 'LineString',
+      coordinates: [
+        [0, 0, 0],
+        [60, 0, 0],
+      ],
+    },
+  };
+  const annotations = new Map<string, Annotation>([
+    [
+      'way/1',
+      {
+        areaId: 'way/1',
+        activities: (['alpine-ski', 'snowboard'] as Activity[]).map((activity) => ({
+          activity,
+          seasons: [],
+          notes: '',
+        })),
+        stakeholders: [],
+        notes: '',
+      },
+    ],
+  ]);
+  function build() {
+    const layer = buildAreaLayer(
+      [run],
+      createMeshSurface(makeFixtureField(), 16),
+      (e, n, z) => [e, z, -n],
+      { width: 800, height: 600 },
+    );
+    const lines = new Map([...layer.registry].map(([id, entry]) => [id, entry.lines]));
+    return {
+      layer,
+      line: layer.registry.get('way/1')?.lines[0] as Line2,
+      highlighter: createHighlighter(lines),
+    };
+  }
+  const hover = reduce(INITIAL_STATE, { type: 'hover', areaId: 'way/1' });
+
+  it('route, highlight, unhighlight returns the routed material', () => {
+    const { layer, line, highlighter } = build();
+    layer.route(annotations, new Set<Activity>(['snowboard']));
+    highlighter.apply(hover);
+    expect(line.material.color.getHex()).toBe(HIGHLIGHT_COLOR);
+    highlighter.apply(INITIAL_STATE);
+    expect(line.material).toBe(layer.materials.snowboard);
+  });
+
+  it('route while highlighted keeps the highlight, and the later unhighlight returns the new routed material', () => {
+    const { layer, line, highlighter } = build();
+    highlighter.apply(hover);
+    const highlight = line.material;
+    expect(highlight.color.getHex()).toBe(HIGHLIGHT_COLOR);
+    layer.route(annotations, new Set<Activity>(['snowboard']));
+    expect(line.material).toBe(highlight);
+    highlighter.apply(INITIAL_STATE);
+    expect(line.material).toBe(layer.materials.snowboard);
   });
 });
