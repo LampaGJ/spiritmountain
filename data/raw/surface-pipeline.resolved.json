@@ -1,0 +1,42 @@
+{
+  "pipeline": [
+    {
+      "type": "readers.ept",
+      "filename": "https://usgs-lidar-public.s3.amazonaws.com/MN_LakeSuperior_2_2021/ept.json",
+      "bounds": "([-10267594,-10263916],[5894213,5897903])",
+      "resolution": 1
+    },
+    {
+      "type": "filters.stats",
+      "tag": "read",
+      "dimensions": "ReturnNumber"
+    },
+    {
+      "type": "filters.range",
+      "limits": "ReturnNumber[1:1]"
+    },
+    {
+      "type": "filters.stats",
+      "tag": "first",
+      "dimensions": "ReturnNumber"
+    },
+    {
+      "type": "filters.reprojection",
+      "out_srs": "EPSG:26915"
+    },
+    {
+      "type": "writers.gdal",
+      "filename": "data/raw/surface-core.tif",
+      "resolution": 1,
+      "output_type": "max",
+      "gdaldriver": "GTiff",
+      "nodata": -9999,
+      "data_type": "float32",
+      "gdalopts": "COMPRESS=LZW",
+      "origin_x": 558450,
+      "origin_y": 5172800,
+      "width": 2500,
+      "height": 2500
+    }
+  ]
+}
