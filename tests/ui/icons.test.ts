@@ -21,6 +21,7 @@ describe('icon map', () => {
       'imagery',
       'buildings',
       'surface',
+      'trees',
       'terrain-exaggeration',
       ...STRIP_VIEWS.map((v) => v.iconId),
       'clear-filters',

@@ -35,6 +35,9 @@ import { Color, type Material, type Texture } from 'three';
 import { loadImageryStats } from './data/load-imagery-stats';
 import { loadSky } from './data/load-sky';
 import { loadSurface } from './data/load-surface';
+import { loadTrees, type LoadedTrees } from './data/load-trees';
+import type { LoadedTerrain } from './data/load-terrain';
+import { installTrees, type TreesHandle } from './scene/trees';
 
 /** Failure channel for the imagery layer: one line in its own element, and the terrain keeps its slope shading. */
 function reportImageryFailure(message: string): void {
@@ -53,6 +56,13 @@ let groundMean: Color | null = null;
 let contextHandle: ContextHandle | null = null;
 /** The first-return surface layer, once it has loaded; null until then and when both heightfields failed. */
 let surfaceHandle: SurfaceHandle | null = null;
+/** The simulated trees (instanced meshes), present only while Trees is on; disposed when it turns off. */
+let treesHandle: TreesHandle | null = null;
+/** The decoded tree records and the core heightfield without canopy, once data/trees.* has loaded. */
+let treesData: LoadedTrees | null = null;
+let noCanopyLayer: LoadedTerrain | null = null;
+let treesWanted = decodeHash(location.hash).filter.trees === true;
+let treesRequested = false;
 let imageryWanted = decodeHash(location.hash).filter.imagery !== false;
 const applyImagery = (): void => {
   handle.setImagery(imageryWanted ? imageryTexture : null);
@@ -302,7 +312,7 @@ function requestSurface(): void {
       }
       surfaceHandle.setImagery(imageryWanted);
       surfaceHandle.setVisible(surfaceWanted);
-      applySurfaceDrape();
+      applyTreesMode();
       setSurfaceLoading(false);
       if (failures.length > 0) reportSurfaceFailure(failures.join('; '));
       console.info(
@@ -320,9 +330,68 @@ export const setSurfaceWanted = (on: boolean): void => {
   surfaceWanted = on;
   if (on) requestSurface();
   surfaceHandle?.setVisible(on);
-  applySurfaceDrape();
+  applyTreesMode();
 };
 if (surfaceWanted) requestSurface();
+
+/**
+ * Trees on: the instanced trees are built (from the cached records) and shown, and while the Surface layer is also on the
+ * core mesh swaps to the core-nocanopy heightfield, so the LiDAR canopy blobs give way to the simulated trees. Trees off:
+ * the trees are disposed and the normal core returns. Lines re-drape onto whichever composite is drawn.
+ */
+function applyTreesMode(): void {
+  const showTrees = treesWanted && treesData !== null;
+  if (showTrees && treesData && !treesHandle) {
+    treesHandle = installTrees(handle.elevated, treesData, { fadeCentre });
+    handle.applyHorizon(treesHandle.material);
+  }
+  if (!showTrees && treesHandle) {
+    treesHandle.dispose();
+    treesHandle = null;
+  }
+  treesHandle?.setVisible(showTrees);
+  const mixed = showTrees && surfaceWanted && noCanopyLayer !== null;
+  surfaceHandle?.setCoreVariant(mixed ? 'nocanopy' : 'canopy', noCanopyLayer ?? undefined);
+  applySurfaceDrape();
+}
+
+/** One line in the imagery status element for the trees layer; the terrain, surface and areas are never touched. */
+function reportTreesFailure(message: string): void {
+  console.error(`trees: ${message}`);
+  let status = document.getElementById('imagery-status');
+  if (!status) {
+    status = document.createElement('div');
+    status.id = 'imagery-status';
+    status.setAttribute('role', 'alert');
+    document.body.append(status);
+  }
+  status.textContent = `trees unavailable: ${message.split('\n')[0] ?? message}`;
+}
+
+/** Loads the trees the first time they are wanted; the default page with Trees off never pays for them. */
+function requestTrees(): void {
+  if (treesRequested) return;
+  treesRequested = true;
+  void loadTrees({ frameUrl })
+    .then((result) => {
+      if ('error' in result.trees) return reportTreesFailure(result.trees.error);
+      treesData = result.trees;
+      if ('error' in result.noCanopy) reportTreesFailure(result.noCanopy.error);
+      else noCanopyLayer = result.noCanopy;
+      applyTreesMode();
+    })
+    .catch((error: unknown) => {
+      reportTreesFailure(error instanceof Error ? error.message : String(error));
+    });
+}
+
+/** The filter strip calls this on mount and on every toggle; the first on starts the lazy load. */
+export const setTreesWanted = (on: boolean): void => {
+  treesWanted = on;
+  if (on) requestTrees();
+  applyTreesMode();
+};
+if (treesWanted) requestTrees();
 
 /** One line in the imagery status element for the context ring; a failure here never touches the centre terrain. */
 function reportContextFailure(message: string): void {
@@ -423,6 +492,7 @@ void annotationsReady.then((handle) => {
     setImagery: setImageryWanted,
     setBuildings: setBuildingsWanted,
     setSurface: setSurfaceWanted,
+    setTrees: setTreesWanted,
     setExaggeration: setSceneExaggeration,
   });
 });

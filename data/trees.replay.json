@@ -1,0 +1,25 @@
+{
+  "inputHash": "0bb9ffcd5b580aca626ef31bf55f4d797a987d2a69e2c6c5c449d09fc638e81b",
+  "codeCommit": "9740ba0e1b670f805a8e5efed238ee69cc8aeff7",
+  "outputHash": "be70ce811eb195f335fa74e271ee48af69a167516cca250aff8dccc19e301031",
+  "effect": "reduces",
+  "inputs": {
+    "data/surface/core.f32": "d64881f43e82fbc2cc6c501885373751d86ea52ba2e6b4e22efe9fc2ffc535dd",
+    "data/surface/core.json": "a162d77d69f0e450465518a541b2ac1dfb1a8d7cfa7abf97ae9d9dda48c0530d",
+    "data/terrain.f32+terrain.json": "366f7d45b315839c6eaa6c034dbc5a5b80555ae9f5e82a6a3203f96eb23f29ee",
+    "data/raw/naip.jpg": "d63d92a84a9b26e34f9848007de753b12a647b558e8600d289ab860a24162521",
+    "data/buildings.geojson": "dbd75576d015ce7a451e3b1a90096724ea28a93157b8e3f6ca9f88bc4b840cf2",
+    "data/frame.json": "68400bc7bf517d7870decf26c3c4c67d720347c85c35c567629d043b51698c38"
+  },
+  "outputs": {
+    "trees.bin": "596b3e5fac074615931894c26427e9b9be3dab26fe957ab643f8a3d090982c29",
+    "trees.json": "1a4e647584c8452400ee8a7ae4597f51bbe29e72fbbc214c6ff4b82b75460ed1",
+    "core-nocanopy.f32": "545df2f0bbb88777c1224d13a0475c300450b1abe948365c56f435f5715e5b80",
+    "core-nocanopy.json": "5f6f74fabae88eab895fb38385f960e7ea7772a52ed961a1bd99e3a9ed12c8bb"
+  },
+  "toolVersions": {
+    "jpeg-js": "0.4.4",
+    "geotiff": "3.0.5"
+  },
+  "lockSubtreeSha256": "79f7827bfbf66fd1999f7d93b21b68e05852db7d235f84a40705daeeee053e82"
+}

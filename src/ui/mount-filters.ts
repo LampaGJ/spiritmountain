@@ -17,6 +17,8 @@ export interface MountFiltersDeps {
   readonly setBuildings?: (on: boolean) => void;
   /** Shows or hides the first-return surface layer. Absent means no Surface button. */
   readonly setSurface?: (on: boolean) => void;
+  /** Shows or hides the simulated trees layer. Absent means no Trees button. */
+  readonly setTrees?: (on: boolean) => void;
   /** Sets the terrain exaggeration factor (0 to 10). Absent means no slider. */
   readonly setExaggeration?: (k: number) => void;
 }
@@ -25,7 +27,8 @@ export interface MountFiltersDeps {
 export const FILTERS_UNAVAILABLE_TEXT = 'filters unavailable: annotations failed to load';
 
 export function mountFilters(deps: MountFiltersDeps): FilterStrip {
-  const { registry, handle, setImagery, setBuildings, setSurface, setExaggeration } = deps;
+  const { registry, handle, setImagery, setBuildings, setSurface, setTrees, setExaggeration } =
+    deps;
   const host = document.createElement('div');
   host.id = 'filters';
   host.className = 'sm-console';
@@ -45,6 +48,7 @@ export function mountFilters(deps: MountFiltersDeps): FilterStrip {
     ...(setImagery ? { setImagery } : {}),
     ...(setBuildings ? { setBuildings } : {}),
     ...(setSurface ? { setSurface } : {}),
+    ...(setTrees ? { setTrees } : {}),
     ...(setExaggeration ? { setExaggeration } : {}),
     apply: (filter) => {
       const result = applyFilter(registry, annotations, filter);

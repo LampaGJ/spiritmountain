@@ -94,6 +94,11 @@
     "label": "Surface",
     "rationale": "Iconic: trees stand for the canopy; roofs are covered by the buildings icon and the label."
   },
+  "trees": {
+    "symbol": "park",
+    "label": "Trees",
+    "rationale": "Iconic: a round-crowned tree on a trunk, the simulated individual trees; distinct from the forest glyph that stands for the LiDAR canopy surface."
+  },
   "terrain-exaggeration": {
     "symbol": "height",
     "label": "Terrain",

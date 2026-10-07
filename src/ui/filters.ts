@@ -34,6 +34,8 @@ export interface FilterStripDeps {
   readonly setBuildings?: (on: boolean) => void;
   /** Called with the surface switch on mount and whenever it changes. Absent means no Surface button. */
   readonly setSurface?: (on: boolean) => void;
+  /** Called with the trees switch on mount and whenever it changes. Absent means no Trees button. */
+  readonly setTrees?: (on: boolean) => void;
   /** Called with the terrain exaggeration factor (0 to 10, 1 = true scale) on mount and whenever it changes. Absent means no slider. */
   readonly setExaggeration?: (k: number) => void;
 }
@@ -76,6 +78,8 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
   let buildingsApplied: boolean | undefined;
   let surfaceButton: HTMLButtonElement | undefined;
   let surfaceApplied: boolean | undefined;
+  let treesButton: HTMLButtonElement | undefined;
+  let treesApplied: boolean | undefined;
   let exagKey: ExaggerationKey | undefined;
   let exagApplied: number | undefined;
 
@@ -138,6 +142,14 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
         deps.setSurface?.(on);
       }
     }
+    if (treesButton) {
+      const on = state.trees === true;
+      treesButton.setAttribute('aria-pressed', String(on));
+      if (treesApplied !== on) {
+        treesApplied = on;
+        deps.setTrees?.(on);
+      }
+    }
     if (exagKey) {
       const k = state.exag ?? 1;
       exagKey.setValue(k);
@@ -190,6 +202,16 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
     render();
   };
 
+  const toggleTrees = (): void => {
+    state = HashFilterSchema.parse({
+      ...state,
+      trees: state.trees === true ? undefined : true,
+    });
+    notice.textContent = '';
+    writeIfChanged();
+    render();
+  };
+
   const setExag = (k: number): void => {
     state = HashFilterSchema.parse({ ...state, exag: k === 1 ? undefined : k });
     notice.textContent = '';
@@ -197,7 +219,7 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
     render();
   };
 
-  /** Clear resets the activity and season toggles only; the imagery, buildings and surface switches and the exaggeration are layers, not filters. */
+  /** Clear resets the activity and season toggles only; the imagery, buildings, surface and trees switches and the exaggeration are layers, not filters. */
   const clear = (): void => {
     state = {
       activity: [],
@@ -205,6 +227,7 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
       ...(state.imagery === false ? { imagery: false } : {}),
       ...(state.buildings === false ? { buildings: false } : {}),
       ...(state.surface === true ? { surface: true } : {}),
+      ...(state.trees === true ? { trees: true } : {}),
       ...(state.exag === undefined ? {} : { exag: state.exag }),
     };
     notice.textContent = '';
@@ -252,7 +275,7 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
   const foot = el('div', undefined, 'console-foot');
   foot.append(clearKey.root, count, notice);
 
-  // The Layers group is mounted only when the host supplies setImagery, setBuildings or setSurface.
+  // The Layers group is mounted only when the host supplies setImagery, setBuildings, setSurface or setTrees.
   const layersSlot = section('group-layers', 'imagery');
   const layerRow = el('div', undefined, 'key-row');
   layersSlot.append(layerRow);
@@ -267,6 +290,7 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
   if (deps.setImagery) imageryButton = layerKey('imagery', toggleImagery);
   if (deps.setBuildings) buildingsButton = layerKey('buildings', toggleBuildings);
   if (deps.setSurface) surfaceButton = layerKey('surface', toggleSurface, false);
+  if (deps.setTrees) treesButton = layerKey('trees', toggleTrees, false);
 
   if (deps.setExaggeration) {
     const { symbol, label } = iconFor('terrain-exaggeration');
@@ -278,7 +302,11 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
     group('group-activity', 'activity', TOGGLE_ACTIVITIES),
     group('group-season', 'season', SeasonSchema.options),
     foot,
-    ...(deps.setImagery || deps.setBuildings || deps.setSurface || deps.setExaggeration
+    ...(deps.setImagery ||
+    deps.setBuildings ||
+    deps.setSurface ||
+    deps.setTrees ||
+    deps.setExaggeration
       ? [layersSlot]
       : []),
   );

@@ -7,9 +7,16 @@ import {
   type Texture,
 } from 'three';
 import type { SurfaceLayer, SurfaceLoad } from '../data/load-surface';
+import type { LoadedTerrain } from '../data/load-terrain';
 import type { TerrainHeader } from '../schema/terrain';
 import { applyRadialFade, type RadialFadeOptions } from './fade';
-import { createMeshSurface, type HeightSample, type MeshSurface } from './heightfield';
+import {
+  createMeshSurface,
+  sampleHeight,
+  type Heightfield,
+  type HeightSample,
+  type MeshSurface,
+} from './heightfield';
 import { buildTerrainGeometry, setTerrainImagery } from './terrain';
 
 /** Lift of the square above bare earth, and of the core above the square, in metres. */
@@ -105,6 +112,27 @@ export function surfaceSampler(layers: {
   return { ...fallback, sample };
 }
 
+/**
+ * The square heightfield with the cells under the core's footprint replaced by the core's heights (bilinear at each cell centre).
+ * The square keeps its own canopy outside the core window; inside it the canopy would otherwise rise above a canopy-free core
+ * and hide the trees standing on it. Cell centres outside the core's first-to-last sample-centre extent are unchanged.
+ */
+export function carveSquare(square: Heightfield, core: Heightfield): Heightfield {
+  const data = new Float32Array(square.data);
+  const east1 = core.originEast + (core.cols - 1) * core.cellSizeEast;
+  const north1 = core.originNorth - (core.rows - 1) * core.cellSizeNorth;
+  for (let r = 0; r < square.rows; r += 1) {
+    const north = square.originNorth - r * square.cellSizeNorth;
+    if (north > core.originNorth || north < north1) continue;
+    for (let c = 0; c < square.cols; c += 1) {
+      const east = square.originEast + c * square.cellSizeEast;
+      if (east < core.originEast || east > east1) continue;
+      data[r * square.cols + c] = sampleHeight(core, east, north).height;
+    }
+  }
+  return { ...square, data };
+}
+
 export interface InstallSurfaceOptions {
   readonly fadeCentre: RadialFadeOptions['centre'];
   /** The box the NAIP photo covers: the terrain header's box (the export bbox is the header box). */
@@ -127,6 +155,13 @@ export interface SurfaceHandle {
   setImagery(on: boolean): void;
   /** Stores the shared NAIP texture; each mesh gets its own UV-cropped copy. */
   setTexture(texture: Texture): void;
+  /**
+   * Swaps the core mesh's heightfield, and carves the square beneath it to match. `canopy` is the surface as loaded; `nocanopy`
+   * rebuilds both meshes once from the given layer (cached after that), so Trees can replace the LiDAR canopy with bare earth
+   * (the square's own canopy would otherwise stand above the core and hide the trees). The sampler follows the active variant, so the
+   * caller re-drapes lines afterwards. Returns false when there is no core mesh, or no layer for a first nocanopy build.
+   */
+  setCoreVariant(variant: 'canopy' | 'nocanopy', layer?: LoadedTerrain): boolean;
   dispose(): void;
 }
 
@@ -185,6 +220,8 @@ function prepareSurface(
   const imageryDelta: { square?: EdgeDelta; core?: EdgeDelta } = {};
   const fields: { square?: MeshSurface; core?: MeshSurface } = {};
   const crops = new Map<Mesh, BoxM>();
+  const coreVariants = new Map<string, { surface: MeshSurface; geometry: BufferGeometry }>();
+  const squareVariants = new Map<string, { surface: MeshSurface; geometry: BufferGeometry }>();
   const textures = new Map<Mesh, Texture>();
   let imageryOn = false;
   let sourceTexture: Texture | null = null;
@@ -208,6 +245,10 @@ function prepareSurface(
     group.add(mesh);
     meshes[name] = mesh;
     fields[name] = meshSurface;
+    (name === 'core' ? coreVariants : squareVariants).set('canopy', {
+      surface: meshSurface,
+      geometry: mesh.geometry,
+    });
     const box = meshBox(meshSurface);
     crops.set(mesh, box);
     imageryDelta[name] = edgeDelta(box, options.imageryBox);
@@ -253,12 +294,47 @@ function prepareSurface(
       refresh();
     },
     setTexture,
+    setCoreVariant(variant, layer) {
+      const mesh = meshes.core;
+      if (!mesh) return false;
+      let entry = coreVariants.get(variant);
+      if (!entry) {
+        if (!layer) return false;
+        const built = createMeshSurface(layer.heightfield, SURFACE_CORE_MAX_SEGMENTS);
+        entry = { surface: built, geometry: buildTerrainGeometry(built) };
+        coreVariants.set(variant, entry);
+      }
+      mesh.geometry = entry.geometry;
+      fields.core = entry.surface;
+      const squareMesh = meshes.square;
+      if (squareMesh) {
+        let sq = squareVariants.get(variant);
+        if (!sq && layer && !('error' in surface.square)) {
+          const carved = createMeshSurface(
+            carveSquare(surface.square.heightfield, layer.heightfield),
+            SURFACE_SQUARE_MAX_SEGMENTS,
+          );
+          sq = { surface: carved, geometry: buildTerrainGeometry(carved) };
+          squareVariants.set(variant, sq);
+        }
+        if (sq) {
+          squareMesh.geometry = sq.geometry;
+          fields.square = sq.surface;
+        }
+      }
+      return true;
+    },
     dispose() {
       scene.remove(group);
       for (const mesh of crops.keys()) {
         mesh.geometry.dispose();
         (mesh.material as MeshStandardMaterial).dispose();
       }
+      for (const { geometry } of [...coreVariants.values(), ...squareVariants.values()]) {
+        geometry.dispose();
+      }
+      coreVariants.clear();
+      squareVariants.clear();
       for (const copy of textures.values()) copy.dispose();
       textures.clear();
       crops.clear();
