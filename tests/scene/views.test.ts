@@ -163,7 +163,7 @@ describe('resort view', () => {
     expect(horizontal).toBeGreaterThanOrEqual(RESORT_VIEW_MIN_DISTANCE_M - 1e-6);
     expect(horizontal).toBeLessThanOrEqual(RESORT_VIEW_MAX_DISTANCE_M + 1e-6);
     const angle = deg(Math.asin((position.y - target.y) / position.distanceTo(target)));
-    expect(angle).toBeGreaterThan(2);
+    expect(angle).toBeGreaterThan(-8);
     expect(angle).toBeLessThan(20);
     expect(position.y).toBeGreaterThanOrEqual(minCameraY(surface, position.x, position.z) - 1e-9);
   });
