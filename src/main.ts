@@ -112,10 +112,6 @@ if (!imageryManifest.success) {
 import areasUrl from '../data/areas.geojson?url';
 import { loadAreas } from './data/load-areas';
 import { installAreas, type AreaLayer } from './scene/areas';
-import { TILES } from './scene/ribbon-kinds';
-import { SYMBOL_SOURCES } from './scene/symbol-sources';
-import { buildSymbolLayer, type SymbolLayer } from './scene/symbols';
-import { buildRibbonLayer, type RibbonLayer } from './scene/ribbons';
 import { createMeshSurface } from './scene/heightfield';
 import { deriveLandmarks } from './scene/landmarks';
 import { focusBoxOf, type FocusBox } from './scene/views';
@@ -167,61 +163,6 @@ if (!('error' in areaLayerResult)) {
 }
 readiness.register('areas', Promise.resolve());
 handle.setFadeCentre(fadeCentre);
-// Trail ribbons: closed volumes (flat-coloured top, walls) per area, in the elevated group. Routed by kind until the filter
-// strip mounts and routes them by activity (src/scene/ribbon-kinds.ts). Lifts stay cables.
-export const ribbonLayer: RibbonLayer | null = (() => {
-  if ('error' in areaLayerResult) return null;
-  try {
-    const layer = buildRibbonLayer(
-      [...areaLayerResult.registry.values()].map((entry) => entry.area),
-      meshSurface,
-      (east, north, elevation) => {
-        const p = toScene(east, north, elevation);
-        return [p.x, p.y, p.z];
-      },
-      TILES,
-      { fadeCentre },
-    );
-    for (const material of layer.allMaterials()) handle.applyHorizon(material);
-    handle.elevated.add(layer.group);
-    const stats = layer.stats();
-    console.info(
-      `ribbons: ${stats.areaCount} areas, ${stats.pathCount} paths, ${stats.vertexCount} vertices, ${stats.triangleCount} triangles`,
-    );
-    return layer;
-  } catch (error) {
-    console.error(`ribbons: ${error instanceof Error ? error.message : String(error)}`);
-    return null;
-  }
-})();
-// Trail symbols (#38): each activity's abstract SVG shape, extruded and instanced along its trail on the ribbon top.
-// Routed exactly as the ribbons are, in the same elevated group.
-export const symbolLayer: SymbolLayer | null = (() => {
-  if ('error' in areaLayerResult) return null;
-  try {
-    const layer = buildSymbolLayer(
-      [...areaLayerResult.registry.values()].map((entry) => entry.area),
-      meshSurface,
-      (east, north, elevation) => {
-        const p = toScene(east, north, elevation);
-        return [p.x, p.y, p.z];
-      },
-      TILES,
-      SYMBOL_SOURCES,
-      { fadeCentre },
-    );
-    for (const material of layer.allMaterials()) handle.applyHorizon(material);
-    handle.elevated.add(layer.group);
-    const stats = layer.stats();
-    console.info(
-      `symbols: ${stats.areaCount} areas, ${stats.pathCount} paths, ${stats.instanceCount} instances, ${stats.triangleCount} triangles`,
-    );
-    return layer;
-  } catch (error) {
-    console.error(`symbols: ${error instanceof Error ? error.message : String(error)}`);
-    return null;
-  }
-})();
 // #exag=2.5 is honoured here, once the terrain, areas and view are in, so a failed annotations load cannot lose it.
 const setSceneExaggeration = (k: number): void => handle.setExaggeration(k);
 setSceneExaggeration(decodeHash(location.hash).filter.exag ?? 1);
@@ -314,10 +255,6 @@ const buildingsLoad = loadBuildings(buildingsUrl)
     layer.setVisible(buildingsWanted);
     handle.applyHorizon(layer.mesh.material as Material);
     handle.elevated.add(layer.mesh);
-    // Ribbons keep off roofs: where one crosses a footprint its top drapes on bare earth.
-    const footprintRings = result.features.map((f) => f.geometry.coordinates[0] ?? []);
-    ribbonLayer?.setFootprints(footprintRings);
-    symbolLayer?.setFootprints(footprintRings);
     buildingsLayer = layer;
     if (layer.dropped.length > 0) {
       console.warn(
@@ -375,8 +312,6 @@ const applySurfaceDrape = (): void => {
   if ('error' in areaLayerResult) return;
   const active = surfaceWanted && surfaceHandle ? surfaceHandle.sampler(meshSurface) : meshSurface;
   areaLayerResult.redrape(active);
-  ribbonLayer?.redrape(active);
-  symbolLayer?.redrape(active);
 };
 
 /** Loads and builds the surface the first time it is wanted; the default page with Surface off never pays for it. */
@@ -587,8 +522,7 @@ readiness.register(
       setSurface: setSurfaceWanted,
       setTrees: setTreesWanted,
       setExaggeration: setSceneExaggeration,
-      ...(ribbonLayer ? { ribbons: ribbonLayer } : {}),
-      ...(symbolLayer ? { symbols: symbolLayer } : {}),
+      ...('error' in areaLayer ? {} : { routeSport: areaLayer.route }),
     });
   }),
 );

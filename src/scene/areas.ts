@@ -2,10 +2,12 @@ import { Group, type Object3D } from 'three';
 import { Line2 } from 'three/addons/lines/Line2.js';
 import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
-import type { Area, AreaKind } from '../schema/area';
+import type { Annotation } from '../schema/annotation';
+import type { Area } from '../schema/area';
 import { cableLine, drapeLine, liftOffsetM, minClearance, type Vec3 } from './drape';
 import type { MeshSurface } from './heightfield';
-import { AREA_KIND_COLOR, LINE_WIDTH_PX } from './palette';
+import { LINE_WIDTH_PX, SPORT_COLOR } from './palette';
+import { sportForArea, type Activity } from './sport-routing';
 
 /** Opacity of the ghost pass that shows an occluded stretch of a line through whatever hides it. */
 export const GHOST_OPACITY = 0.35;
@@ -108,15 +110,23 @@ export interface AreaLayerStats {
 export interface AreaLayer {
   readonly group: Group;
   readonly registry: ReadonlyMap<string, AreaEntry>;
-  readonly materials: Readonly<Record<AreaKind, LineMaterial>>;
-  /** The no-depth-test ghost pass materials, one per kind (see GHOST_OPACITY). */
-  readonly ghostMaterials: Readonly<Record<AreaKind, LineMaterial>>;
+  /** One shared solid material per sport, coloured from SPORT_COLOR. */
+  readonly materials: Readonly<Record<Activity, LineMaterial>>;
+  /** The no-depth-test ghost pass materials, one per sport (see GHOST_OPACITY). */
+  readonly ghostMaterials: Readonly<Record<Activity, LineMaterial>>;
   readonly stats: AreaLayerStats;
   /**
    * Rewrites every non-lift line's positions in place from another surface (the composite from surfaceSampler, or the
    * bare-earth mesh surface to restore). Line2 objects, userData.areaId and visibility are kept. Lifts keep their straight cables.
    */
   redrape(surface: MeshSurface): void;
+  /**
+   * Re-colours every line by sport (sportForArea) for the current annotations and Activity selection. Swaps shared
+   * per-sport materials only: never rebuilds geometry, adds or removes a Line2, or touches the ghost renderOrder or
+   * raycast. Records the sport material in line.userData.baseMaterial; a line currently highlighted (its material is
+   * not the recorded base) keeps its highlight, and the highlighter restores the new base later. Idempotent.
+   */
+  route(annotations: ReadonlyMap<string, Annotation>, selected: ReadonlySet<Activity>): void;
 }
 
 /**
@@ -131,21 +141,21 @@ export function buildAreaLayer(
   toScene: SceneMapper,
   resolution: { readonly width: number; readonly height: number },
 ): AreaLayer {
-  const materials = {} as Record<AreaKind, LineMaterial>;
-  const ghostMaterials = {} as Record<AreaKind, LineMaterial>;
-  for (const kind of Object.keys(AREA_KIND_COLOR) as AreaKind[]) {
-    const material = new LineMaterial({ color: AREA_KIND_COLOR[kind], linewidth: LINE_WIDTH_PX });
+  const materials = {} as Record<Activity, LineMaterial>;
+  const ghostMaterials = {} as Record<Activity, LineMaterial>;
+  for (const sport of Object.keys(SPORT_COLOR) as Activity[]) {
+    const material = new LineMaterial({ color: SPORT_COLOR[sport], linewidth: LINE_WIDTH_PX });
     material.resolution.set(resolution.width, resolution.height);
-    // The trail ribbon top is level with the line; a constant depth bias (units only, no slope term, so a grazing view
-    // cannot push it behind the terrain) keeps the line drawn over the ribbon.
+    // The line sits 0.5 m above the surface; a constant depth bias (units only, no slope term) keeps it drawn over the
+    // terrain at grazing angles, where depth error would otherwise push it behind the ground.
     material.polygonOffset = true;
     material.polygonOffsetFactor = 0;
     material.polygonOffsetUnits = -4;
-    materials[kind] = material;
+    materials[sport] = material;
     // The ghost pass (#36): the same line drawn faint with no depth test, so a trail hidden behind a ridge, a LiDAR tree
     // crown or a simulated tree still reads as a trace. The solid pass above keeps the depth cue where it is in view.
     const ghost = new LineMaterial({
-      color: AREA_KIND_COLOR[kind],
+      color: SPORT_COLOR[sport],
       linewidth: LINE_WIDTH_PX,
       transparent: true,
       opacity: GHOST_OPACITY,
@@ -153,7 +163,7 @@ export function buildAreaLayer(
       depthWrite: false,
     });
     ghost.resolution.set(resolution.width, resolution.height);
-    ghostMaterials[kind] = ghost;
+    ghostMaterials[sport] = ghost;
   }
 
   const group = new Group();
@@ -166,15 +176,18 @@ export function buildAreaLayer(
   for (const area of areas) {
     if (registry.has(area.id)) throw new Error(`duplicate area id ${area.id}`);
     const built = buildAreaPositions(area, surface, toScene);
+    // First paint uses the kind default: annotations load after the layer, and the first filter apply re-routes.
+    const sport = sportForArea(area, undefined, new Set());
     const lines = built.scene.map((positions) => {
       const geometry = new LineGeometry();
       geometry.setPositions(positions);
-      const line = new Line2(geometry, materials[area.kind]);
+      const line = new Line2(geometry, materials[sport]);
       line.name = area.id;
       line.userData['areaId'] = area.id;
+      line.userData['baseMaterial'] = materials[sport];
       // The ghost is a child so it follows the line's visibility and shares its geometry (redrape moves both). It
       // renders after the fade-transparent ground meshes and never intercepts a pick ray.
-      const ghost = new Line2(geometry, ghostMaterials[area.kind]);
+      const ghost = new Line2(geometry, ghostMaterials[sport]);
       ghost.name = `${area.id}:ghost`;
       ghost.renderOrder = GHOST_RENDER_ORDER;
       ghost.raycast = () => {};
@@ -201,6 +214,21 @@ export function buildAreaLayer(
       });
     }
   };
+  const route = (
+    annotations: ReadonlyMap<string, Annotation>,
+    selected: ReadonlySet<Activity>,
+  ): void => {
+    for (const [areaId, { area, lines }] of registry) {
+      const sport = sportForArea(area, annotations.get(areaId), selected);
+      for (const line of lines) {
+        const previous = line.userData['baseMaterial'] as LineMaterial | undefined;
+        if (previous === undefined || line.material === previous) line.material = materials[sport];
+        line.userData['baseMaterial'] = materials[sport];
+        const ghost = line.children[0];
+        if (ghost instanceof Line2) ghost.material = ghostMaterials[sport];
+      }
+    }
+  };
   return {
     group,
     registry,
@@ -208,6 +236,7 @@ export function buildAreaLayer(
     ghostMaterials,
     stats: { lineCount, clampedVertexCount, liftMinClearanceM },
     redrape,
+    route,
   };
 }
 

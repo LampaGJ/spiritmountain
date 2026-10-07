@@ -41,6 +41,7 @@ Run as `npm run ingest:<name>`. Each needs the ones above it that it names.
 - Local metres are EPSG:26915 minus the origin in `data/frame.json`. Scene x is east, y is elevation, z is minus north (`src/scene/frame.ts:35`). Camera at positive z looks north.
 - Every object whose y encodes elevation lives in the one `ElevatedGroup` (`src/scene/elevated.ts:23`); exaggeration scales it about lake level and never rebuilds geometry. Ground plane and sky stay outside it.
 - The active heightfield sampler is the bare-earth mesh surface, or the composite surface sampler while Surface is on. `areaLayerResult.redrape` (`src/scene/areas.ts:112`) re-drapes every non-lift line when it changes; lifts keep straight cables.
+- Line colour is routed per sport by `sportForArea` (`src/scene/sport-routing.ts`); `AreaLayer.route` swaps per-activity materials on every filter change without rebuilding geometry.
 - Every ground-side material gets `applyRadialFade` (`src/scene/fade.ts:37`) and then `handle.applyHorizon` (`src/scene/horizon.ts:79`, via `src/scene/scene.ts:64`). A new ground-side layer without both shows a hard edge or a seam at the horizon.
 - Surface meshes are capped at 700 segments (square) and 1024 (core) (`src/scene/surface.ts:147`). Above that the renderer stalled over 45 s on 5.2M triangles. Do not raise the caps without a browser measurement.
 - Layers load lazily and toggle by URL hash keys: `activity`, `season`, `imagery=off`, `buildings=off`, `surface=on`, `trees=on`, `exag=` (0.1 to 10). The codec is `src/ui/filter-hash.ts:10`.

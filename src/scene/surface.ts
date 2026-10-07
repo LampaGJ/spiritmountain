@@ -238,7 +238,7 @@ function prepareSurface(
     );
     const material = new MeshStandardMaterial({ vertexColors: true, roughness: 1, metalness: 0 });
     // Units only, no slope term (#36): with factor -level the canopy's steep triangles were pulled toward the camera by
-    // a slope-scaled depth at grazing views, far more than the 1.1 m the lines and ribbon tops sit above it, so the
+    // a slope-scaled depth at grazing views, far more than the 0.5 m (DRAPE_LIFT_M) the lines sit above it, so the
     // surface drew over every trail. The layers are already 0.3 m apart in metres; a constant bias is enough.
     material.polygonOffset = true;
     material.polygonOffsetFactor = 0;
