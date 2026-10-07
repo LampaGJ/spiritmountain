@@ -4,7 +4,13 @@ import { Line2 } from 'three/addons/lines/Line2.js';
 import { describe, expect, it } from 'vitest';
 import { parseAreas } from '../../src/data/load-areas';
 import { DRAPE_LIFT_M, LIFT_DEFAULT_OFFSET_M, minClearance } from '../../src/scene/drape';
-import { buildAreaLayer, buildAreaPositions, type SceneMapper } from '../../src/scene/areas';
+import {
+  GHOST_OPACITY,
+  GHOST_RENDER_ORDER,
+  buildAreaLayer,
+  buildAreaPositions,
+  type SceneMapper,
+} from '../../src/scene/areas';
 import { createMeshSurface } from '../../src/scene/heightfield';
 import { AREA_KIND_COLOR } from '../../src/scene/palette';
 import type { Area } from '../../src/schema/area';
@@ -149,7 +155,7 @@ describe('buildAreaLayer', () => {
     expect([...layer.registry.keys()]).toEqual(areas.map((a) => a.id));
     let seen = 0;
     layer.group.traverse((object) => {
-      if (object instanceof Line2) {
+      if (object instanceof Line2 && !object.name.endsWith(':ghost')) {
         seen += 1;
         const id = object.userData['areaId'] as string;
         expect(layer.registry.get(id)?.lines).toContain(object);
@@ -240,5 +246,27 @@ describe('buildAreaLayer', () => {
   it('reports lift clearance and clamped vertices in the stats', () => {
     expect(layer.stats.clampedVertexCount).toBeGreaterThan(0);
     expect(layer.stats.liftMinClearanceM).toBeGreaterThanOrEqual(0);
+  });
+});
+
+describe('ghost pass (#36)', () => {
+  const toScene: SceneMapper = (e, n, z) => [e, z, -n];
+  const layer = buildAreaLayer(areas, surface, toScene, { width: 800, height: 600 });
+
+  it('gives every line one ghost child sharing its geometry, faint, depth-test off, after the ground, unpickable', () => {
+    for (const { area, lines } of layer.registry.values()) {
+      for (const line of lines) {
+        expect(line.children).toHaveLength(1);
+        const ghost = line.children[0] as Line2;
+        expect(ghost.geometry).toBe(line.geometry);
+        expect(ghost.material).toBe(layer.ghostMaterials[area.kind]);
+        expect(ghost.renderOrder).toBe(GHOST_RENDER_ORDER);
+        expect(ghost.raycast(null as never, [])).toBeUndefined();
+      }
+    }
+    const ghost = layer.ghostMaterials['downhill-run'];
+    expect([ghost.depthTest, ghost.depthWrite, ghost.transparent]).toEqual([false, false, true]);
+    expect(ghost.opacity).toBe(GHOST_OPACITY);
+    expect(ghost.color.getHex()).toBe(AREA_KIND_COLOR['downhill-run']);
   });
 });
