@@ -50,12 +50,39 @@ export type TileName = (typeof TILE_NAMES)[number];
 
 export interface TileInfo {
   readonly file: string;
-  /** Ribbon width in metres (the tile's world size across the trail). */
+  /** Drawn ribbon width in metres: the tile's physical width across the trail times symbolScale. */
   readonly widthM: number;
-  /** Metres of trail per repeat of the tile along the trail. */
+  /** Drawn metres of trail per repeat of the tile along the trail: the physical period times symbolScale. */
   readonly periodM: number;
   readonly widthPx: number;
   readonly heightPx: number;
+  /** Cartographic enlargement applied to this tile (1 = drawn at physical size). See symbolScale. */
+  readonly symbolScale: number;
+}
+
+/**
+ * Smallest drawn repeat along a trail, in metres. A tile drawn at physical size (a 1.2 m tyre tread, a 2 m ski stride)
+ * is below a pixel from the chalet and filters to its mean colour, so the trail shows no pattern at all (#37). Six
+ * metres is about ten pixels at 500 m in the resort view, enough for a repeat to read.
+ */
+export const RIBBON_MIN_PERIOD_M = 6;
+/** No tile is drawn wider than this, so a run ribbon never swallows the slope beside it. */
+export const RIBBON_MAX_WIDTH_M = 20;
+/** Cap on the enlargement, so a tiny physical tile cannot become a road. */
+export const RIBBON_MAX_SCALE = 5;
+
+/**
+ * Cartographic enlargement for a tile: the factor that lifts its period to RIBBON_MIN_PERIOD_M, at most RIBBON_MAX_SCALE,
+ * reduced so the width stays within RIBBON_MAX_WIDTH_M, never below 1. Width and period scale together, so the PNG's
+ * aspect (and the texture matrix) is unchanged.
+ */
+export function symbolScale(physical: {
+  readonly widthM: number;
+  readonly periodM: number;
+}): number {
+  const forPeriod = Math.min(RIBBON_MAX_SCALE, Math.max(1, RIBBON_MIN_PERIOD_M / physical.periodM));
+  const forWidth = Math.max(1, RIBBON_MAX_WIDTH_M / physical.widthM);
+  return Math.min(forPeriod, forWidth);
 }
 
 /** The parsed manifest tiles, keyed by tile name. Throws when the manifest is malformed or lacks a tile in TILE_NAMES. */
@@ -68,7 +95,13 @@ export function parseTiles(json: unknown): Record<TileName, TileInfo> {
   for (const name of TILE_NAMES) {
     const tile = parsed.data.tiles[name];
     if (tile === undefined) throw new Error(`patterns.json has no tile ${name}`);
-    out[name] = tile;
+    const scale = symbolScale(tile);
+    out[name] = {
+      ...tile,
+      widthM: tile.widthM * scale,
+      periodM: tile.periodM * scale,
+      symbolScale: scale,
+    };
   }
   return out;
 }
