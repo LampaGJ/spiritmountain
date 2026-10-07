@@ -5,7 +5,7 @@ import type { AnnotationsHandle } from '../wire-annotations';
 import { SeasonSchema, type Annotation } from '../schema/annotation';
 import { browserHash, mountFilterStrip, TOGGLE_ACTIVITIES, type FilterStrip } from './filters';
 import { getRail } from './rail';
-import { facetCounts, type Activity } from './filter-predicate';
+import { facetCounts, seasonActivities, seasonCounts, type Activity } from './filter-predicate';
 
 export interface MountFiltersDeps {
   readonly registry: ReadonlyMap<string, AreaEntry>;
@@ -58,9 +58,14 @@ export function mountFilters(deps: MountFiltersDeps): FilterStrip {
   }
   const annotations = handle.annotations.map;
   const areas = [...registry.values()].map((entry) => entry.area);
+  // Derived once from the already-parsed annotations map; the failed path above renders no season bar.
+  const seasonMap = seasonActivities(annotations);
+  const seasonCountsByActivity = seasonCounts(areas, annotations);
   return mountFilterStrip({
     host,
     ...browserHash,
+    seasonMap,
+    seasonCounts: seasonCountsByActivity,
     ...(setImagery ? { setImagery } : {}),
     ...(setBuildings ? { setBuildings } : {}),
     ...(setSurface ? { setSurface } : {}),

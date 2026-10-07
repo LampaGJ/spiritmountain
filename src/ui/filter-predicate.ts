@@ -1,6 +1,6 @@
 import type { z } from 'zod';
 import type { Area } from '../schema/area';
-import type { ActivitySchema, Annotation, SeasonSchema } from '../schema/annotation';
+import { ActivitySchema, SeasonSchema, type Annotation } from '../schema/annotation';
 
 export type Activity = z.infer<typeof ActivitySchema>;
 export type Season = z.infer<typeof SeasonSchema>;
@@ -56,6 +56,78 @@ export interface FacetCounts {
   readonly lifts: number;
   /** Non-lift areas in total. */
   readonly candidates: number;
+}
+
+/**
+ * The activities each season offers: an activity belongs to a season when any annotation entry lists it with that
+ * season. Every season is a key (a season with no entries maps to []); lists follow ActivitySchema.options order;
+ * lift-ride is excluded because lifts are always visible. Derived from the already-parsed annotations map.
+ */
+export function seasonActivities(
+  annotations: ReadonlyMap<string, Annotation>,
+): ReadonlyMap<Season, readonly Activity[]> {
+  const found = new Map<Season, Set<Activity>>(SeasonSchema.options.map((s) => [s, new Set()]));
+  for (const annotation of annotations.values()) {
+    for (const e of annotation.activities) {
+      if (e.activity === 'lift-ride') continue;
+      for (const season of e.seasons) found.get(season)?.add(e.activity);
+    }
+  }
+  return new Map(
+    SeasonSchema.options.map((season) => {
+      const set = found.get(season) ?? new Set<Activity>();
+      return [season, ActivitySchema.options.filter((a) => set.has(a))] as const;
+    }),
+  );
+}
+
+/** Per-season and per-activity-in-season counts for the season menu; lifts excluded. */
+export interface SeasonCounts {
+  /** Non-lift areas with at least one entry in that season. */
+  readonly seasons: ReadonlyMap<Season, number>;
+  /** Non-lift areas with an entry listing that activity with that season. Only activities the season offers are keys. */
+  readonly activities: ReadonlyMap<Season, ReadonlyMap<Activity, number>>;
+}
+
+/** Counts for the season bar badges and the rail's season-mode Activity badges. Pure and deterministic. */
+export function seasonCounts(
+  areas: readonly Area[],
+  annotations: ReadonlyMap<string, Annotation>,
+): SeasonCounts {
+  const seasons = new Map<Season, number>(SeasonSchema.options.map((s) => [s, 0]));
+  const activities = new Map<Season, Map<Activity, number>>(
+    SeasonSchema.options.map((s) => [s, new Map()]),
+  );
+  for (const area of areas) {
+    if (area.kind === 'lift') continue;
+    const annotation = annotations.get(area.id);
+    if (annotation === undefined) continue;
+    for (const season of SeasonSchema.options) {
+      const here = annotation.activities.filter(
+        (e) => e.activity !== 'lift-ride' && e.seasons.includes(season),
+      );
+      if (here.length === 0) continue;
+      seasons.set(season, (seasons.get(season) ?? 0) + 1);
+      const perActivity = activities.get(season);
+      if (perActivity === undefined) continue;
+      for (const act of new Set(here.map((e) => e.activity))) {
+        perActivity.set(act, (perActivity.get(act) ?? 0) + 1);
+      }
+    }
+  }
+  // Re-key each per-activity map in schema order so iteration never depends on annotation order.
+  const ordered = new Map<Season, ReadonlyMap<Activity, number>>(
+    SeasonSchema.options.map((s) => {
+      const counts = activities.get(s) ?? new Map<Activity, number>();
+      return [
+        s,
+        new Map(
+          ActivitySchema.options.filter((a) => counts.has(a)).map((a) => [a, counts.get(a) ?? 0]),
+        ),
+      ] as const;
+    }),
+  );
+  return { seasons, activities: ordered };
 }
 
 /**

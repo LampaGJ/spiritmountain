@@ -1,4 +1,4 @@
-import { ActivitySchema, SeasonSchema } from '../schema/annotation';
+import { ActivitySchema } from '../schema/annotation';
 import {
   HashFilterSchema,
   decodeHash,
@@ -11,7 +11,15 @@ import { createClickKey, createToggleKey, type ClickyKey } from './clicky-key';
 import { createExaggerationKey, type ExaggerationKey } from './exaggeration-key';
 import { iconFor } from './icons';
 import { groupHead } from './rail';
-import type { FacetCounts, Filter } from './filter-predicate';
+import type { Activity, FacetCounts, Filter, SeasonCounts } from './filter-predicate';
+import {
+  buildSeasonBar,
+  normalizeSeason,
+  selectSeason,
+  toggleSeasonActivity,
+  type SeasonBar,
+  type SeasonMap,
+} from './season-menu';
 
 export interface StripCounts {
   visibleCount: number;
@@ -38,6 +46,10 @@ export interface FilterStripDeps {
   readonly setTrees?: (on: boolean) => void;
   /** Called with the terrain exaggeration factor (0 to 10, 1 = true scale) on mount and whenever it changes. Absent means no slider. */
   readonly setExaggeration?: (k: number) => void;
+  /** Activities per season (seasonActivities). With seasonCounts, mounts the top season bar and normalises the hash. */
+  readonly seasonMap?: SeasonMap;
+  /** Per-season and per-activity-in-season counts (seasonCounts) for the bar badges and the rail in season mode. */
+  readonly seasonCounts?: SeasonCounts;
 }
 
 export interface FilterStrip {
@@ -82,6 +94,7 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
   let treesApplied: boolean | undefined;
   let exagKey: ExaggerationKey | undefined;
   let exagApplied: number | undefined;
+  let seasonBar: SeasonBar | undefined;
 
   const count = el('p', undefined, 'filter-count');
   count.setAttribute('role', 'status');
@@ -91,10 +104,27 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
   const render = (): void => {
     const counts = deps.apply(toFilter(state));
     const { facets } = counts;
+    // Season mode: one season active and the bar mounted. facetCounts would give every activity the same union count.
+    const season = seasonBar === undefined ? undefined : state.season[0];
+    const inSeason = season === undefined ? undefined : (deps.seasonMap?.get(season) ?? []);
+    const seasonActivityCounts =
+      season === undefined ? undefined : deps.seasonCounts?.activities.get(season);
+    seasonBar?.render(state);
     for (const b of buttons) {
       const pressed = (state[b.key] as string[]).includes(b.value);
       // The pressed look (sunk key, accent face, check mark) is generated CSS keyed on aria-pressed.
       b.handle.button.setAttribute('aria-pressed', String(pressed));
+      const offSeason =
+        b.key === 'activity' && inSeason !== undefined && !inSeason.includes(b.value as Activity);
+      b.handle.root.classList.toggle('is-off-season', offSeason);
+      if (b.key === 'activity' && seasonActivityCounts !== undefined) {
+        const n = seasonActivityCounts.get(b.value as Activity) ?? 0;
+        b.handle.setCount(n);
+        b.handle.root.classList.remove('is-zero');
+        b.handle.button.removeAttribute('aria-disabled');
+        b.handle.button.removeAttribute('title');
+        continue;
+      }
       if (facets === undefined) continue;
       const lookup: ReadonlyMap<string, number> =
         b.key === 'activity' ? facets.activities : facets.seasons;
@@ -165,17 +195,27 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
     if (next !== deps.readHash()) deps.writeHash(next);
   };
 
+  /** The one write path for a new state: clear the notice, write the hash if it changed, re-render. */
+  const commit = (next: HashFilter): void => {
+    state = next;
+    notice.textContent = '';
+    writeIfChanged();
+    render();
+  };
+
   const toggle = (key: Key, value: string): void => {
     // aria-disabled keys stay focusable but do nothing; a latched key is never disabled, so it can always be switched off.
     const entry = buttons.find((b) => b.key === key && b.value === value);
     if (entry?.handle.button.getAttribute('aria-disabled') === 'true') return;
+    // Season mode: the rail's Activity keys take the same transition as the bar's row, so an empty list clears both keys.
+    if (key === 'activity' && deps.seasonMap !== undefined && state.season.length > 0) {
+      commit(toggleSeasonActivity(state, value as Activity, deps.seasonMap));
+      return;
+    }
     const values = new Set<string>(state[key]);
     if (values.has(value)) values.delete(value);
     else values.add(value);
-    state = HashFilterSchema.parse({ ...state, [key]: [...values] });
-    notice.textContent = '';
-    writeIfChanged();
-    render();
+    commit(HashFilterSchema.parse({ ...state, [key]: [...values] }));
   };
 
   const toggleImagery = (): void => {
@@ -237,7 +277,11 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
 
   const sync = (): void => {
     const decoded = decodeHash(deps.readHash());
-    state = decoded.filter;
+    // normalizeSeason is idempotent and replaceState fires no hashchange, so this rewrite cannot loop.
+    state =
+      deps.seasonMap === undefined
+        ? decoded.filter
+        : normalizeSeason(decoded.filter, deps.seasonMap);
     notice.textContent = ignoredNotice(decoded.ignored) ?? '';
     writeIfChanged();
     render();
@@ -271,7 +315,7 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
   const clearKey = createClickKey(clearEntry.label, { icon: clearEntry.symbol });
   clearKey.button.addEventListener('click', clear);
 
-  // Clear sits under the Season group; the status line and the hash notice sit under Clear.
+  // Clear sits under the Activity group; the status line and the hash notice sit under Clear.
   const foot = el('div', undefined, 'console-foot');
   foot.append(clearKey.root, count, notice);
 
@@ -298,9 +342,20 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
     layersSlot.append(exagKey.root);
   }
 
+  // The season choice lives in the top bar (#42), not in the rail.
+  const { seasonMap, seasonCounts } = deps;
+  if (seasonMap !== undefined && seasonCounts !== undefined) {
+    seasonBar = buildSeasonBar({
+      map: seasonMap,
+      counts: seasonCounts,
+      onSeason: (season) => commit(selectSeason(state, season, seasonMap)),
+      onActivity: (activity) => commit(toggleSeasonActivity(state, activity, seasonMap)),
+    });
+    document.body.appendChild(seasonBar.root);
+  }
+
   deps.host.replaceChildren(
     group('group-activity', 'activity', TOGGLE_ACTIVITIES),
-    group('group-season', 'season', SeasonSchema.options),
     foot,
     ...(deps.setImagery ||
     deps.setBuildings ||
@@ -313,5 +368,11 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
   window.addEventListener('hashchange', sync);
   sync();
 
-  return { sync, dispose: () => window.removeEventListener('hashchange', sync) };
+  return {
+    sync,
+    dispose: () => {
+      window.removeEventListener('hashchange', sync);
+      seasonBar?.root.remove();
+    },
+  };
 }

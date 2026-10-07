@@ -133,3 +133,56 @@ describe('facetCounts', () => {
     expect(c.seasons.get('summer')).toBe(0);
   });
 });
+
+describe('seasonActivities and seasonCounts (#42)', () => {
+  const notes = new Map<string, Annotation>([
+    // Listed out of schema order on purpose: the output follows ActivitySchema.options.
+    [
+      'way/10',
+      makeAnnotation('way/10', [
+        entry('nordic-skate', ['winter']),
+        entry('nordic-classic', ['winter']),
+      ]),
+    ],
+    [
+      'way/11',
+      makeAnnotation('way/11', [
+        entry('alpine-ski', ['winter']),
+        entry('nordic-classic', ['winter']),
+      ]),
+    ],
+    ['way/12', makeAnnotation('way/12', [entry('mountain-bike', ['summer', 'fall'])])],
+    ['way/13', makeAnnotation('way/13', [entry('lift-ride', ['winter', 'summer'])])],
+  ]);
+  const seasonAreas: Area[] = [
+    makeArea('way/10', 'nordic-trail'),
+    makeArea('way/11', 'downhill-run'),
+    makeArea('way/12', 'mtb-trail'),
+    makeArea('way/13', 'lift'),
+  ];
+
+  it('keys every season, maps an empty season to [], excludes lift-ride and follows schema order', async () => {
+    const { seasonActivities } = await import('../../src/ui/filter-predicate');
+    const map = seasonActivities(notes);
+    expect([...map.keys()]).toEqual(['winter', 'spring', 'summer', 'fall']);
+    expect(map.get('spring')).toEqual([]);
+    expect(map.get('winter')).toEqual(['alpine-ski', 'nordic-classic', 'nordic-skate']);
+    expect(map.get('summer')).toEqual(['mountain-bike']);
+    expect(map.get('fall')).toEqual(['mountain-bike']);
+    for (const list of map.values()) expect(list).not.toContain('lift-ride');
+  });
+
+  it('counts non-lift areas per season and per activity in a season, differing by activity', async () => {
+    const { seasonCounts } = await import('../../src/ui/filter-predicate');
+    const c = seasonCounts(seasonAreas, notes);
+    expect(c.seasons.get('winter')).toBe(2);
+    expect(c.seasons.get('summer')).toBe(1);
+    expect(c.seasons.get('spring')).toBe(0);
+    const winter = c.activities.get('winter');
+    expect(winter?.get('nordic-classic')).toBe(2);
+    expect(winter?.get('alpine-ski')).toBe(1);
+    expect(winter?.get('nordic-skate')).toBe(1);
+    expect(winter?.has('lift-ride')).toBe(false);
+    expect(c.activities.get('spring')?.size).toBe(0);
+  });
+});
