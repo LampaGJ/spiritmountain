@@ -1,0 +1,42 @@
+{
+  "pipeline": [
+    {
+      "type": "readers.ept",
+      "filename": "{{EPT_URL}}",
+      "bounds": "{{BOUNDS_3857}}",
+      "resolution": 1
+    },
+    {
+      "type": "filters.stats",
+      "tag": "read",
+      "dimensions": "ReturnNumber"
+    },
+    {
+      "type": "filters.range",
+      "limits": "ReturnNumber[1:1]"
+    },
+    {
+      "type": "filters.stats",
+      "tag": "first",
+      "dimensions": "ReturnNumber"
+    },
+    {
+      "type": "filters.reprojection",
+      "out_srs": "EPSG:26915"
+    },
+    {
+      "type": "writers.gdal",
+      "filename": "{{OUTPUT_TIF}}",
+      "resolution": "{{RESOLUTION}}",
+      "output_type": "max",
+      "gdaldriver": "GTiff",
+      "nodata": -9999,
+      "data_type": "float32",
+      "gdalopts": "COMPRESS=LZW",
+      "origin_x": "{{ORIGIN_X}}",
+      "origin_y": "{{ORIGIN_Y}}",
+      "width": "{{WIDTH}}",
+      "height": "{{HEIGHT}}"
+    }
+  ]
+}

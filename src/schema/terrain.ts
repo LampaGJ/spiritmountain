@@ -35,9 +35,12 @@ export const TerrainHeaderSchema = z
     nodataFilled: z.int().nonnegative(),
     frame: z.strictObject({ file: z.literal('data/frame.json'), sha256: Sha256Schema }),
     source: z.strictObject({
-      path: z.string().regex(/^data\/raw\/(3dep\.tif|context\/-?\d+_-?\d+\.tif)$/, {
-        error: 'source.path must be data/raw/3dep.tif or data/raw/context/<i>_<j>.tif',
-      }),
+      path: z
+        .string()
+        .regex(/^data\/raw\/(3dep\.tif|surface-core\.tif|context\/-?\d+_-?\d+\.tif)$/, {
+          error:
+            'source.path must be data/raw/3dep.tif, data/raw/surface-core.tif or data/raw/context/<i>_<j>.tif',
+        }),
       sha256: Sha256Schema,
     }),
   })
