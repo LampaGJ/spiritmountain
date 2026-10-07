@@ -6,3 +6,4 @@ dist/
 .env
 reports/.progress/*
 !reports/.progress/.gitkeep
+.claude/worktrees/
