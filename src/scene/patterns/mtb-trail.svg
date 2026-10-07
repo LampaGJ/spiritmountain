@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="256" height="204" viewBox="0 0 256 204">
-  <!-- bold map symbol: ochre dirt ground, one dark-umber tyre-tread chevron, all content uniform in y outside the motif so v=0 and v=204 match -->
-  <rect width="256" height="204" fill="#c9a066"/>
-  <path d="M40 50 L128 126 L216 50" fill="none" stroke="#2e1a0c" stroke-width="58" stroke-linejoin="miter" stroke-miterlimit="3"/>
-</svg>

@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="256" height="204" viewBox="0 0 256 204">
-  <!-- bold map symbol: pale snow ground, one wide blue-grey fat-tyre tread block; ground is uniform in y at the seam -->
-  <rect width="256" height="204" fill="#f4f8fd"/>
-  <path d="M40 40 L216 40 L216 112 L128 168 L40 112 Z" fill="#2c4260" stroke="#2c4260" stroke-width="8" stroke-linejoin="round"/>
-</svg>
