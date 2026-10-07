@@ -6,6 +6,7 @@ import { fromArrayBuffer } from 'geotiff';
 import { z } from 'zod';
 import { ReplayRecordSchema } from '../../src/schema/replay';
 import { TerrainHeaderSchema, type TerrainHeader } from '../../src/schema/terrain';
+import { despike } from './despike';
 import { SurfaceManifestSchema } from './surface-manifest-schema';
 import { seamEastingAtNorthing } from './surface-window';
 import {
@@ -26,6 +27,7 @@ import {
 
 /** The transitive repo-import closure of this file, enforced by a test (tests/ingest/surface-terrain.test.ts). Its last commit becomes codeCommit. */
 export const TRANSFORM_SOURCES: string[] = [
+  'scripts/ingest/despike.ts',
   'scripts/ingest/manifest-schema.ts',
   'scripts/ingest/replay.ts',
   'scripts/ingest/surface-manifest-schema.ts',
@@ -81,6 +83,14 @@ export const SurfaceReplaySchema = ReplayRecordSchema.extend({
   seamValidFraction: z.number().min(0).max(1).optional(),
   /** Square window only: mean valid fraction of the columns 4 to 12 cells either side of the seam, the stripe gate's baseline. */
   neighbourValidFraction: z.number().min(0).max(1).optional(),
+  /** The isolated-spike filter: per-pass counts and largest removed delta, and the max elevation before and after. */
+  despike: z.strictObject({
+    passes: z.array(
+      z.strictObject({ spikesRemoved: z.number().int().min(0), maxDelta: z.number().min(0) }),
+    ),
+    maxBefore: z.number(),
+    maxAfter: z.number(),
+  }),
 });
 export type SurfaceReplay = z.infer<typeof SurfaceReplaySchema>;
 
@@ -181,6 +191,12 @@ export async function buildSurface(
   seamValidFraction: number | null;
   /** Mean valid fraction of the columns 4, 8 and 12 cells either side of the seam; null unless ctx.checkSeam. */
   neighbourValidFraction: number | null;
+  /** The isolated-spike filter's counts, applied after pooling and before the nodata fill. */
+  despike: {
+    passes: { spikesRemoved: number; maxDelta: number }[];
+    maxBefore: number;
+    maxAfter: number;
+  };
 }> {
   const arrayBuffer = tiffBytes.buffer.slice(
     tiffBytes.byteOffset,
@@ -261,6 +277,8 @@ export async function buildSurface(
     neighbourValidFraction =
       around.length === 0 ? seamValidFraction : around.reduce((p, q) => p + q, 0) / around.length;
   }
+  const despiked = despike(pooled.values, pooled.width, pooled.height, pooled.nodata);
+  pooled.values.set(despiked.data);
   const nodataFilled = fillNodata(pooled.values, pooled.nodata, pooled.width, pooled.height);
   const total = pooled.width * pooled.height;
   const f32 = new Uint8Array(total * 4);
@@ -304,6 +322,11 @@ export async function buildSurface(
     bbox: { xmin, ymin, xmax, ymax },
     seamValidFraction,
     neighbourValidFraction,
+    despike: {
+      passes: despiked.passes,
+      maxBefore: despiked.maxBefore,
+      maxAfter: despiked.maxAfter,
+    },
   };
 }
 
@@ -336,7 +359,7 @@ export interface SurfaceTerrainOptions {
 /**
  * @displayName Build surface heightfield
  * @strategicPurpose Converts the pinned 1 m first-return TIFF once into a 2 m typed-array heightfield (max over each 2x2 block, so roofs and canopy keep their peaks) in the shared local frame, with the same decode, nodata and header rules as the bare-earth terrain; pure so a rerun is byte-identical.
- * @tacticalObjective Verifies the TIFF against the surface manifest sha256, size and window, max-pools it 2x2 to 2 m cells, fills remaining nodata, and writes data/surface/core.f32, core.json, then surface.replay.json last.
+ * @tacticalObjective Verifies the TIFF against the surface manifest sha256, size and window, max-pools it 2x2 to 2 m cells, removes isolated spikes, fills remaining nodata, and writes data/surface/core.f32, core.json, then surface.replay.json last.
  */
 export async function runSurfaceTerrain(
   options: SurfaceTerrainOptions,
@@ -412,6 +435,7 @@ export async function runSurfaceTerrain(
     lockSubtreeSha256: options.lockSubtree,
     decodeResolutionM: config.cellM,
     pooling: 'max',
+    despike: built.despike,
     ...(built.seamValidFraction === null
       ? {}
       : {
@@ -453,7 +477,7 @@ async function main(argv: string[]): Promise<void> {
     resolveCommit: () => resolveCodeCommit(TRANSFORM_SOURCES, { allowDirty }),
   });
   process.stdout.write(
-    `ingest:surface-terrain ok ${header.width}x${header.height} elev ${header.minElev}..${header.maxElev} nodataFilled=${header.nodataFilled}${replay.seamValidFraction === undefined ? '' : ` seamValidFraction=${replay.seamValidFraction} neighbourValidFraction=${replay.neighbourValidFraction}`}\n`,
+    `ingest:surface-terrain ok ${header.width}x${header.height} elev ${header.minElev}..${header.maxElev} nodataFilled=${header.nodataFilled} despiked=${replay.despike.passes.map((p) => p.spikesRemoved).join('+')} max ${replay.despike.maxBefore}->${replay.despike.maxAfter}${replay.seamValidFraction === undefined ? '' : ` seamValidFraction=${replay.seamValidFraction} neighbourValidFraction=${replay.neighbourValidFraction}`}\n`,
   );
 }
 
