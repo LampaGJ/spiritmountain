@@ -2,6 +2,7 @@ import {
   Color,
   DirectionalLight,
   HemisphereLight,
+  type Material,
   type MeshStandardMaterial,
   type ColorRepresentation,
   type Mesh,
@@ -16,6 +17,12 @@ import { elevationToSceneY } from './frame';
 import { createMeshSurface, type Heightfield, type MeshSurface } from './heightfield';
 import { setFadeCentre } from './fade';
 import { createGround, groundSlopeColor } from './ground';
+import {
+  applyHorizonBlend,
+  createHorizonUniforms,
+  setHorizonSkyTexture,
+  updateHorizon,
+} from './horizon';
 import { createSkyControl, SKY_FALLBACK_COLOR } from './sky';
 import { createTerrainMesh, setTerrainImagery, terrainFade } from './terrain';
 import { computeViews, minCameraY, verticalFovDeg, type FocusBox, type ViewName } from './views';
@@ -42,6 +49,10 @@ export interface SceneHandle {
   setSkyFallback(): void;
   /** Installs (or replaces) the opaque ground plane at base elevation minus 0.5 m, beyond the faded terrain, in a linear-light colour. */
   setGround(colorLinear: { r: number; g: number; b: number }, baseElevationM: number): void;
+  /** Points the horizon blend at the sky panorama, or at the flat fallback colour with null. Call it beside setSky and setSkyFallback. */
+  setHorizonSky(texture: Texture | null): void;
+  /** Patches a ground-side material (after applyRadialFade, if it has one) so it blends into the sky at the true horizon. All share one set of uniforms. */
+  applyHorizon(material: Material): void;
   /** Re-tints the ground: the photo mean (colour) or the slope-shading mid colour (null). */
   setGroundColor(color: ColorRepresentation | null): void;
   /** Moves the radial fade centre of the centre terrain (local metres east and north). */
@@ -103,6 +114,8 @@ export function createScene(
   const sun = new DirectionalLight(0xfff2dd, 2.2);
   sun.position.set(-1, 0.45, 1).normalize().multiplyScalar(1000);
   scene.add(sun);
+  const horizon = createHorizonUniforms(SKY_FALLBACK_COLOR);
+  applyHorizonBlend(terrain.material as Material, horizon);
   const sky = createSkyControl(scene, { sun, hemisphere });
   let ground: Mesh | null = null;
 
@@ -158,6 +171,12 @@ export function createScene(
       base: baseSceneY,
     });
     if (camera.position.y < floor) camera.position.y = floor;
+    updateHorizon(
+      horizon,
+      camera.position,
+      (camera.position.y - baseSceneY) / effectiveScale(exaggeration),
+      camera.far * 0.98,
+    );
     for (const callback of callbacks) callback(now - last);
     last = now;
     renderer.render(scene, camera);
@@ -195,6 +214,8 @@ export function createScene(
     },
     setSky: sky.setSky,
     setSkyFallback: sky.setSkyFallback,
+    setHorizonSky: (texture) => setHorizonSkyTexture(horizon, texture),
+    applyHorizon: (material) => applyHorizonBlend(material, horizon),
     setGround(colorLinear, baseElevationM) {
       if (ground) {
         scene.remove(ground);
@@ -210,6 +231,7 @@ export function createScene(
           north: extent.centreNorth,
         },
       );
+      applyHorizonBlend(ground.material as Material, horizon);
       scene.add(ground);
     },
     setGroundColor(color) {

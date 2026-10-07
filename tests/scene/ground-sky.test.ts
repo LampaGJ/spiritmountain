@@ -21,7 +21,7 @@ import {
 } from '../../src/scene/sky';
 
 describe('createGround', () => {
-  it('puts a 60 km opaque plane 0.5 m under the base elevation, in the given colour, first in draw order', () => {
+  it('puts a 300 km opaque plane 0.5 m under the base elevation, in the given colour, first in draw order', () => {
     const colour = new Color(0.1545, 0.1845, 0.1331);
     const ground = createGround(colour, 183.08);
     expect(ground.position.y).toBeCloseTo(elevationToSceneY(183.08) - 0.5, 9);

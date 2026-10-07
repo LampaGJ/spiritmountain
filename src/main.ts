@@ -31,7 +31,7 @@ import { headerBox, installSurfaceAsync, type SurfaceHandle } from './scene/surf
 import { groundSlopeColor } from './scene/ground';
 import { loadImagery } from './data/load-imagery';
 import { decodeHash } from './ui/filter-hash';
-import { Color, type Texture } from 'three';
+import { Color, type Material, type Texture } from 'three';
 import { loadImageryStats } from './data/load-imagery-stats';
 import { loadSky } from './data/load-sky';
 import { loadSurface } from './data/load-surface';
@@ -161,9 +161,11 @@ void loadImageryStats().then((stats) => {
 void loadSky().then((sky) => {
   if ('error' in sky) {
     handle.setSkyFallback();
+    handle.setHorizonSky(null);
     return reportSceneFailure('sky', sky.error);
   }
   handle.setSky(sky);
+  handle.setHorizonSky(sky);
   console.info('sky: panorama applied');
 });
 
@@ -198,6 +200,7 @@ void loadBuildings(buildingsUrl)
     if ('error' in result) return reportBuildingsFailure(result.error);
     const layer = buildBuildingsLayer(result.features, meshSurface, { centre: fadeCentre });
     layer.setVisible(buildingsWanted);
+    handle.applyHorizon(layer.mesh.material as Material);
     handle.elevated.add(layer.mesh);
     buildingsLayer = layer;
     if (layer.dropped.length > 0) {
@@ -275,6 +278,9 @@ function requestSurface(): void {
         { fadeCentre, imageryBox: headerBox(header), imagery: imageryTexture },
         yieldToBrowser,
       );
+      for (const mesh of Object.values(surfaceHandle.meshes)) {
+        handle.applyHorizon(mesh.material as Material);
+      }
       surfaceHandle.setImagery(imageryWanted);
       surfaceHandle.setVisible(surfaceWanted);
       applySurfaceDrape();
@@ -325,6 +331,9 @@ void loadContext({ frameUrl })
       fadeCentre,
       imageryOn: imageryWanted,
     });
+    for (const mesh of contextHandle.meshes.values()) {
+      handle.applyHorizon(mesh.material as Material);
+    }
     handle.setContextExtent(FADE_OUTER_M);
     const failures: string[] = [];
     return loadContextTextures(context.tiles, {
