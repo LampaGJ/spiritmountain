@@ -31,7 +31,8 @@
     "ingest:surface": "tsx scripts/ingest/surface.ts",
     "ingest:surface-terrain": "tsx scripts/ingest/surface-terrain.ts",
     "ingest:sky": "tsx scripts/ingest/sky.ts",
-    "ingest:imagery-stats": "tsx scripts/ingest/imagery-stats.ts"
+    "ingest:imagery-stats": "tsx scripts/ingest/imagery-stats.ts",
+    "ingest:trees": "tsx scripts/ingest/trees.ts"
   },
   "dependencies": {
     "geotiff": "3.0.5",
