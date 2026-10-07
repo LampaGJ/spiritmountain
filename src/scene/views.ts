@@ -20,10 +20,19 @@ export interface ViewSet {
   readonly sphere: Sphere;
   readonly near: number;
   readonly far: number;
+  /** Vertical fov in degrees for the aspect computeViews was given. */
+  readonly fov: number;
 }
 
-/** Vertical field of view in degrees; computeViews and the camera must agree. */
-export const CAMERA_FOV_DEG = 50;
+/** Horizontal field of view in degrees (principal: a 2 m tall person with 120 degree horizontal perspective). */
+export const HORIZONTAL_FOV_DEG = 120;
+/** three.js cameras take a VERTICAL fov; derive it from the horizontal one and the viewport aspect. */
+export function verticalFovDeg(aspect: number): number {
+  const halfH = (HORIZONTAL_FOV_DEG / 2) * (Math.PI / 180);
+  return (2 * Math.atan(Math.tan(halfH) / Math.max(aspect, 0.1)) * 180) / Math.PI;
+}
+/** Vertical fov at a 16:9 viewport; the camera is constructed with this and should be retuned per aspect. */
+export const CAMERA_FOV_DEG = verticalFovDeg(16 / 9);
 /** Overview camera: elevation angle above the horizon, and azimuth west of south. */
 export const OVERVIEW_ELEVATION_DEG = 40;
 export const OVERVIEW_AZIMUTH_WEST_OF_SOUTH_DEG = 22.5;
@@ -31,7 +40,7 @@ export const OVERVIEW_AZIMUTH_WEST_OF_SOUTH_DEG = 22.5;
 export const SUMMIT_VIEW_SOUTH_FRACTION = 0.2;
 export const SUMMIT_VIEW_UP_FRACTION = 0.06;
 /** The camera is never allowed lower than this many metres above the terrain surface beneath it. */
-export const CAMERA_CLEARANCE_M = 5;
+export const CAMERA_CLEARANCE_M = 2;
 
 /** Resort view distance, as a multiple of the focus box diagonal, before clamping. */
 export const RESORT_VIEW_DISTANCE_FACTOR = 1.0;
@@ -40,9 +49,9 @@ export const RESORT_VIEW_MIN_DISTANCE_M = 700;
 /** Resort view horizontal distance is never farther than this, in metres. */
 export const RESORT_VIEW_MAX_DISTANCE_M = 2500;
 /** Resort camera height above the terrain beneath it, as a fraction of the view distance. */
-export const RESORT_VIEW_HEIGHT_FRACTION = 0.02;
+export const RESORT_VIEW_HEIGHT_FRACTION = 0;
 /** Resort camera height above the terrain beneath it never falls below this, in metres. */
-export const RESORT_VIEW_MIN_HEIGHT_M = 25;
+export const RESORT_VIEW_MIN_HEIGHT_M = 2;
 /** Resort target sits this fraction of the focus box's height range above its lowest sampled point, so it reads as mid-slope. */
 export const RESORT_TARGET_SLOPE_FRACTION = 0.35;
 /**
@@ -50,7 +59,7 @@ export const RESORT_TARGET_SLOPE_FRACTION = 0.35;
  * Added to the specified construction: on the real resort the base-side camera sits at target height
  * (measured -0.1 degrees), so without a floor the view is level and shows no slope.
  */
-export const RESORT_VIEW_MIN_ELEVATION_DEG = -6;
+export const RESORT_VIEW_MIN_ELEVATION_DEG = -30;
 /** With no focus box, the resort view uses a box of this half-size around the summit, in metres. */
 export const RESORT_FALLBACK_HALF_SIZE_M = 400;
 
@@ -144,7 +153,8 @@ export function computeViews(surface: MeshSurface, aspect: number, focus?: Focus
   const box = terrainBox(surface);
   const sphere = box.getBoundingSphere(new Sphere());
   const centre = sphere.center;
-  const halfV = (CAMERA_FOV_DEG / 2) * (Math.PI / 180);
+  const fov = verticalFovDeg(aspect);
+  const halfV = (fov / 2) * (Math.PI / 180);
   const halfH = Math.atan(Math.tan(halfV) * aspect);
   const fitDistance = sphere.radius / Math.sin(Math.min(halfV, halfH));
 
@@ -198,6 +208,7 @@ export function computeViews(surface: MeshSurface, aspect: number, focus?: Focus
     sphere,
     near,
     far,
+    fov,
   };
 }
 
