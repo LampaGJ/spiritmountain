@@ -11,6 +11,7 @@ import {
   Color,
   Group,
   Mesh,
+  MeshBasicMaterial,
   MeshStandardMaterial,
   RepeatWrapping,
   ClampToEdgeWrapping,
@@ -461,12 +462,12 @@ export interface RibbonLayerStats {
 
 export interface RibbonLayer {
   readonly group: Group;
-  /** One MeshStandardMaterial per tile (the patterned top). */
-  readonly topMaterials: Readonly<Record<TileName, MeshStandardMaterial>>;
+  /** One unlit MeshBasicMaterial per tile (the patterned top): a map symbol, drawn at the tile's own colours. */
+  readonly topMaterials: Readonly<Record<TileName, MeshBasicMaterial>>;
   /** The one vertex-coloured material every ribbon's walls, base and caps share. */
   readonly wallMaterial: MeshStandardMaterial;
   /** Every material, for patching (the horizon blend) in one loop. */
-  allMaterials(): MeshStandardMaterial[];
+  allMaterials(): (MeshBasicMaterial | MeshStandardMaterial)[];
   /** Rebuilds the per-tile geometries for a new routing. */
   assign(assignment: RibbonAssignment): void;
   /** Routes from the annotations and the Activity filter, then rebuilds. */
@@ -522,14 +523,14 @@ export function buildRibbonLayer(
     areaById.set(area.id, area);
   }
 
-  const topMaterials = {} as Record<TileName, MeshStandardMaterial>;
+  const topMaterials = {} as Record<TileName, MeshBasicMaterial>;
   for (const name of TILE_NAMES) {
     const texture = textures[name];
     if (texture) configureRibbonTexture(texture);
-    const material = new MeshStandardMaterial({
+    // Unlit (#37): the top is a map symbol. Under the photo sky's dimmed sun and quarter hemisphere a lit white tile
+    // rendered mid grey, so every snow pattern read as a grey strip.
+    const material = new MeshBasicMaterial({
       ...(texture ? { map: texture } : {}),
-      roughness: 1,
-      metalness: 0,
       alphaTest: RIBBON_ALPHA_TEST,
     });
     // No polygonOffset: at a grazing view its slope term pushes a far ribbon behind the terrain it stands on.
