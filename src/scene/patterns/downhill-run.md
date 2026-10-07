@@ -1,16 +1,13 @@
-# downhill-run tile (groomed corduroy)
+# downhill-run tile (blue groomer chevrons)
 
-World size: 12 m across (u, 256 px, 21.33 px/m) by 1.5 m along (v, 32 px). Tile repeats along v only.
+World size: 12 m across (u, 256 px, 21.33 px/m) by 1.5 m along (v, 32 px). Scene later enlarges it to 20 m wide, so one repeat is 2.5 m on the ground. Tile repeats along v only. Size is unchanged at 256 x 32 px.
 
-Period: ridge pitch 8 px (0.375 m, 32 ridges across); vertical period 32 px (1.5 m).
+Motif: one zigzag band of four 64 px legs across the tile (two chevrons), 45 degrees in world space, band thickness 16 px along v (half the period). Mid blue on white, a piste-map groomer-stripe icon.
 
-Seam proof: every element is either a full-height rect with no v-dependence (the sheen rect, the alpha mask rect, whose gradients vary only in x) or a pattern whose tile is 8x32, so its vertical period equals the tile height. Nothing varies with y, so row 0 and row 32 have identical content. Ridge gradient is symmetric (groove, ridge, groove), so it is also continuous across the 8 px pattern joins. No filters, no blur bleed across the edge.
+Seam proof: the zigzag drops 32 px per 64 px leg and the period is 32 px, so the band shifted by one period lands on itself. A second copy drawn at y -32 fills the top rows, the viewBox clips both. Row 31 continues into row 0 with no break (patterns.test.ts passes).
 
-Colour tokens:
+Colour tokens: ground #FFFFFF; motif gradient #2F6FC4 at the edges to #1F58AA at the centre (x only, so it cannot break the seam). Alpha is 1.0 everywhere.
 
-- groove: #B9CBE3 (edge of pitch), #C9D8EB (shoulder)
-- ridge crest: #EAF1F9
-- sheen: #F0F5FB at 0 to 0.22 opacity, peak at centre
-- alpha mask: luminance #999999 at u edges (0.6 alpha), #F2F2F2 inside 18 to 82 percent (0.95 alpha)
+Legibility at 24 px: the 24 x 3 preview still shows a blue wave on white, clearly not a flat strip. Contrast is about 6:1 in luminance.
 
-Illusion technique: corduroy is a 1-D periodic luminance ramp. Each ridge is a symmetric gradient (cool blue groove, near-white crest) so the eye reads a rounded rib lit from above; the cooler groove tone gives the shadow without any drawn lines. A wide, faint centre sheen adds a groomed-gloss falloff, and a luminance mask drops alpha to 60 percent at the edges so the aerial photo bleeds in. The 8 px pitch gives about 1.2 px grooves at 20 px display (reads as a tint band) and distinct ribs at 200 px without stripe harshness.
+Exception to the stroke rule: the tile is only 32 px tall, so 15 percent of tile width cannot apply along v; the band is 16 px (50 percent of the period) instead.

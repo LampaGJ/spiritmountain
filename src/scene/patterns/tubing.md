@@ -1,11 +1,13 @@
-# tubing tile
+# tubing tile (orange tube ring)
 
-World size: 12 m across (u, 256 px) by 4 m along (v, 85 px). Scale about 21.3 px/m. Period: 85 px (4 m) in v. u does not tile.
+World size: 12 m across (u, 256 px, 21.33 px/m) by 4 m along (v, 85 px). Scene later enlarges it to 20 m wide, so one repeat is about 6.7 m on the ground. Tile repeats along v only. Size is unchanged at 256 x 85 px.
 
-Layout: four chutes 48 px (2.25 m) wide at x=8, 72, 136, 200 (centres 32, 96, 160, 224). Berms 16 px (0.75 m) wide at x=56, 120, 184, plus 8 px half-berms at both outer edges. Dividers run the full height.
+Motif: one ring (donut) centred at (128, 42.5), centreline radius 28 px, stroke 22 px, so outer radius 39 px and inner hole radius 17 px. The ring is 78 px across against an 85 px period.
 
-Seam proof: chutes, berms, polish streaks, shadow lines and the alpha mask are full-height rects that vary only in x (no filters, so no blur falloff at the top or bottom). Pressure marks are grouped once as `marks` and instanced at y offsets -85, 0 and +85, clipped by the viewBox. Row 0 and row 85 are therefore identical.
+Seam proof: the ring sits wholly inside the tile (top at y=3.5, bottom at y=81.5), so rows 84 and 0 are both plain ground and match exactly (patterns.test.ts passes).
 
-Colour tokens: base snow #eef4fb; chute gradient #bfd3ea / #d3e3f5 / #dcebfa / #d0e1f4 / #c6daf0; polish #ffffff at 0.8 (streak) and 0.55 (core line); berm shadow flank #9fb3cd, mid #c3d2e5, crest #ffffff, soft flank #f1f6fc, far edge #d6e2f1; berm cast shadow on chute #8ea6c4 at 0.35; mark ring #7e98ba at 0.5, mark fill #b9cfe8 to #97b0d0, mark rim highlight #ffffff at 0.8. Edge alpha 0.6 at u=0 and u=256, ramping to 1.0 by 5 percent inward (the soft outer berms).
+Colour tokens: ground #FFFFFF; ring #E8590C. Alpha is 1.0 everywhere.
 
-Illusion technique: light comes from the right, as in the other snow tiles. Each berm is a horizontal gradient from a blue-grey shadowed left flank to a white crest right of centre, which reads as a rounded ridge, and a thin dark line at the chute's left edge fakes the berm's cast shadow. Chutes are bluer, with a bright centre polish streak for gloss. Each tube mark is a shallow radial dent with a dark upper-left rim and a white lower-right lip, which reads as a pressed-in hollow. Two marks per chute per 4 m, staggered between chutes and nudged 1 px sideways so the lanes do not look cloned.
+Legibility at 24 px: the 24 x 8 preview shows an orange ring with a white hole on white. Contrast is about 3.5:1 in luminance (orange is brighter than the blues), and the hue difference carries it.
+
+Exception to the stroke rule: the tile is only 85 px tall, so a stroke of 15 percent of the width (38 px) does not fit; the stroke is 22 px (26 percent of the period, above the 1/8 minimum).

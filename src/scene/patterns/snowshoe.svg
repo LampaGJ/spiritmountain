@@ -1,88 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="256" height="341" viewBox="0 0 256 341">
   <defs>
-    <!-- x-only alpha ramp: 0.55 at edges, 1.0 from 12 percent inward -->
-    <linearGradient id="edge" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="256" y2="0">
-      <stop offset="0" stop-color="#fff" stop-opacity="0.55"/>
-      <stop offset="0.12" stop-color="#fff" stop-opacity="1"/>
-      <stop offset="0.88" stop-color="#fff" stop-opacity="1"/>
-      <stop offset="1" stop-color="#fff" stop-opacity="0.55"/>
-    </linearGradient>
-    <mask id="alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="256" height="341">
-      <rect width="256" height="341" fill="url(#edge)"/>
-    </mask>
-    <!-- x-only weight: loose snow concentrated at the edges -->
-    <linearGradient id="side" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="256" y2="0">
-      <stop offset="0" stop-color="#fff"/>
-      <stop offset="0.2" stop-color="#fff" stop-opacity="0.8"/>
-      <stop offset="0.36" stop-color="#fff" stop-opacity="0"/>
-      <stop offset="0.64" stop-color="#fff" stop-opacity="0"/>
-      <stop offset="0.8" stop-color="#fff" stop-opacity="0.8"/>
-      <stop offset="1" stop-color="#fff"/>
-    </linearGradient>
-    <mask id="sideMask" maskUnits="userSpaceOnUse" x="0" y="0" width="256" height="341">
-      <rect width="256" height="341" fill="url(#side)"/>
-    </mask>
-    <!-- tile-wrapped noise; stitchTiles on a region equal to the tile -->
-    <filter id="specW" filterUnits="userSpaceOnUse" x="0" y="0" width="256" height="341" color-interpolation-filters="sRGB">
-      <feTurbulence type="fractalNoise" baseFrequency="0.22" numOctaves="2" seed="7" stitchTiles="stitch"/>
-      <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  9 0 0 0 -5.6"/>
-    </filter>
-    <filter id="specD" filterUnits="userSpaceOnUse" x="0" y="0" width="256" height="341" color-interpolation-filters="sRGB">
-      <feTurbulence type="fractalNoise" baseFrequency="0.16" numOctaves="2" seed="23" stitchTiles="stitch"/>
-      <feColorMatrix type="matrix" values="0 0 0 0 0.62  0 0 0 0 0.70  0 0 0 0 0.80  0 9 0 0 -5.5"/>
-    </filter>
-    <!-- trough: x-only compressed band -->
-    <linearGradient id="trough" gradientUnits="userSpaceOnUse" x1="76" y1="0" x2="180" y2="0">
-      <stop offset="0" stop-color="#c9d7e8" stop-opacity="0"/>
-      <stop offset="0.22" stop-color="#cbd9ea" stop-opacity="0.7"/>
-      <stop offset="0.5" stop-color="#c3d2e5" stop-opacity="0.95"/>
-      <stop offset="0.78" stop-color="#d2deed" stop-opacity="0.7"/>
-      <stop offset="1" stop-color="#e4edf7" stop-opacity="0"/>
-    </linearGradient>
-    <!-- print depression: shadow wall left, lit floor right -->
-    <linearGradient id="pit" x1="0" x2="1" y1="0" y2="0">
-      <stop offset="0" stop-color="#7f94b1"/>
-      <stop offset="0.3" stop-color="#b3c4da"/>
-      <stop offset="1" stop-color="#d9e5f2"/>
-    </linearGradient>
-    <!-- faint crosshatch deck impression -->
-    <pattern id="deck" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
-      <rect width="6" height="6" fill="#d3e0f0"/>
-      <rect width="6" height="1" fill="#9fb2c9" opacity="0.5"/>
-      <rect width="1" height="6" fill="#9fb2c9" opacity="0.5"/>
-    </pattern>
-    <!-- one print, origin at its centre, toe at -y, heel at +y; 43 x 120 px -->
-    <g id="print">
-      <ellipse cx="2.2" cy="2.2" rx="22" ry="60.5" fill="none" stroke="#ffffff" stroke-width="3" opacity="0.9"/>
-      <ellipse rx="21.3" ry="59.7" fill="url(#pit)"/>
-      <ellipse rx="21.3" ry="59.7" fill="none" stroke="#5d7190" stroke-width="1.4" opacity="0.55"/>
-      <ellipse cx="2" cy="-1" rx="15" ry="49" fill="url(#deck)" opacity="0.8"/>
-      <ellipse cx="2" cy="-1" rx="15" ry="49" fill="none" stroke="#8da2bd" stroke-width="0.8" opacity="0.6"/>
-      <!-- binding slot across the ball of the foot -->
-      <rect x="-9" y="9" width="22" height="2" rx="1" fill="#6f84a0" opacity="0.6"/>
-      <!-- crisp crescent heel -->
-      <path d="M-17 41 Q0 74 17 41 Q0 58 -17 41 Z" fill="#6a7f9d"/>
-      <path d="M-17 41 Q0 58 17 41" fill="none" stroke="#4f6382" stroke-width="1"/>
-      <path d="M-15 45 Q0 69 15 45" fill="none" stroke="#ffffff" stroke-width="1.2" opacity="0.8" transform="translate(1.5 2.2)"/>
-      <!-- toe dent -->
-      <path d="M-9 -48 Q0 -54 9 -48" fill="none" stroke="#8da2bd" stroke-width="1.6" opacity="0.7"/>
-    </g>
+    <clipPath id="inner"><ellipse cx="128" cy="170.5" rx="82" ry="122"/></clipPath>
   </defs>
-  <g mask="url(#alpha)">
-    <rect width="256" height="341" fill="#eef4fb"/>
-    <rect x="76" width="104" height="341" fill="url(#trough)"/>
-    <!-- trough edge lines, full height, x only -->
-    <rect x="93" width="1.4" height="341" fill="#b8c7da" opacity="0.35"/>
-    <rect x="163" width="1.4" height="341" fill="#ffffff" opacity="0.7"/>
-    <!-- loose snow at edges -->
-    <g mask="url(#sideMask)">
-      <rect width="256" height="341" filter="url(#specD)" opacity="0.35"/>
-      <rect width="256" height="341" filter="url(#specW)"/>
-    </g>
-    <!-- left print centre y=85, right print half a stride (170.5 px) later; both fully inside 0..341 -->
-    <g>
-      <use href="#print" transform="translate(112 85.3) rotate(-7)"/>
-      <use href="#print" transform="translate(144 255.8) rotate(7)"/>
-    </g>
+  <rect width="256" height="341" fill="#ffffff"/>
+  <!-- one big oval print, bold ring plus crosshatch, wholly inside the tile -->
+  <ellipse cx="128" cy="170.5" rx="100" ry="140" fill="none" stroke="#3b5878" stroke-width="36"/>
+  <g clip-path="url(#inner)" stroke="#3b5878" stroke-width="30" fill="none">
+    <path d="M-60 -20 L316 360 M-60 90 L316 470 M-60 -130 L316 250"/>
+    <path d="M316 -20 L-60 360 M316 90 L-60 470 M316 -130 L-60 250"/>
   </g>
 </svg>

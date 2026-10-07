@@ -62,14 +62,14 @@ export interface TileInfo {
 
 /**
  * Smallest drawn repeat along a trail, in metres. A tile drawn at physical size (a 1.2 m tyre tread, a 2 m ski stride)
- * is below a pixel from the chalet and filters to its mean colour, so the trail shows no pattern at all (#37). Six
- * metres is about ten pixels at 500 m in the resort view, enough for a repeat to read.
+ * is below a pixel from the chalet and filters to its mean colour, so the trail shows no pattern at all (#37). Twelve
+ * metres is about twenty pixels at 500 m in the resort view; Graham judged 6 m "too small" on the live site.
  */
-export const RIBBON_MIN_PERIOD_M = 6;
+export const RIBBON_MIN_PERIOD_M = 12;
 /** No tile is drawn wider than this, so a run ribbon never swallows the slope beside it. */
 export const RIBBON_MAX_WIDTH_M = 20;
 /** Cap on the enlargement, so a tiny physical tile cannot become a road. */
-export const RIBBON_MAX_SCALE = 5;
+export const RIBBON_MAX_SCALE = 10;
 
 /**
  * Cartographic enlargement for a tile: the factor that lifts its period to RIBBON_MIN_PERIOD_M, at most RIBBON_MAX_SCALE,
