@@ -96,7 +96,7 @@
   },
   "terrain-exaggeration": {
     "symbol": "height",
-    "label": "Terrain Exaggeration",
+    "label": "Terrain",
     "rationale": "Indexical: vertical arrows with bars signal stretching along the vertical axis."
   },
   "resort": {

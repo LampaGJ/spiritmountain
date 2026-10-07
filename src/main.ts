@@ -19,7 +19,7 @@ const { header, heightfield } = await loadTerrain({
   throw error;
 });
 
-const handle = createScene(app, heightfield);
+const handle = createScene(app, heightfield, { lakeLevelM: header.minElev });
 
 import imageryManifestJson from '../data/raw/imagery-manifest.json';
 import naipUrl from '../data/raw/naip.jpg?url';
@@ -107,7 +107,7 @@ const meshSurface = createMeshSurface(heightfield);
 let areaLayerResult: AreaLayer | { error: string };
 try {
   const areas = await loadAreas(areasUrl);
-  areaLayerResult = installAreas(handle.scene, areas, meshSurface, (east, north, elevation) => {
+  areaLayerResult = installAreas(handle.elevated, areas, meshSurface, (east, north, elevation) => {
     const p = toScene(east, north, elevation);
     return [p.x, p.y, p.z];
   });
@@ -130,6 +130,9 @@ if (!('error' in areaLayerResult)) {
   }
 }
 handle.setFadeCentre(fadeCentre);
+// #exag=2.5 is honoured here, once the terrain, areas and view are in, so a failed annotations load cannot lose it.
+const setSceneExaggeration = (k: number): void => handle.setExaggeration(k);
+setSceneExaggeration(decodeHash(location.hash).filter.exag ?? 1);
 
 /** One line in the shared imagery status element for the ground or sky; the scene keeps its fallback look. */
 function reportSceneFailure(what: string, message: string): void {
@@ -195,7 +198,7 @@ void loadBuildings(buildingsUrl)
     if ('error' in result) return reportBuildingsFailure(result.error);
     const layer = buildBuildingsLayer(result.features, meshSurface, { centre: fadeCentre });
     layer.setVisible(buildingsWanted);
-    handle.scene.add(layer.mesh);
+    handle.elevated.add(layer.mesh);
     buildingsLayer = layer;
     if (layer.dropped.length > 0) {
       console.warn(
@@ -267,7 +270,7 @@ function requestSurface(): void {
       );
       if (failures.length === 2) return reportSurfaceFailure(failures.join('; '));
       surfaceHandle = await installSurfaceAsync(
-        handle.scene,
+        handle.elevated,
         result,
         { fadeCentre, imageryBox: headerBox(header), imagery: imageryTexture },
         yieldToBrowser,
@@ -318,7 +321,7 @@ void loadContext({ frameUrl })
       );
     }
     if (context.tiles.length === 0) return;
-    contextHandle = installContext(handle.scene, context.tiles, {
+    contextHandle = installContext(handle.elevated, context.tiles, {
       fadeCentre,
       imageryOn: imageryWanted,
     });
@@ -392,6 +395,7 @@ void annotationsReady.then((handle) => {
     setImagery: setImageryWanted,
     setBuildings: setBuildingsWanted,
     setSurface: setSurfaceWanted,
+    setExaggeration: setSceneExaggeration,
   });
 });
 

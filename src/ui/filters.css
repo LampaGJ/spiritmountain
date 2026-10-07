@@ -42,3 +42,51 @@
 #filters .filter-notice:empty {
   display: none;
 }
+
+/* Terrain exaggeration slider: the Layers group's one non-key control. Same ink, halo and key width as the rail's keys. */
+#filters .exag-key {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: var(--rail-key-w, 16em);
+  padding: 4px 4px 6px 3px;
+  pointer-events: auto;
+  color: var(--sm-ink);
+  font-size: 12px;
+  font-weight: 600;
+  text-shadow: var(--sm-halo);
+}
+#filters .exag-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 2px 0 4px;
+}
+#filters .exag-head .ms {
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+  filter: drop-shadow(0 0 1px rgb(0 0 0 / 0.95)) drop-shadow(0 0 2px rgb(0 0 0 / 0.9));
+}
+#filters .exag-label {
+  flex: 1 1 auto;
+}
+#filters .exag-value {
+  font-variant-numeric: tabular-nums;
+}
+#filters .exag-input {
+  width: 100%;
+  min-height: 24px;
+  margin: 0;
+  accent-color: var(--sm-accent);
+  cursor: pointer;
+}
+#filters .exag-input:focus-visible {
+  outline: 2px solid var(--sm-focus);
+  outline-offset: 2px;
+}
+@media (pointer: coarse) {
+  #filters .exag-input {
+    min-height: 44px;
+  }
+}

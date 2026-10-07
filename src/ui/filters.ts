@@ -8,6 +8,7 @@ import {
   type HashFilter,
 } from './filter-hash';
 import { createClickKey, createToggleKey, type ClickyKey } from './clicky-key';
+import { createExaggerationKey, type ExaggerationKey } from './exaggeration-key';
 import { iconFor } from './icons';
 import { groupHead } from './rail';
 import type { FacetCounts, Filter } from './filter-predicate';
@@ -33,6 +34,8 @@ export interface FilterStripDeps {
   readonly setBuildings?: (on: boolean) => void;
   /** Called with the surface switch on mount and whenever it changes. Absent means no Surface button. */
   readonly setSurface?: (on: boolean) => void;
+  /** Called with the terrain exaggeration factor (0 to 10, 1 = true scale) on mount and whenever it changes. Absent means no slider. */
+  readonly setExaggeration?: (k: number) => void;
 }
 
 export interface FilterStrip {
@@ -73,6 +76,8 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
   let buildingsApplied: boolean | undefined;
   let surfaceButton: HTMLButtonElement | undefined;
   let surfaceApplied: boolean | undefined;
+  let exagKey: ExaggerationKey | undefined;
+  let exagApplied: number | undefined;
 
   const count = el('p', undefined, 'filter-count');
   count.setAttribute('role', 'status');
@@ -133,6 +138,14 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
         deps.setSurface?.(on);
       }
     }
+    if (exagKey) {
+      const k = state.exag ?? 1;
+      exagKey.setValue(k);
+      if (exagApplied !== k) {
+        exagApplied = k;
+        deps.setExaggeration?.(k);
+      }
+    }
   };
 
   const writeIfChanged = (): void => {
@@ -177,7 +190,14 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
     render();
   };
 
-  /** Clear resets the activity and season toggles only; the imagery, buildings and surface switches are layers, not filters. */
+  const setExag = (k: number): void => {
+    state = HashFilterSchema.parse({ ...state, exag: k === 1 ? undefined : k });
+    notice.textContent = '';
+    writeIfChanged();
+    render();
+  };
+
+  /** Clear resets the activity and season toggles only; the imagery, buildings and surface switches and the exaggeration are layers, not filters. */
   const clear = (): void => {
     state = {
       activity: [],
@@ -185,6 +205,7 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
       ...(state.imagery === false ? { imagery: false } : {}),
       ...(state.buildings === false ? { buildings: false } : {}),
       ...(state.surface === true ? { surface: true } : {}),
+      ...(state.exag === undefined ? {} : { exag: state.exag }),
     };
     notice.textContent = '';
     writeIfChanged();
@@ -247,11 +268,19 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
   if (deps.setBuildings) buildingsButton = layerKey('buildings', toggleBuildings);
   if (deps.setSurface) surfaceButton = layerKey('surface', toggleSurface, false);
 
+  if (deps.setExaggeration) {
+    const { symbol, label } = iconFor('terrain-exaggeration');
+    exagKey = createExaggerationKey({ icon: symbol, label, onChange: setExag });
+    layersSlot.append(exagKey.root);
+  }
+
   deps.host.replaceChildren(
     group('group-activity', 'activity', TOGGLE_ACTIVITIES),
     group('group-season', 'season', SeasonSchema.options),
     foot,
-    ...(deps.setImagery || deps.setBuildings || deps.setSurface ? [layersSlot] : []),
+    ...(deps.setImagery || deps.setBuildings || deps.setSurface || deps.setExaggeration
+      ? [layersSlot]
+      : []),
   );
   window.addEventListener('hashchange', sync);
   sync();
