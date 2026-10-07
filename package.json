@@ -21,11 +21,17 @@
     "lint:determinism": "bash scripts/lint-determinism.sh",
     "ingest:areas": "tsx scripts/ingest/areas.ts",
     "ingest:fetch": "tsx scripts/ingest/fetch.ts",
+    "ingest:buildings:fetch": "tsx scripts/ingest/fetch-buildings.ts",
+    "ingest:buildings": "tsx scripts/ingest/buildings.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "ingest:imagery": "tsx scripts/ingest/imagery.ts",
     "ingest:context": "tsx scripts/ingest/context.ts",
-    "ingest:context-terrain": "tsx scripts/ingest/context-terrain.ts"
+    "ingest:context-terrain": "tsx scripts/ingest/context-terrain.ts",
+    "ingest:surface": "tsx scripts/ingest/surface.ts",
+    "ingest:surface-terrain": "tsx scripts/ingest/surface-terrain.ts",
+    "ingest:sky": "tsx scripts/ingest/sky.ts",
+    "ingest:imagery-stats": "tsx scripts/ingest/imagery-stats.ts"
   },
   "dependencies": {
     "geotiff": "3.0.5",
@@ -43,6 +49,7 @@
     "culori": "4.0.2",
     "eslint": "9.39.5",
     "globals": "17.13.0",
+    "jpeg-js": "0.4.4",
     "jsdom": "30.1.2",
     "prettier": "3.9.9",
     "tsx": "4.23.15",
