@@ -53,6 +53,10 @@ describe('scripts/lint-determinism.sh', () => {
     expect(run(fixture({ 'fetch.ts': 'export const t = Date.now();\n' })).status).toBe(0);
   });
 
+  it('ignores imagery.ts, the second ingestion step', () => {
+    expect(run(fixture({ 'imagery.ts': 'export const t = Date.now();\n' })).status).toBe(0);
+  });
+
   it('exits 2 when the directory is missing', () => {
     expect(run('/nonexistent-determinism-dir').status).toBe(2);
   });

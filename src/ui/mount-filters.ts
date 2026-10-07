@@ -8,13 +8,15 @@ export interface MountFiltersDeps {
   readonly registry: ReadonlyMap<string, AreaEntry>;
   /** The #13 handle. Its `annotations.status` decides between a working strip and "filters unavailable". */
   readonly handle: AnnotationsHandle;
+  /** Turns the terrain imagery on or off. Absent means no Imagery button. */
+  readonly setImagery?: (on: boolean) => void;
 }
 
 /** Shown instead of the strip when the annotations load failed (#13 Decision 5). */
 export const FILTERS_UNAVAILABLE_TEXT = 'filters unavailable: annotations failed to load';
 
 export function mountFilters(deps: MountFiltersDeps): FilterStrip {
-  const { registry, handle } = deps;
+  const { registry, handle, setImagery } = deps;
   const host = document.createElement('div');
   host.id = 'filters';
   host.setAttribute('role', 'group');
@@ -29,6 +31,7 @@ export function mountFilters(deps: MountFiltersDeps): FilterStrip {
   return mountFilterStrip({
     host,
     ...browserHash,
+    ...(setImagery ? { setImagery } : {}),
     apply: (filter) => {
       const result = applyFilter(registry, annotations, filter);
       handle.onFilterApplied(result.visibleIds);

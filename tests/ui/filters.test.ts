@@ -15,8 +15,9 @@ afterEach(() => {
   history.replaceState(null, '', location.pathname + location.search);
 });
 
-function setup(initialHash: string) {
+function setup(initialHash: string, withImagery = false) {
   let hash = initialHash;
+  const imageryCalls: boolean[] = [];
   const writes: string[] = [];
   let applyCalls = 0;
   const host = document.createElement('div');
@@ -27,6 +28,7 @@ function setup(initialHash: string) {
       applyCalls += 1;
       return { visibleCount: 3, total: 5 };
     },
+    ...(withImagery ? { setImagery: (on: boolean) => void imageryCalls.push(on) } : {}),
     readHash: () => hash,
     writeHash: (h) => {
       hash = h;
@@ -41,7 +43,15 @@ function setup(initialHash: string) {
     if (found === undefined) throw new Error(`no button ${text}`);
     return found;
   };
-  return { host, strip, button, writes, getHash: () => hash, calls: () => applyCalls };
+  return {
+    host,
+    strip,
+    button,
+    writes,
+    imageryCalls,
+    getHash: () => hash,
+    calls: () => applyCalls,
+  };
 }
 
 describe('filter strip', () => {
@@ -97,6 +107,39 @@ describe('filter strip', () => {
     const before = calls();
     window.dispatchEvent(new Event('hashchange'));
     expect(calls()).toBe(before);
+  });
+});
+
+describe('imagery toggle', () => {
+  it('has no Imagery button unless setImagery is wired', () => {
+    const { host } = setup('');
+    expect(host.textContent).not.toContain('Imagery');
+  });
+
+  it('defaults on: pressed, the hash stays empty, and setImagery(true) is called once', () => {
+    const { button, getHash, imageryCalls } = setup('', true);
+    expect(button('Imagery').getAttribute('aria-pressed')).toBe('true');
+    expect(getHash()).toBe('');
+    expect(imageryCalls).toEqual([true]);
+  });
+
+  it('toggling off writes imagery=off and calls setImagery(false); toggling on clears it', () => {
+    const { button, getHash, imageryCalls } = setup('', true);
+    button('Imagery').click();
+    expect(button('Imagery').getAttribute('aria-pressed')).toBe('false');
+    expect(getHash()).toBe('#imagery=off');
+    button('Imagery').click();
+    expect(getHash()).toBe('');
+    expect(imageryCalls).toEqual([true, false, true]);
+  });
+
+  it('starts off from #imagery=off, and Clear keeps imagery off', () => {
+    const { host, button, getHash, imageryCalls } = setup('#imagery=off&activity=hike', true);
+    expect(button('Imagery').getAttribute('aria-pressed')).toBe('false');
+    expect(imageryCalls).toEqual([false]);
+    [...host.querySelectorAll('button')].find((b) => b.textContent === 'Clear')?.click();
+    expect(getHash()).toBe('#imagery=off');
+    expect(imageryCalls).toEqual([false]);
   });
 });
 

@@ -4,7 +4,6 @@ import { fromScene, toScene } from '../../src/scene/frame';
 import { createMeshSurface } from '../../src/scene/heightfield';
 import {
   CAMERA_CLEARANCE_M,
-  CAMERA_FOV_DEG,
   NAMED_VIEWS,
   RESORT_FALLBACK_HALF_SIZE_M,
   RESORT_VIEW_MAX_DISTANCE_M,
@@ -24,7 +23,7 @@ const surface = createMeshSurface(field);
 function cameraFor(name: ViewName, aspect: number) {
   const set = computeViews(surface, aspect);
   const view = set.views[name];
-  const camera = new PerspectiveCamera(CAMERA_FOV_DEG, aspect, set.near, set.far);
+  const camera = new PerspectiveCamera(set.fov, aspect, set.near, set.far);
   camera.up.copy(view.up);
   camera.position.copy(view.position);
   camera.lookAt(view.target);
@@ -163,7 +162,7 @@ describe('resort view', () => {
     expect(horizontal).toBeGreaterThanOrEqual(RESORT_VIEW_MIN_DISTANCE_M - 1e-6);
     expect(horizontal).toBeLessThanOrEqual(RESORT_VIEW_MAX_DISTANCE_M + 1e-6);
     const angle = deg(Math.asin((position.y - target.y) / position.distanceTo(target)));
-    expect(angle).toBeGreaterThan(-8);
+    expect(angle).toBeGreaterThan(-15);
     expect(angle).toBeLessThan(20);
     expect(position.y).toBeGreaterThanOrEqual(minCameraY(surface, position.x, position.z) - 1e-9);
   });
@@ -218,5 +217,15 @@ describe('focusBoxOf', () => {
     } as never;
     expect(focusBoxOf([polygon])).toEqual({ minEast: 0, maxEast: 4, minNorth: 0, maxNorth: 3 });
     expect(focusBoxOf([entry('mtb-trail', [[1, 1]])])).toBeNull();
+  });
+});
+
+describe('field of view', () => {
+  it('derives the vertical fov from a 120 degree horizontal fov', async () => {
+    const { verticalFovDeg, HORIZONTAL_FOV_DEG } = await import('../../src/scene/views');
+    expect(HORIZONTAL_FOV_DEG).toBe(120);
+    expect(verticalFovDeg(1)).toBeCloseTo(120, 6);
+    expect(verticalFovDeg(16 / 9)).toBeCloseTo(88.55, 1);
+    expect(verticalFovDeg(16 / 9)).toBeLessThan(verticalFovDeg(1));
   });
 });

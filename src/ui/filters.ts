@@ -19,6 +19,8 @@ export interface FilterStripDeps {
   readonly apply: (filter: Filter) => StripCounts;
   readonly readHash: () => string;
   readonly writeHash: (hash: string) => void;
+  /** Called with the imagery switch on mount and whenever it changes. Absent means no Imagery button. */
+  readonly setImagery?: (on: boolean) => void;
 }
 
 export interface FilterStrip {
@@ -51,6 +53,8 @@ function el<K extends keyof HTMLElementTagNameMap>(
 export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
   const buttons: { key: Key; value: string; button: HTMLButtonElement }[] = [];
   let state: HashFilter = { activity: [], season: [] };
+  let imageryButton: HTMLButtonElement | undefined;
+  let imageryApplied: boolean | undefined;
 
   const count = el('p');
   count.className = 'filter-count';
@@ -64,6 +68,15 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
       const pressed = (state[b.key] as string[]).includes(b.value);
       b.button.setAttribute('aria-pressed', String(pressed));
       b.button.textContent = (pressed ? '✓ ' : '') + b.value;
+    }
+    if (imageryButton) {
+      const on = state.imagery !== false;
+      imageryButton.setAttribute('aria-pressed', String(on));
+      imageryButton.textContent = (on ? '✓ ' : '') + 'Imagery';
+      if (imageryApplied !== on) {
+        imageryApplied = on;
+        deps.setImagery?.(on);
+      }
     }
     const { visibleCount, total } = deps.apply(toFilter(state));
     count.textContent = `${visibleCount} of ${total} areas`;
@@ -84,8 +97,16 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
     render();
   };
 
+  const toggleImagery = (): void => {
+    state = HashFilterSchema.parse({ ...state, imagery: state.imagery === false });
+    notice.textContent = '';
+    writeIfChanged();
+    render();
+  };
+
+  /** Clear resets the activity and season toggles only; the imagery switch is a layer, not a filter. */
   const clear = (): void => {
-    state = { activity: [], season: [] };
+    state = { activity: [], season: [], ...(state.imagery === false ? { imagery: false } : {}) };
     notice.textContent = '';
     writeIfChanged();
     render();
@@ -113,6 +134,17 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
     return fieldset;
   };
 
+  let layers: HTMLFieldSetElement | undefined;
+  if (deps.setImagery) {
+    layers = el('fieldset');
+    layers.appendChild(el('legend', 'Layers'));
+    imageryButton = el('button', 'Imagery');
+    imageryButton.type = 'button';
+    imageryButton.setAttribute('aria-pressed', 'true');
+    imageryButton.addEventListener('click', toggleImagery);
+    layers.appendChild(imageryButton);
+  }
+
   const clearButton = el('button', 'Clear');
   clearButton.type = 'button';
   clearButton.addEventListener('click', clear);
@@ -120,6 +152,7 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
   deps.host.replaceChildren(
     group('Activity', 'activity', TOGGLE_ACTIVITIES),
     group('Season', 'season', SeasonSchema.options),
+    ...(layers ? [layers] : []),
     clearButton,
     count,
     notice,

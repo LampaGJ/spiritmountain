@@ -5,6 +5,7 @@ import {
   Mesh,
   MeshStandardMaterial,
   PlaneGeometry,
+  type Texture,
 } from 'three';
 import { elevationToSceneY, toScene } from './frame';
 import type { MeshSurface } from './heightfield';
@@ -27,7 +28,13 @@ function smoothstep(edge0: number, edge1: number, x: number): number {
  *
  * PlaneGeometry rows run from +y (top) to -y; rotateX(-PI/2) maps (x, y, 0) to (x, 0, -y), so
  * row 0 lands at the most negative z (north) and a row-major heightfield with row 0 northmost
- * maps onto vertex order with no flipping. The plane spans segX * stepEast = (cols - 1) * cellSize
+ * maps onto vertex order with no flipping.
+ *
+ * Imagery orientation rule (proved in tests/scene/terrain-imagery.test.ts): PlaneGeometry gives vertex
+ * row 0 the UV v = 1 and column 0 the UV u = 0, so after rotateX the north-west corner is UV (0, 1).
+ * A texture loaded from an image has flipY = true, which puts the image's top row at v = 1 and its left
+ * column at u = 0. So an image whose top edge is north and left edge is west drapes with no UV change.
+ * The NAIP export is requested for the heightfield's own box, so image edges equal mesh edges. The plane spans segX * stepEast = (cols - 1) * cellSize
  * (cell-centre samples), so its edges coincide with the first and last sample.
  */
 export function buildTerrainGeometry(surface: MeshSurface): BufferGeometry {
@@ -70,10 +77,23 @@ export function applySlopeColors(geometry: BufferGeometry): void {
   geometry.setAttribute('color', new BufferAttribute(colors, 3));
 }
 
-/** Terrain mesh: standard material, vertex colours, no texture, no shadows. */
-export function createTerrainMesh(surface: MeshSurface): Mesh {
+/**
+ * Swaps the terrain between the photo and slope shading. With a texture the map is shown at full
+ * strength and vertex colours are off (they would tint it); with null the slope colours return.
+ * The geometry keeps its colour attribute either way, so toggling needs no rebuild.
+ */
+export function setTerrainImagery(mesh: Mesh, texture: Texture | null): void {
+  const material = mesh.material as MeshStandardMaterial;
+  material.map = texture;
+  material.vertexColors = texture === null;
+  material.needsUpdate = true;
+}
+
+/** Terrain mesh: standard material, slope vertex colours or (when a texture is given) the photo, no shadows. */
+export function createTerrainMesh(surface: MeshSurface, texture: Texture | null = null): Mesh {
   const material = new MeshStandardMaterial({ vertexColors: true, roughness: 1, metalness: 0 });
   const mesh = new Mesh(buildTerrainGeometry(surface), material);
   mesh.name = 'terrain';
+  setTerrainImagery(mesh, texture);
   return mesh;
 }

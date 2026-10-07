@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "name": "naip",
+  "path": "data/raw/naip.jpg",
+  "url": "https://imagery.nationalmap.gov/arcgis/rest/services/USGSNAIPPlus/ImageServer/exportImage",
+  "method": "GET",
+  "params": {
+    "bbox": "556530,5169870,563480,5176610",
+    "bboxSR": "26915",
+    "imageSR": "26915",
+    "size": "4000,3879",
+    "format": "jpg",
+    "f": "image"
+  },
+  "requestHeaders": {
+    "userAgent": "spiritmountain-poc/0.1"
+  },
+  "httpStatus": 200,
+  "contentType": "image/jpeg",
+  "fetchedAt": "2026-10-07T01:37:37.615Z",
+  "byteLength": 3987360,
+  "sha256": "d63d92a84a9b26e34f9848007de753b12a647b558e8600d289ab860a24162521",
+  "epsg": 26915,
+  "bbox": {
+    "xmin": 556530,
+    "ymin": 5169870,
+    "xmax": 563480,
+    "ymax": 5176610
+  },
+  "width": 4000,
+  "height": 3879,
+  "metresPerPixel": 1.7375
+}

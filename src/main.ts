@@ -21,6 +21,48 @@ const { heightfield } = await loadTerrain({
 
 const handle = createScene(app, heightfield);
 
+import imageryManifestJson from '../data/raw/imagery-manifest.json';
+import naipUrl from '../data/raw/naip.jpg?url';
+import { ImageryManifestSchema } from '../scripts/ingest/imagery-manifest-schema';
+import { loadImagery } from './data/load-imagery';
+import { decodeHash } from './ui/filter-hash';
+import type { Texture } from 'three';
+
+/** Failure channel for the imagery layer: one line in its own element, and the terrain keeps its slope shading. */
+function reportImageryFailure(message: string): void {
+  console.error(`imagery: ${message}`);
+  const status = document.createElement('div');
+  status.id = 'imagery-status';
+  status.setAttribute('role', 'alert');
+  status.textContent = `imagery unavailable: ${message}`;
+  document.body.append(status);
+}
+
+let imageryTexture: Texture | null = null;
+let imageryWanted = decodeHash(location.hash).filter.imagery !== false;
+const applyImagery = (): void => handle.setImagery(imageryWanted ? imageryTexture : null);
+/** The filter strip calls this on mount and on every toggle; it also fires before the photo has loaded. */
+export const setImageryWanted = (on: boolean): void => {
+  imageryWanted = on;
+  applyImagery();
+};
+
+// Not awaited: the terrain is already on screen with slope shading, and a failed load only adds the status line.
+const imageryManifest = ImageryManifestSchema.safeParse(imageryManifestJson);
+if (!imageryManifest.success) {
+  reportImageryFailure(imageryManifest.error.issues.map((i) => i.message).join('; '));
+} else {
+  void loadImagery({
+    url: naipUrl,
+    capabilities: handle.renderer.capabilities,
+    expectedWidth: imageryManifest.data.width,
+  }).then((result) => {
+    if (result.texture === null) return reportImageryFailure(result.reason);
+    imageryTexture = result.texture;
+    applyImagery();
+  });
+}
+
 import areasUrl from '../data/areas.geojson?url';
 import { loadAreas } from './data/load-areas';
 import { installAreas, type AreaLayer } from './scene/areas';
@@ -99,7 +141,7 @@ import { mountFilters } from './ui/mount-filters';
 void annotationsReady.then((handle) => {
   const registry: ReadonlyMap<string, AreaEntry> =
     'error' in areaLayer ? new Map() : areaLayer.registry;
-  mountFilters({ registry, handle });
+  mountFilters({ registry, handle, setImagery: setImageryWanted });
 });
 
 export { handle, heightfield, toScene };
