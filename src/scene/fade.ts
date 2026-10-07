@@ -53,7 +53,8 @@ export function applyRadialFade(
       .replace('#include <common>', '#include <common>\nvarying vec2 vFadeXZ;')
       .replace(
         '#include <begin_vertex>',
-        '#include <begin_vertex>\nvFadeXZ = (modelMatrix * vec4(transformed, 1.0)).xz;',
+        // An InstancedMesh (the trail symbols) places each copy with instanceMatrix, applied after this chunk.
+        '#include <begin_vertex>\n#ifdef USE_INSTANCING\nvFadeXZ = (modelMatrix * instanceMatrix * vec4(transformed, 1.0)).xz;\n#else\nvFadeXZ = (modelMatrix * vec4(transformed, 1.0)).xz;\n#endif',
       );
     shader.fragmentShader = shader.fragmentShader
       .replace(
