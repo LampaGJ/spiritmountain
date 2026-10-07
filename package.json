@@ -23,7 +23,9 @@
     "ingest:fetch": "tsx scripts/ingest/fetch.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "ingest:imagery": "tsx scripts/ingest/imagery.ts"
+    "ingest:imagery": "tsx scripts/ingest/imagery.ts",
+    "ingest:context": "tsx scripts/ingest/context.ts",
+    "ingest:context-terrain": "tsx scripts/ingest/context-terrain.ts"
   },
   "dependencies": {
     "geotiff": "3.0.5",

@@ -7,6 +7,7 @@ import {
   PlaneGeometry,
   type Texture,
 } from 'three';
+import { applyRadialFade, type RadialFadeUniforms } from './fade';
 import { elevationToSceneY, toScene } from './frame';
 import type { MeshSurface } from './heightfield';
 import { TERRAIN_FLAT_COLOR, TERRAIN_STEEP_COLOR } from './palette';
@@ -89,11 +90,24 @@ export function setTerrainImagery(mesh: Mesh, texture: Texture | null): void {
   material.needsUpdate = true;
 }
 
-/** Terrain mesh: standard material, slope vertex colours or (when a texture is given) the photo, no shadows. */
+/**
+ * Terrain mesh: standard material, slope vertex colours or (when a texture is given) the photo, no shadows.
+ * The material fades radially (see applyRadialFade) around a centre that defaults to the mesh centre; the
+ * uniforms are kept on mesh.userData.fade so the caller can move the centre to the resort focus box.
+ */
 export function createTerrainMesh(surface: MeshSurface, texture: Texture | null = null): Mesh {
   const material = new MeshStandardMaterial({ vertexColors: true, roughness: 1, metalness: 0 });
+  const fade = applyRadialFade(material, {
+    centre: { east: surface.extent.centreEast, north: surface.extent.centreNorth },
+  });
   const mesh = new Mesh(buildTerrainGeometry(surface), material);
   mesh.name = 'terrain';
+  mesh.userData['fade'] = fade;
   setTerrainImagery(mesh, texture);
   return mesh;
+}
+
+/** The fade uniforms createTerrainMesh stored on the mesh. */
+export function terrainFade(mesh: Mesh): RadialFadeUniforms {
+  return mesh.userData['fade'] as RadialFadeUniforms;
 }

@@ -23,7 +23,10 @@ const handle = createScene(app, heightfield);
 
 import imageryManifestJson from '../data/raw/imagery-manifest.json';
 import naipUrl from '../data/raw/naip.jpg?url';
+import { FADE_OUTER_M } from '../scripts/ingest/context-tiles';
 import { ImageryManifestSchema } from '../scripts/ingest/imagery-manifest-schema';
+import { loadContext, loadContextTextures } from './data/load-context';
+import { installContext, type ContextHandle } from './scene/context';
 import { loadImagery } from './data/load-imagery';
 import { decodeHash } from './ui/filter-hash';
 import type { Texture } from 'three';
@@ -39,8 +42,13 @@ function reportImageryFailure(message: string): void {
 }
 
 let imageryTexture: Texture | null = null;
+/** The context ring, once it has loaded; null until then and when every tile failed. */
+let contextHandle: ContextHandle | null = null;
 let imageryWanted = decodeHash(location.hash).filter.imagery !== false;
-const applyImagery = (): void => handle.setImagery(imageryWanted ? imageryTexture : null);
+const applyImagery = (): void => {
+  handle.setImagery(imageryWanted ? imageryTexture : null);
+  contextHandle?.setImagery(imageryWanted);
+};
 /** The filter strip calls this on mount and on every toggle; it also fires before the photo has loaded. */
 export const setImageryWanted = (on: boolean): void => {
   imageryWanted = on;
@@ -98,10 +106,64 @@ try {
 } catch (error) {
   areaLayerResult = reportAreasFailure(error instanceof Error ? error.message : String(error));
 }
+// The fade is centred on the resort focus box (downhill runs and lifts), or on the centre tile when there is none.
+let fadeCentre = {
+  east: heightfield.originEast + ((heightfield.cols - 1) * heightfield.cellSizeEast) / 2,
+  north: heightfield.originNorth - ((heightfield.rows - 1) * heightfield.cellSizeNorth) / 2,
+};
 if (!('error' in areaLayerResult)) {
   const focus = focusBoxOf(areaLayerResult.registry.values());
-  if (focus) handle.setView('resort', focus);
+  if (focus) {
+    handle.setView('resort', focus);
+    fadeCentre = {
+      east: (focus.minEast + focus.maxEast) / 2,
+      north: (focus.minNorth + focus.maxNorth) / 2,
+    };
+  }
 }
+handle.setFadeCentre(fadeCentre);
+
+/** One line in the imagery status element for the context ring; a failure here never touches the centre terrain. */
+function reportContextFailure(message: string): void {
+  console.error(`context: ${message}`);
+  let status = document.getElementById('imagery-status');
+  if (!status) {
+    status = document.createElement('div');
+    status.id = 'imagery-status';
+    status.setAttribute('role', 'alert');
+    document.body.append(status);
+  }
+  status.textContent = `context unavailable: ${message}`;
+}
+
+// Not awaited: the centre terrain, areas and panel are already usable; tiles that fail just stay out of the ring.
+void loadContext({ frameUrl })
+  .then((context) => {
+    if (context.missing.length > 0) {
+      reportContextFailure(
+        `${context.missing.length} of ${context.tiles.length + context.missing.length} tiles missing (${context.missing[0]?.key}: ${context.missing[0]?.reason})`,
+      );
+    }
+    if (context.tiles.length === 0) return;
+    contextHandle = installContext(handle.scene, context.tiles, {
+      fadeCentre,
+      imageryOn: imageryWanted,
+    });
+    handle.setContextExtent(FADE_OUTER_M);
+    const failures: string[] = [];
+    return loadContextTextures(context.tiles, {
+      capabilities: handle.renderer.capabilities,
+      onTexture: (key, texture) => contextHandle?.setTexture(key, texture),
+      onFailure: (key, reason) => failures.push(`${key}: ${reason}`),
+    }).then(() => {
+      if (failures.length > 0) {
+        reportContextFailure(`${failures.length} tile photos failed (${failures[0]})`);
+      }
+    });
+  })
+  .catch((error: unknown) => {
+    reportContextFailure(error instanceof Error ? error.message : String(error));
+  });
 export const areaLayer: AreaLayer | { error: string } = areaLayerResult;
 
 import annotationsUrl from '../data/annotations.json?url';

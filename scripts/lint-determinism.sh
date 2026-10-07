@@ -6,7 +6,7 @@
 # The one pattern list is scripts/determinism-patterns.txt (one extended regex per line, no blank
 # lines). This script, tests/determinism-lint.test.ts, #8's source-scan test and #15's sweep all
 # read that file; none keeps its own copy.
-# Scope: every *.ts under the first argument (default scripts/ingest), except fetch.ts and imagery.ts (the two
+# Scope: every *.ts under the first argument (default scripts/ingest), except fetch.ts, imagery.ts and context.ts (the three
 # ingestion steps; each legitimately records fetched-at and fetches), plus the extra files named by
 # the remaining arguments (default src/scene/drape.ts and src/ui/filter-predicate.ts, which land
 # in E3; an extra file that does not exist yet is skipped, once it exists it is scanned).
@@ -34,7 +34,7 @@ files=()
 for f in ${extras[@]+"${extras[@]}"}; do
   if [ -f "$f" ]; then files+=("$f"); fi
 done
-grep -rnE -f "$patterns" --include='*.ts' --exclude='fetch.ts' --exclude='imagery.ts' "$dir"
+grep -rnE -f "$patterns" --include='*.ts' --exclude='fetch.ts' --exclude='imagery.ts' --exclude='context.ts' "$dir"
 dir_status=$?
 file_status=1
 if [ "${#files[@]}" -gt 0 ]; then
