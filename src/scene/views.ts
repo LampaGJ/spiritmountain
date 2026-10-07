@@ -12,6 +12,8 @@ export interface CameraView {
   readonly position: Vector3;
   readonly target: Vector3;
   readonly up: Vector3;
+  /** Landmark resort view only: straight-line metres from the camera to the target after fitting. */
+  readonly distance?: number;
 }
 
 export interface ViewSet {
@@ -27,10 +29,14 @@ export interface ViewSet {
 
 /** Horizontal field of view in degrees (principal: a 2 m tall person with 120 degree horizontal perspective). */
 export const HORIZONTAL_FOV_DEG = 120;
+/** Vertical fov bounds in degrees: a portrait phone never gets a 120-plus degree vertical field; a squarer viewport never a sliver. */
+export const MIN_VERTICAL_FOV_DEG = 50;
+export const MAX_VERTICAL_FOV_DEG = 95;
 /** three.js cameras take a VERTICAL fov; derive it from the horizontal one and the viewport aspect. */
 export function verticalFovDeg(aspect: number): number {
   const halfH = (HORIZONTAL_FOV_DEG / 2) * (Math.PI / 180);
-  return (2 * Math.atan(Math.tan(halfH) / Math.max(aspect, 0.1)) * 180) / Math.PI;
+  const raw = (2 * Math.atan(Math.tan(halfH) / Math.max(aspect, 0.1)) * 180) / Math.PI;
+  return Math.min(Math.max(raw, MIN_VERTICAL_FOV_DEG), MAX_VERTICAL_FOV_DEG);
 }
 /** Vertical fov at a 16:9 viewport; the camera is constructed with this and should be retuned per aspect. */
 export const CAMERA_FOV_DEG = verticalFovDeg(16 / 9);
@@ -61,6 +67,16 @@ export const RESORT_TARGET_SLOPE_FRACTION = 0.35;
  * (measured -0.1 degrees), so without a floor the view is level and shows no slope.
  */
 export const RESORT_VIEW_MIN_ELEVATION_DEG = -30;
+/** The resort camera stands this far beyond the lift base, away from the lift top, in metres (the parking lot). */
+export const RESORT_LANDMARK_BACK_OFF_M = 60;
+/** Roof height assumed for the Upper Chalet when the data gives none, in metres. */
+export const RESORT_LANDMARK_DEFAULT_ROOF_M = 8;
+/** Fraction of each half-angle the chalet and lift top may occupy; the rest is the 10 percent margin. */
+export const RESORT_FIT_FRAME_FRACTION = 0.9;
+/** The fit never moves the camera back further than this multiple of its base-lot distance from the target. */
+export const RESORT_FIT_MAX_DISTANCE_FACTOR = 2.5;
+/** Metres the fit steps the camera back per iteration. */
+export const RESORT_FIT_STEP_M = 10;
 /** With no focus box, the resort view uses a box of this half-size around the summit, in metres. */
 export const RESORT_FALLBACK_HALF_SIZE_M = 400;
 
@@ -70,6 +86,22 @@ export interface FocusBox {
   readonly maxEast: number;
   readonly minNorth: number;
   readonly maxNorth: number;
+}
+
+/** A point in local metres. */
+export interface EastNorth {
+  readonly east: number;
+  readonly north: number;
+}
+
+/**
+ * Landmarks that pin the default resort view: the camera stands just below the main lift's base,
+ * looking up the lift at the Upper Chalet. Without upperChalet the target falls back to the focus-box centre.
+ */
+export interface Landmarks {
+  readonly liftBase: EastNorth;
+  readonly liftTop: EastNorth;
+  readonly upperChalet?: EastNorth & { readonly roofM?: number };
 }
 
 const FOCUS_KINDS: ReadonlySet<string> = new Set(['downhill-run', 'lift']);
@@ -150,7 +182,12 @@ export function terrainBox(surface: MeshSurface): Box3 {
 }
 
 /** Camera positions come from the terrain extent, never from hard-coded metres. */
-export function computeViews(surface: MeshSurface, aspect: number, focus?: FocusBox): ViewSet {
+export function computeViews(
+  surface: MeshSurface,
+  aspect: number,
+  focus?: FocusBox,
+  landmarks?: Landmarks,
+): ViewSet {
   const box = terrainBox(surface);
   const sphere = box.getBoundingSphere(new Sphere());
   const centre = sphere.center;
@@ -199,6 +236,9 @@ export function computeViews(surface: MeshSurface, aspect: number, focus?: Focus
       minNorth: summit.north - RESORT_FALLBACK_HALF_SIZE_M,
       maxNorth: summit.north + RESORT_FALLBACK_HALF_SIZE_M,
     },
+    landmarks,
+    fov,
+    aspect,
   );
 
   const far = fitDistance + 2 * sphere.radius;
@@ -217,7 +257,13 @@ export function computeViews(surface: MeshSurface, aspect: number, focus?: Focus
  * Resort view: target mid-slope at the focus box centre, camera on the base side (the lowest edge
  * midpoint) looking uphill, low and far enough back to read true-scale verticality.
  */
-function resortView(surface: MeshSurface, focus: FocusBox): CameraView {
+function resortView(
+  surface: MeshSurface,
+  focus: FocusBox,
+  landmarks: Landmarks | undefined,
+  fov: number,
+  aspect: number,
+): CameraView {
   const centreEast = (focus.minEast + focus.maxEast) / 2;
   const centreNorth = (focus.minNorth + focus.maxNorth) / 2;
   const height = (east: number, north: number): number => surface.sample(east, north).height;
@@ -238,6 +284,11 @@ function resortView(surface: MeshSurface, focus: FocusBox): CameraView {
   const range = Math.max(...sampled) - Math.min(...sampled);
   const t = toScene(centreEast, centreNorth, centreHeight + RESORT_TARGET_SLOPE_FRACTION * range);
   const target = new Vector3(t.x, t.y, t.z);
+
+  if (landmarks) {
+    const view = landmarkView(surface, landmarks, target, fov, aspect);
+    if (view) return view;
+  }
 
   const lowest = mids.reduce((a, b) => (height(b.east, b.north) < height(a.east, a.north) ? b : a));
   // Scene z is -north. A flat box has no base side; fall back to south, the overview's side.
@@ -267,6 +318,82 @@ function resortView(surface: MeshSurface, focus: FocusBox): CameraView {
     target.y + Math.tan((RESORT_VIEW_MIN_ELEVATION_DEG * Math.PI) / 180) * distance;
   const y = Math.max(aboveGround, minCameraY(surface, x, z), elevationFloor);
   return { position: new Vector3(x, y, z), target, up: new Vector3(0, 1, 0) };
+}
+
+/**
+ * Landmark resort view: the camera stands RESORT_LANDMARK_BACK_OFF_M beyond the lift base, away from the lift top,
+ * at eye height above the terrain there; the target is the Upper Chalet at half its roof height (or fallbackTarget).
+ * Null when base and top coincide, since the lift then gives no direction.
+ */
+function landmarkView(
+  surface: MeshSurface,
+  { liftBase, liftTop, upperChalet }: Landmarks,
+  fallbackTarget: Vector3,
+  fovDeg: number,
+  aspect: number,
+): CameraView | null {
+  const dEast = liftBase.east - liftTop.east;
+  const dNorth = liftBase.north - liftTop.north;
+  const length = Math.hypot(dEast, dNorth);
+  if (length === 0) return null;
+  const eyeAt = (east: number, north: number): Vector3 => {
+    const eye = toScene(east, north, surface.sample(east, north).height);
+    return new Vector3(eye.x, eye.y + CAMERA_CLEARANCE_M, eye.z);
+  };
+  const east0 = liftBase.east + (dEast / length) * RESORT_LANDMARK_BACK_OFF_M;
+  const north0 = liftBase.north + (dNorth / length) * RESORT_LANDMARK_BACK_OFF_M;
+  let position = eyeAt(east0, north0);
+  let target = fallbackTarget;
+  if (upperChalet) {
+    const roofM = upperChalet.roofM ?? RESORT_LANDMARK_DEFAULT_ROOF_M;
+    const t = toScene(
+      upperChalet.east,
+      upperChalet.north,
+      surface.sample(upperChalet.east, upperChalet.north).height + roofM / 2,
+    );
+    target = new Vector3(t.x, t.y, t.z);
+  }
+  const up = new Vector3(0, 1, 0);
+
+  // Fit: the lift top must sit inside the frame (with a margin) as seen from the chosen position; if not,
+  // back the camera off along the horizontal sight line, never beyond RESORT_FIT_MAX_DISTANCE_FACTOR.
+  const topScene = toScene(
+    liftTop.east,
+    liftTop.north,
+    surface.sample(liftTop.east, liftTop.north).height,
+  );
+  const points = [target, new Vector3(topScene.x, topScene.y, topScene.z)];
+  const halfV = (fovDeg / 2) * (Math.PI / 180);
+  const tanV = Math.tan(halfV) * RESORT_FIT_FRAME_FRACTION;
+  const tanH = Math.tan(halfV) * aspect * RESORT_FIT_FRAME_FRACTION;
+  const fits = (from: Vector3): boolean => {
+    const forward = target.clone().sub(from).normalize();
+    const right = new Vector3().crossVectors(forward, up).normalize();
+    const camUp = new Vector3().crossVectors(right, forward);
+    return points.every((point) => {
+      const rel = point.clone().sub(from);
+      const depth = rel.dot(forward);
+      return (
+        depth > 0 &&
+        Math.abs(rel.dot(right)) <= depth * tanH &&
+        Math.abs(rel.dot(camUp)) <= depth * tanV
+      );
+    });
+  };
+  const toTarget = { x: target.x - position.x, z: target.z - position.z };
+  const baseHorizontal = Math.hypot(toTarget.x, toTarget.z);
+  if (baseHorizontal > 0) {
+    const ux = toTarget.x / baseHorizontal;
+    const uz = toTarget.z / baseHorizontal;
+    const origin = position;
+    const maxBack = (RESORT_FIT_MAX_DISTANCE_FACTOR - 1) * baseHorizontal;
+    for (let back = 0; !fits(position) && back < maxBack;) {
+      back = Math.min(back + RESORT_FIT_STEP_M, maxBack);
+      const local = fromScene(origin.x - ux * back, 0, origin.z - uz * back);
+      position = eyeAt(local.east, local.north);
+    }
+  }
+  return { position, target, up, distance: position.distanceTo(target) };
 }
 
 /** The live vertical map (see elevated.ts): scene y' = base + k * (y - base). */

@@ -87,7 +87,8 @@ import areasUrl from '../data/areas.geojson?url';
 import { loadAreas } from './data/load-areas';
 import { installAreas, type AreaLayer } from './scene/areas';
 import { createMeshSurface } from './scene/heightfield';
-import { focusBoxOf } from './scene/views';
+import { deriveLandmarks } from './scene/landmarks';
+import { focusBoxOf, type FocusBox } from './scene/views';
 
 /**
  * Failure channel for the areas layer. Writes the message to its own element with textContent and
@@ -119,10 +120,15 @@ let fadeCentre = {
   east: heightfield.originEast + ((heightfield.cols - 1) * heightfield.cellSizeEast) / 2,
   north: heightfield.originNorth - ((heightfield.rows - 1) * heightfield.cellSizeNorth) / 2,
 };
+const sampleHeight = (east: number, north: number): number =>
+  meshSurface.sample(east, north).height;
+let resortFocus: FocusBox | null = null;
 if (!('error' in areaLayerResult)) {
   const focus = focusBoxOf(areaLayerResult.registry.values());
   if (focus) {
-    handle.setView('resort', focus);
+    resortFocus = focus;
+    const liftOnly = deriveLandmarks(areaLayerResult.registry.values(), null, sampleHeight);
+    handle.setView('resort', focus, liftOnly ?? undefined);
     fadeCentre = {
       east: (focus.minEast + focus.maxEast) / 2,
       north: (focus.minNorth + focus.maxNorth) / 2,
@@ -194,10 +200,23 @@ export const setBuildingsWanted = (on: boolean): void => {
   buildingsLayer?.setVisible(on);
 };
 
+// The landmark view is re-applied once the buildings load, unless the user has already moved the camera.
+let resortMoved = false;
+handle.controls.addEventListener('start', () => {
+  resortMoved = true;
+});
 // Not awaited: the terrain and areas are already usable, and a failure here only adds a status line.
 void loadBuildings(buildingsUrl)
   .then((result) => {
     if ('error' in result) return reportBuildingsFailure(result.error);
+    if (resortFocus && !('error' in areaLayerResult) && !resortMoved) {
+      const landmarks = deriveLandmarks(
+        areaLayerResult.registry.values(),
+        result.features,
+        sampleHeight,
+      );
+      if (landmarks) handle.setView('resort', resortFocus, landmarks);
+    }
     const layer = buildBuildingsLayer(result.features, meshSurface, { centre: fadeCentre });
     layer.setVisible(buildingsWanted);
     handle.applyHorizon(layer.mesh.material as Material);
