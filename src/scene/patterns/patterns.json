@@ -6,8 +6,8 @@
       "periodM": 1.5,
       "widthPx": 256,
       "heightPx": 32,
-      "svgSha256": "f1ce1c44a83dcea566015392169193c9c7525df6efedfd855e3804cc5648d99d",
-      "pngSha256": "4bfbf0aa1baf95fc5b8ac3fb0d21f037d7fb36c3ed65084a99857c41f514d678"
+      "svgSha256": "1f1c09e275db84a90239b7b19131b1b7af32250f788ec320440967e84341500e",
+      "pngSha256": "a47c6bb95a77cd373a647a07937783bc9009283436edd3116be00f352fdcf22b"
     },
     "nordic-classic": {
       "file": "nordic-classic.png",
@@ -15,8 +15,8 @@
       "periodM": 2,
       "widthPx": 256,
       "heightPx": 128,
-      "svgSha256": "28c4f0ce870f50dadfdcbad181b5fa5fe96ebd6dfbfd95929fc08b3e98772935",
-      "pngSha256": "fb3ecac9295fe637adfff36da3d6a64a2fcdf6e4ff8fc226556e4238edd175a6"
+      "svgSha256": "d3e95d082c7b686bc78ad4602bfe82ae5984f8ad2026075e3969a6bac23f682a",
+      "pngSha256": "08aeeedd7fdfab66e044020fa12ae28c3fd8a7ba7dccc80190ed6e53753cce0e"
     },
     "nordic-skate": {
       "file": "nordic-skate.png",
@@ -24,8 +24,8 @@
       "periodM": 3,
       "widthPx": 256,
       "heightPx": 192,
-      "svgSha256": "641650f455297a5575643cda6d79392d44744a5fc675420b1c8b9774585b0112",
-      "pngSha256": "db90e3a4d2e69d6a8aa1e07ac94257455945117ca6313866b1ae49fc21e8426e"
+      "svgSha256": "153aab7f7060227d1bce1f637154c3aaca58808c9cefe2b2f843f7ba374e8b51",
+      "pngSha256": "23dc876ef639a12b5a76331ff0f524d93939962f885aa1177868b4c654e21790"
     },
     "mtb-trail": {
       "file": "mtb-trail.png",
@@ -33,8 +33,8 @@
       "periodM": 1.2,
       "widthPx": 256,
       "heightPx": 204,
-      "svgSha256": "fb79aa7e92ce014223b63306390a60123a09a5b01476e004d3dee9f1d5347603",
-      "pngSha256": "4fe9f2540a1ac877266b2dce11aaf121f11b561270b1f2405b8f3e9811731150"
+      "svgSha256": "f68bbac8398b294342919c516524a42d4772e60e560d9745c651f2052c0dcfc7",
+      "pngSha256": "01d3588f223051a8fa8e3cb351bef4db6a7e07cf3ae073cfc7378b3d0326215e"
     },
     "snowboard": {
       "file": "snowboard.png",
@@ -42,8 +42,8 @@
       "periodM": 6,
       "widthPx": 256,
       "heightPx": 128,
-      "svgSha256": "e18c5d648e4774f6cf27ec4f56d569f64553458036609501dbdeea8762dfdf51",
-      "pngSha256": "a464f0dc3f4ed743d6afa9afa2eda9d000a6836d0019f42704b25b0dd0cd3d2e"
+      "svgSha256": "40594ac733b23572bde51488d2a61f4e2c0e8d115425b95eca43af20d65da85f",
+      "pngSha256": "a3594bde32b80e41cc210d16ee8f734050f1240eba476bb216e21c282cc3d512"
     },
     "snowshoe": {
       "file": "snowshoe.png",
@@ -51,8 +51,8 @@
       "periodM": 2,
       "widthPx": 256,
       "heightPx": 341,
-      "svgSha256": "e441a4cc948b4305da3beea0ff74fd92eb586715bd3db1d88cac7679e74800b9",
-      "pngSha256": "358190751510c900dc33a073a73c3a9bfa70274476f0f2690908f90e3e35812c"
+      "svgSha256": "74cd98311e5585cdded65e039e85ca6cc4689064b00cae7bda96583cd3f3bf83",
+      "pngSha256": "94b3e7fc2a6dcc32b1858367273b8df356f23881cd0f0f9fd3a10559c4fe3d21"
     },
     "fat-bike": {
       "file": "fat-bike.png",
@@ -60,8 +60,8 @@
       "periodM": 1.2,
       "widthPx": 256,
       "heightPx": 204,
-      "svgSha256": "efab2b4927d0bbc10982ceb6590418fb26561546dfcf4c3bba0fcc70665da1d8",
-      "pngSha256": "b2c36a408001f01c3893bf4c741713c62dec96c00dbe4cb272b541ecfd284fd9"
+      "svgSha256": "56c83714e0a2165e6517e3821154c626f798a6a24e1b6d90c92350b8536ecae0",
+      "pngSha256": "a7c898c436ee98b27499a6f92c98aea3c72112f188c3a1c2eeb13111b92059f4"
     },
     "hike": {
       "file": "hike.png",
@@ -69,8 +69,8 @@
       "periodM": 1.5,
       "widthPx": 256,
       "heightPx": 320,
-      "svgSha256": "095a4f2fc052ebd9a4504026bc1698428ef28fb01902989b55bb683306d989f4",
-      "pngSha256": "028c321b08f871371a775dc6757ec5d0f4f019f758c9a5a355bb3589d653abec"
+      "svgSha256": "aa4f5a2ad7ddf43c0a3aa948b3b51b61dea9f5a5dd0da5e565323b21e8fa8763",
+      "pngSha256": "efba50b26bc99233b7eccbb629260b4e29137a31b4360c39e5446a516bfa7af4"
     },
     "trail-run": {
       "file": "trail-run.png",
@@ -78,8 +78,8 @@
       "periodM": 2.4,
       "widthPx": 256,
       "heightPx": 614,
-      "svgSha256": "d4cc5887f33fe303290227c5d6b3e734f9ba70d6514373c01adf8ce6ed672c22",
-      "pngSha256": "aa147b45d146fc00ebbe4f9c42ab24205ab88f4fcb790f72d87e8bc6a3ec9d10"
+      "svgSha256": "a7b1096ecda7b15ac70a72198784a7fa9ae6cc225bf02dc08fb4ca348fd52b5d",
+      "pngSha256": "c57f718a3681c53dca4c467c2fcf100f52ed12be43f7daa92fc5b58f685dfa83"
     },
     "tubing": {
       "file": "tubing.png",
@@ -87,8 +87,8 @@
       "periodM": 4,
       "widthPx": 256,
       "heightPx": 85,
-      "svgSha256": "ce46ffd82954bb2103aa858f0d9f610b8e99eba077c030cdce6a6ff0d5546fc5",
-      "pngSha256": "df8bc384664bf257fb980bb2617ad9398c28d135fbf13da1186f12eeb29fa51e"
+      "svgSha256": "ccd0fa5d8f3fa281e75b31049da558e0deef9eff7b5ae756997980fd1adedaf7",
+      "pngSha256": "7670b86eb2da2d39b004e67e9edd364776680e654f80f13879c5d00a2cd825a1"
     },
     "adaptive": {
       "file": "adaptive.png",
@@ -96,8 +96,8 @@
       "periodM": 4,
       "widthPx": 256,
       "heightPx": 85,
-      "svgSha256": "64bd2c84c2d0d6bbb30493c6f1695d8b88300acb58002ebf76e683fa606b6878",
-      "pngSha256": "3319597195942399216c585cb049e5e97bf569704efb6d3822050fe190f75829"
+      "svgSha256": "064a72861ad02be25524c09d6437cd146c102fca2b3cc4fbd1af55f4e15417df",
+      "pngSha256": "6d4d68f57c0ea455e2dec77876a9d932868a0ef2e57bd353950e308caffda5e7"
     }
   }
 }

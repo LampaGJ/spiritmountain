@@ -1,18 +1,18 @@
 # mtb-trail tile
 
-World size: 1.5 m across (u) by 1.2 m along (v). Raster 256 x 204 px (about 170 px/m; 204 px is 1.2 m at 170 px/m).
+World size: 1.5 m across (u) by 1.2 m along (v). Raster 256 x 204 px (about 170 px/m). The scene enlarges the tile 5x, so one repeat covers 7.5 m by 6 m on the ground.
 
 Period: 204 px in v (1.2 m). Tile u does not repeat.
 
-Seam proof: knob row 0 is centred on v=0, so each print is cut by the top edge. The whole content group `#period` is drawn three times, at y=-204, 0 and +204. The copy at y=-204 puts the lower half of row 0 (its v=204 instance) at the top edge as the continuation, and the copy at y=+204 puts the upper half at the bottom edge. All gradients vary only in x, so no colour step exists at v=0/204. Knob rows are 34 px apart (6 rows x 34 = 204), so spacing across the seam is unchanged. Roots and leaves near v=204 spill over and reappear at the top the same way.
+Motif: ONE bold tyre-tread chevron per repeat, centred at u=128, pointing along +v. Polyline (40,50) (128,126) (216,50), stroke 58 px (23% of tile width), miter join. Occupies roughly v 25 to 170. It is a bold map symbol: no knobs, leaves, roots or gradients.
+
+Seam proof: the chevron sits inside v 25 to 170, so rows 0 and 203 are both pure ground (#c9a066). Last row continues into the first with zero difference. No gradient or filter, so nothing varies in v at the seam.
 
 Colour tokens:
 
-- dirt edge #5a4128 at alpha 0.5, mid #7a5a36 / #9a7448, centre #a47c4c at alpha 1
-- tread #b08856 (edges #8f683c)
-- knob body #6b4a2a, knob highlight #c09a66, knob shadow umber #3b2614
-- damp sheen #e8d4a8 at alpha up to 0.22
-- leaves #a8672c #7e4a22 #c08a3c #8c5a28 #9a6a30 #b07a34 #b88a40
-- roots #4a3018 with #7a5430 highlight
+- ground ochre dirt #c9a066, alpha 1.0
+- chevron dark umber #2e1a0c, alpha 1.0
 
-Illusion technique: blurred umber shadow under each raised knob plus a thin pale highlight on its lit side gives relief. Staggered rows read as a tire tread. A soft x-only sheen band suggests damp. Edge alpha ramps 1.0 to 0.5 so the aerial photo shows through. Plain inline SVG with gradients, one Gaussian blur filter, `use` and no foreignObject, for resvg.
+Luminance contrast between motif and ground is about 90 percent. No feature is smaller than 58 px (23 percent of width).
+
+Legibility at 24 px: the 24 x 19 px preview (sips) shows a clear dark V on tan, distinct from a flat strip. The two arms and the tip are each several pixels thick.
