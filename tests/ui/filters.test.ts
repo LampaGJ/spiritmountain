@@ -24,7 +24,13 @@ afterEach(() => {
   history.replaceState(null, '', location.pathname + location.search);
 });
 
-function setup(initialHash: string, withImagery = false, withBuildings = false) {
+function setup(
+  initialHash: string,
+  withImagery = false,
+  withBuildings = false,
+  withSurface = false,
+) {
+  const surfaceCalls: boolean[] = [];
   let hash = initialHash;
   const imageryCalls: boolean[] = [];
   const buildingsCalls: boolean[] = [];
@@ -40,6 +46,7 @@ function setup(initialHash: string, withImagery = false, withBuildings = false) 
     },
     ...(withImagery ? { setImagery: (on: boolean) => void imageryCalls.push(on) } : {}),
     ...(withBuildings ? { setBuildings: (on: boolean) => void buildingsCalls.push(on) } : {}),
+    ...(withSurface ? { setSurface: (on: boolean) => void surfaceCalls.push(on) } : {}),
     readHash: () => hash,
     writeHash: (h) => {
       hash = h;
@@ -61,6 +68,7 @@ function setup(initialHash: string, withImagery = false, withBuildings = false) 
     writes,
     imageryCalls,
     buildingsCalls,
+    surfaceCalls,
     getHash: () => hash,
     calls: () => applyCalls,
   };
@@ -275,6 +283,48 @@ describe('buildings toggle', () => {
     button('Clear Filters').click();
     expect(getHash()).toBe('#buildings=off');
     expect(buildingsCalls).toEqual([false]);
+  });
+});
+
+describe('surface toggle', () => {
+  it('has no Surface button unless setSurface is wired', () => {
+    const { host } = setup('', true, true);
+    expect(host.textContent).not.toContain('Surface');
+  });
+
+  it('sits after Buildings in the Layers group, defaults off, and leaves the hash empty', () => {
+    const { host, button, getHash, surfaceCalls } = setup('', true, true, true);
+    const labels = [...host.querySelectorAll('.console-group:last-child button .btn-label')].map(
+      (b) => b.textContent,
+    );
+    expect(labels).toEqual(['Imagery', 'Buildings', 'Surface']);
+    expect(button('Surface').getAttribute('aria-pressed')).toBe('false');
+    expect(getHash()).toBe('');
+    expect(surfaceCalls).toEqual([false]);
+  });
+
+  it('toggling on writes surface=on and calls setSurface(true); toggling off clears it', () => {
+    const { button, getHash, surfaceCalls } = setup('', false, false, true);
+    button('Surface').click();
+    expect(button('Surface').getAttribute('aria-pressed')).toBe('true');
+    expect(getHash()).toBe('#surface=on');
+    button('Surface').click();
+    expect(getHash()).toBe('');
+    expect(surfaceCalls).toEqual([false, true, false]);
+  });
+
+  it('starts on from #surface=on, and Clear leaves it alone', () => {
+    const { button, getHash, surfaceCalls } = setup(
+      '#surface=on&activity=hike',
+      false,
+      false,
+      true,
+    );
+    expect(button('Surface').getAttribute('aria-pressed')).toBe('true');
+    expect(surfaceCalls).toEqual([true]);
+    button('Clear Filters').click();
+    expect(getHash()).toBe('#surface=on');
+    expect(surfaceCalls).toEqual([true]);
   });
 });
 

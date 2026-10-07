@@ -15,13 +15,15 @@ export interface MountFiltersDeps {
   readonly setImagery?: (on: boolean) => void;
   /** Shows or hides the buildings layer. Absent means no Buildings button. */
   readonly setBuildings?: (on: boolean) => void;
+  /** Shows or hides the first-return surface layer. Absent means no Surface button. */
+  readonly setSurface?: (on: boolean) => void;
 }
 
 /** Shown instead of the strip when the annotations load failed (#13 Decision 5). */
 export const FILTERS_UNAVAILABLE_TEXT = 'filters unavailable: annotations failed to load';
 
 export function mountFilters(deps: MountFiltersDeps): FilterStrip {
-  const { registry, handle, setImagery, setBuildings } = deps;
+  const { registry, handle, setImagery, setBuildings, setSurface } = deps;
   const host = document.createElement('div');
   host.id = 'filters';
   host.className = 'sm-console';
@@ -40,6 +42,7 @@ export function mountFilters(deps: MountFiltersDeps): FilterStrip {
     ...browserHash,
     ...(setImagery ? { setImagery } : {}),
     ...(setBuildings ? { setBuildings } : {}),
+    ...(setSurface ? { setSurface } : {}),
     apply: (filter) => {
       const result = applyFilter(registry, annotations, filter);
       handle.onFilterApplied(result.visibleIds);

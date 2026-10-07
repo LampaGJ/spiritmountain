@@ -125,3 +125,26 @@ describe('buildings key', () => {
     expect(decodeHash('#buildings=maybe').ignored).toEqual(['buildings=maybe']);
   });
 });
+
+describe('surface key', () => {
+  it('encodes surface=on last and nothing when off or absent', () => {
+    expect(encodeHash({ activity: [], season: [], surface: true })).toBe('#surface=on');
+    expect(
+      encodeHash({ activity: [], season: [], imagery: false, buildings: false, surface: true }),
+    ).toBe('#imagery=off&buildings=off&surface=on');
+    expect(encodeHash({ activity: [], season: [], surface: false })).toBe('');
+    expect(encodeHash({ activity: [], season: [] })).toBe('');
+  });
+
+  it('decodes on to true, off and absent to undefined, and reports bad tokens', () => {
+    expect(decodeHash('#surface=on').filter.surface).toBe(true);
+    expect(decodeHash('#surface=off').filter.surface).toBeUndefined();
+    expect(decodeHash('').filter.surface).toBeUndefined();
+    expect(decodeHash('#surface=maybe').ignored).toEqual(['surface=maybe']);
+  });
+
+  it('round trips with surface on', () => {
+    const state: HashFilter = { activity: ['hike'], season: ['winter'], surface: true };
+    expect(decodeHash(encodeHash(state)).filter).toEqual(state);
+  });
+});
