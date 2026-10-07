@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="256" height="614" viewBox="0 0 256 614">
+  <defs>
+    <!-- across-trail alpha ramp: 0.5 at edges, 1.0 in tread; x-only so v-seamless -->
+    <linearGradient id="dirt" x1="0" x2="256" y1="0" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8a6a44" stop-opacity="0.5"/>
+      <stop offset="0.16" stop-color="#a98457" stop-opacity="0.72"/>
+      <stop offset="0.32" stop-color="#c29c68" stop-opacity="0.95"/>
+      <stop offset="0.5" stop-color="#cba673" stop-opacity="1"/>
+      <stop offset="0.68" stop-color="#c29c68" stop-opacity="0.95"/>
+      <stop offset="0.84" stop-color="#a98457" stop-opacity="0.72"/>
+      <stop offset="1" stop-color="#8a6a44" stop-opacity="0.5"/>
+    </linearGradient>
+    <linearGradient id="line" x1="84" x2="172" y1="0" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#d8b886" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#dcc08e" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#d8b886" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="1.4"/>
+    </filter>
+    <filter id="soft2" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="0.7"/>
+    </filter>
+    <!-- shoe print, origin at forefoot centre, toe up; about 26 x 69 px -->
+    <path id="sole" d="M0 -34 C9 -34 14 -26 13.5 -15 C13 -6 9 0 6 6 C4.5 12 4.5 20 4 25 C3.5 30 -3.5 30 -4 25 C-4.5 20 -5 12 -7 6 C-10 0 -13.5 -6 -13.5 -15 C-14 -26 -9 -34 0 -34 Z"/>
+    <g id="print">
+      <use xlink:href="#sole" x="1.5" y="2" fill="#4a3320" opacity="0.55" filter="url(#soft)"/>
+      <use xlink:href="#sole" fill="#a07c50"/>
+      <!-- chevron outsole lugs, apex toward toe -->
+      <g fill="none" stroke="#6a4a2a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.85">
+        <path d="M-9 -22 L0 -28 L9 -22"/>
+        <path d="M-10 -14 L0 -20 L10 -14"/>
+        <path d="M-10 -6 L0 -12 L10 -6"/>
+        <path d="M-7 2 L0 -3 L7 2"/>
+        <path d="M-3.5 12 L0 9 L3.5 12"/>
+        <path d="M-3.5 19 L0 16 L3.5 19"/>
+      </g>
+      <!-- lit lip on upper-left edge -->
+      <path d="M-11 -24 C-9 -30 -4 -33 0 -33" fill="none" stroke="#e6cf9e" stroke-width="1.6" stroke-linecap="round" opacity="0.6"/>
+    </g>
+    <!-- scuff: toe-off drag marks behind the toe (below the print) -->
+    <g id="scuff" fill="none" stroke="#6a4a2a" stroke-linecap="round" opacity="0.5">
+      <path d="M-5 38 L-6 52" stroke-width="1.6"/>
+      <path d="M0 37 L1 58" stroke-width="1.4"/>
+      <path d="M5 38 L7 49" stroke-width="1.6"/>
+      <circle cx="-8" cy="60" r="1.4" fill="#6a4a2a" stroke="none"/>
+      <circle cx="4" cy="64" r="1.1" fill="#6a4a2a" stroke="none"/>
+    </g>
+    <!-- pebble -->
+    <g id="peb">
+      <ellipse cx="0.8" cy="1" rx="5" ry="3.6" fill="#4a3320" opacity="0.55" filter="url(#soft2)"/>
+      <ellipse cx="0" cy="0" rx="4.6" ry="3.3" fill="#9a8c7a"/>
+      <ellipse cx="-1" cy="-1" rx="2.2" ry="1.2" fill="#cfc4b2" opacity="0.7"/>
+    </g>
+    <!-- crossing root, spans x only partly; defined at y=0, tilted -->
+    <g id="root">
+      <path d="M-4 6 C30 -2 60 10 92 2" fill="none" stroke="#3b2614" stroke-width="9" stroke-linecap="round" opacity="0.4" filter="url(#soft)"/>
+      <path d="M-4 3 C30 -5 60 7 92 -1" fill="none" stroke="#5a3d22" stroke-width="7" stroke-linecap="round"/>
+      <path d="M-2 1 C30 -7 60 5 90 -3" fill="none" stroke="#9a7348" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+    </g>
+    <!-- one full period; reused at -614, 0, +614 -->
+    <g id="period">
+      <rect x="0" y="0" width="256" height="614" fill="url(#dirt)"/>
+      <rect x="84" y="0" width="88" height="614" fill="url(#line)"/>
+      <!-- fine speckle -->
+      <g fill="#6a4a2a" opacity="0.3">
+        <circle cx="96" cy="14" r="1.1"/><circle cx="150" cy="120" r="1"/><circle cx="110" cy="177" r="1.2"/>
+        <circle cx="160" cy="262" r="1"/><circle cx="92" cy="341" r="1.1"/><circle cx="134" cy="431" r="1.2"/>
+        <circle cx="120" cy="496" r="1"/><circle cx="165" cy="588" r="1"/><circle cx="104" cy="560" r="1"/>
+      </g>
+      <!-- left foot at v=60 and 367 (stride 307 px = 1.2 m); right foot at 213 and 520 -->
+      <g>
+        <use xlink:href="#print" x="108" y="60"/><use xlink:href="#scuff" x="108" y="60"/>
+        <use xlink:href="#print" x="148" y="213"/><use xlink:href="#scuff" x="148" y="213"/>
+        <use xlink:href="#print" x="108" y="367"/><use xlink:href="#scuff" x="108" y="367"/>
+        <use xlink:href="#print" x="148" y="520"/><use xlink:href="#scuff" x="148" y="520"/>
+      </g>
+      <!-- edge pebbles -->
+      <use xlink:href="#peb" x="30" y="150"/><use xlink:href="#peb" x="226" y="300"/>
+      <use xlink:href="#peb" x="18" y="470"/><use xlink:href="#peb" x="238" y="8"/>
+      <use xlink:href="#peb" x="236" y="606"/><use xlink:href="#peb" x="46" y="560"/>
+      <!-- crossing root from the left edge, centred on the seam so it wraps -->
+      <use xlink:href="#root" x="0" y="607"/>
+    </g>
+  </defs>
+  <use xlink:href="#period" y="-614"/>
+  <use xlink:href="#period" y="0"/>
+  <use xlink:href="#period" y="614"/>
+</svg>

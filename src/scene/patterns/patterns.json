@@ -1,0 +1,103 @@
+{
+  "tiles": {
+    "downhill-run": {
+      "file": "downhill-run.png",
+      "widthM": 12,
+      "periodM": 1.5,
+      "widthPx": 256,
+      "heightPx": 32,
+      "svgSha256": "f1ce1c44a83dcea566015392169193c9c7525df6efedfd855e3804cc5648d99d",
+      "pngSha256": "4bfbf0aa1baf95fc5b8ac3fb0d21f037d7fb36c3ed65084a99857c41f514d678"
+    },
+    "nordic-classic": {
+      "file": "nordic-classic.png",
+      "widthM": 4,
+      "periodM": 2,
+      "widthPx": 256,
+      "heightPx": 128,
+      "svgSha256": "28c4f0ce870f50dadfdcbad181b5fa5fe96ebd6dfbfd95929fc08b3e98772935",
+      "pngSha256": "fb3ecac9295fe637adfff36da3d6a64a2fcdf6e4ff8fc226556e4238edd175a6"
+    },
+    "nordic-skate": {
+      "file": "nordic-skate.png",
+      "widthM": 4,
+      "periodM": 3,
+      "widthPx": 256,
+      "heightPx": 192,
+      "svgSha256": "641650f455297a5575643cda6d79392d44744a5fc675420b1c8b9774585b0112",
+      "pngSha256": "db90e3a4d2e69d6a8aa1e07ac94257455945117ca6313866b1ae49fc21e8426e"
+    },
+    "mtb-trail": {
+      "file": "mtb-trail.png",
+      "widthM": 1.5,
+      "periodM": 1.2,
+      "widthPx": 256,
+      "heightPx": 204,
+      "svgSha256": "fb79aa7e92ce014223b63306390a60123a09a5b01476e004d3dee9f1d5347603",
+      "pngSha256": "4fe9f2540a1ac877266b2dce11aaf121f11b561270b1f2405b8f3e9811731150"
+    },
+    "snowboard": {
+      "file": "snowboard.png",
+      "widthM": 12,
+      "periodM": 6,
+      "widthPx": 256,
+      "heightPx": 128,
+      "svgSha256": "e18c5d648e4774f6cf27ec4f56d569f64553458036609501dbdeea8762dfdf51",
+      "pngSha256": "a464f0dc3f4ed743d6afa9afa2eda9d000a6836d0019f42704b25b0dd0cd3d2e"
+    },
+    "snowshoe": {
+      "file": "snowshoe.png",
+      "widthM": 1.5,
+      "periodM": 2,
+      "widthPx": 256,
+      "heightPx": 341,
+      "svgSha256": "e441a4cc948b4305da3beea0ff74fd92eb586715bd3db1d88cac7679e74800b9",
+      "pngSha256": "358190751510c900dc33a073a73c3a9bfa70274476f0f2690908f90e3e35812c"
+    },
+    "fat-bike": {
+      "file": "fat-bike.png",
+      "widthM": 1.5,
+      "periodM": 1.2,
+      "widthPx": 256,
+      "heightPx": 204,
+      "svgSha256": "efab2b4927d0bbc10982ceb6590418fb26561546dfcf4c3bba0fcc70665da1d8",
+      "pngSha256": "b2c36a408001f01c3893bf4c741713c62dec96c00dbe4cb272b541ecfd284fd9"
+    },
+    "hike": {
+      "file": "hike.png",
+      "widthM": 1.2,
+      "periodM": 1.5,
+      "widthPx": 256,
+      "heightPx": 320,
+      "svgSha256": "095a4f2fc052ebd9a4504026bc1698428ef28fb01902989b55bb683306d989f4",
+      "pngSha256": "028c321b08f871371a775dc6757ec5d0f4f019f758c9a5a355bb3589d653abec"
+    },
+    "trail-run": {
+      "file": "trail-run.png",
+      "widthM": 1,
+      "periodM": 2.4,
+      "widthPx": 256,
+      "heightPx": 614,
+      "svgSha256": "d4cc5887f33fe303290227c5d6b3e734f9ba70d6514373c01adf8ce6ed672c22",
+      "pngSha256": "aa147b45d146fc00ebbe4f9c42ab24205ab88f4fcb790f72d87e8bc6a3ec9d10"
+    },
+    "tubing": {
+      "file": "tubing.png",
+      "widthM": 12,
+      "periodM": 4,
+      "widthPx": 256,
+      "heightPx": 85,
+      "svgSha256": "ce46ffd82954bb2103aa858f0d9f610b8e99eba077c030cdce6a6ff0d5546fc5",
+      "pngSha256": "df8bc384664bf257fb980bb2617ad9398c28d135fbf13da1186f12eeb29fa51e"
+    },
+    "adaptive": {
+      "file": "adaptive.png",
+      "widthM": 12,
+      "periodM": 4,
+      "widthPx": 256,
+      "heightPx": 85,
+      "svgSha256": "64bd2c84c2d0d6bbb30493c6f1695d8b88300acb58002ebf76e683fa606b6878",
+      "pngSha256": "3319597195942399216c585cb049e5e97bf569704efb6d3822050fe190f75829"
+    }
+  }
+}
