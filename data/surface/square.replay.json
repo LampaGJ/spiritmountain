@@ -1,0 +1,18 @@
+{
+  "inputHash": "277f670d879922503d9fb9794ad6c0c16c201e3c187e08421a03e42779d9fa73",
+  "codeCommit": "f50ce8e19f33a451ffeca568845db36dcea29abd",
+  "outputHash": "938588bc3f1bcd9aaba3634fff9b0f3bf9ca248b27bdb4c5e4da1cf6e8cbca97",
+  "effect": "preserves",
+  "outputs": {
+    "square.f32": "452c65664728b7d28bf4f342c6777670c739d37171035e547a38d08cc650c3e2",
+    "square.json": "9a79431d2703798dc98f0df1240c02c6bebd0ad0981a5583bad1d120413eae5b"
+  },
+  "toolVersions": {
+    "geotiff": "3.0.5"
+  },
+  "lockSubtreeSha256": "70e39a4155e68d4e88179ebe1818e7905f29b7e6a98f493ef80f6692be05d6cb",
+  "decodeResolutionM": 4,
+  "pooling": "max",
+  "seamValidFraction": 0.792285,
+  "neighbourValidFraction": 0.811573
+}
