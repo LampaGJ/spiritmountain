@@ -1,37 +1,12 @@
 /**
- * Which pattern tile a trail ribbon shows. Pure (no three import), so it tests in node.
+ * Which tile (ribbon colour plus extruded symbol) a trail shows. Pure (no three import), so it tests in node.
  *
  * Ribbons are keyed by ACTIVITY, not by area kind: an area carries activities in its annotation, the Activity filter
  * selects some, and tileForArea picks one tile per area from those two inputs.
  */
-import { z } from 'zod';
 import type { Area, AreaKind } from '../schema/area';
 import type { Annotation } from '../schema/annotation';
 import type { Activity } from '../ui/filter-predicate';
-import patternsJson from './patterns/patterns.json';
-
-/**
- * @displayName Ribbon pattern manifest
- * @strategicPurpose Carries each tile's world size and checksum from the rasteriser (scripts/ui/gen-patterns.mjs, the
- *   emitter) to the scene (this file, the consumer), so a ribbon's width and repeat come from the same numbers the PNG was drawn at.
- * @tacticalObjective Parses patterns.json once: per tile the PNG file name, world width across, repeat period along,
- *   pixel size and the sha256 of the SVG and the PNG. A missing tile is a parse error, never an empty list.
- */
-export const PatternManifestSchema = z.strictObject({
-  tiles: z.record(
-    z.string(),
-    z.strictObject({
-      file: z.string().min(1),
-      widthM: z.number().positive(),
-      periodM: z.number().positive(),
-      widthPx: z.number().int().positive(),
-      heightPx: z.number().int().positive(),
-      svgSha256: z.string().length(64),
-      pngSha256: z.string().length(64),
-    }),
-  ),
-});
-export type PatternManifest = z.infer<typeof PatternManifestSchema>;
 
 export const TILE_NAMES = [
   'downhill-run',
@@ -49,16 +24,35 @@ export const TILE_NAMES = [
 export type TileName = (typeof TILE_NAMES)[number];
 
 export interface TileInfo {
-  readonly file: string;
+  /** The abstract symbol extruded along the trail: src/scene/symbols/<symbol> (viewBox 0 0 100 100). */
+  readonly symbol: string;
   /** Drawn ribbon width in metres: the tile's physical width across the trail times symbolScale. */
   readonly widthM: number;
-  /** Drawn metres of trail per repeat of the tile along the trail: the physical period times symbolScale. */
+  /** Drawn metres of trail per repeat of the symbol along the trail: the physical period times symbolScale. */
   readonly periodM: number;
-  readonly widthPx: number;
-  readonly heightPx: number;
   /** Cartographic enlargement applied to this tile (1 = drawn at physical size). See symbolScale. */
   readonly symbolScale: number;
 }
+
+/**
+ * Physical size per tile, before enlargement. widthM is across the trail (symbol x), periodM along it (symbol y, one
+ * symbol per period). nordic-skate's symbol holds two 1.5 m strokes, so its repeat is the full 3 m.
+ */
+export const TILE_PHYSICAL: Readonly<
+  Record<TileName, { readonly widthM: number; readonly periodM: number }>
+> = {
+  'downhill-run': { widthM: 12, periodM: 1.5 },
+  'nordic-classic': { widthM: 4, periodM: 2 },
+  'nordic-skate': { widthM: 4, periodM: 3 },
+  'mtb-trail': { widthM: 1.5, periodM: 1.2 },
+  snowboard: { widthM: 12, periodM: 6 },
+  snowshoe: { widthM: 1.5, periodM: 2 },
+  'fat-bike': { widthM: 1.5, periodM: 1.2 },
+  hike: { widthM: 1.2, periodM: 1.5 },
+  'trail-run': { widthM: 1, periodM: 2.4 },
+  tubing: { widthM: 12, periodM: 4 },
+  adaptive: { widthM: 12, periodM: 4 },
+};
 
 /**
  * Smallest drawn repeat along a trail, in metres. A tile drawn at physical size (a 1.2 m tyre tread, a 2 m ski stride)
@@ -73,8 +67,8 @@ export const RIBBON_MAX_SCALE = 10;
 
 /**
  * Cartographic enlargement for a tile: the factor that lifts its period to RIBBON_MIN_PERIOD_M, at most RIBBON_MAX_SCALE,
- * reduced so the width stays within RIBBON_MAX_WIDTH_M, never below 1. Width and period scale together, so the PNG's
- * aspect (and the texture matrix) is unchanged.
+ * reduced so the width stays within RIBBON_MAX_WIDTH_M, never below 1. Width and period scale together, so the
+ * symbol's aspect is unchanged.
  */
 export function symbolScale(physical: {
   readonly widthM: number;
@@ -85,19 +79,16 @@ export function symbolScale(physical: {
   return Math.min(forPeriod, forWidth);
 }
 
-/** The parsed manifest tiles, keyed by tile name. Throws when the manifest is malformed or lacks a tile in TILE_NAMES. */
-export function parseTiles(json: unknown): Record<TileName, TileInfo> {
-  const parsed = PatternManifestSchema.safeParse(json);
-  if (!parsed.success) {
-    throw new Error(`patterns.json: ${parsed.error.issues.map((i) => i.message).join('; ')}`);
-  }
+/** Every tile at its drawn size: the physical table enlarged by symbolScale, width and period together. */
+export function scaleTiles(
+  physical: Readonly<Record<TileName, { readonly widthM: number; readonly periodM: number }>>,
+): Record<TileName, TileInfo> {
   const out = {} as Record<TileName, TileInfo>;
   for (const name of TILE_NAMES) {
-    const tile = parsed.data.tiles[name];
-    if (tile === undefined) throw new Error(`patterns.json has no tile ${name}`);
+    const tile = physical[name];
     const scale = symbolScale(tile);
     out[name] = {
-      ...tile,
+      symbol: `${name}.svg`,
       widthM: tile.widthM * scale,
       periodM: tile.periodM * scale,
       symbolScale: scale,
@@ -106,7 +97,7 @@ export function parseTiles(json: unknown): Record<TileName, TileInfo> {
   return out;
 }
 
-export const TILES: Record<TileName, TileInfo> = parseTiles(patternsJson);
+export const TILES: Record<TileName, TileInfo> = scaleTiles(TILE_PHYSICAL);
 
 /**
  * The tile each activity draws. lift-ride has no tile: lifts stay cables. A Record over the activity enum, so a new
@@ -185,4 +176,40 @@ export const TILE_EDGE_COLOR: Record<TileName, string> = {
   'mtb-trail': DIRT_EDGE,
   hike: DIRT_EDGE,
   'trail-run': DIRT_EDGE,
+};
+
+/** The ribbon top per tile (sRGB hex), drawn unlit: near-white snow, tan dirt. The symbol stands on it. */
+const SNOW_TOP = '#f4f7fb';
+const DIRT_TOP = '#c8a878';
+export const RIBBON_TOP_COLOR: Record<TileName, string> = {
+  'downhill-run': SNOW_TOP,
+  'nordic-classic': SNOW_TOP,
+  'nordic-skate': SNOW_TOP,
+  snowboard: SNOW_TOP,
+  snowshoe: SNOW_TOP,
+  'fat-bike': SNOW_TOP,
+  tubing: SNOW_TOP,
+  adaptive: SNOW_TOP,
+  'mtb-trail': DIRT_TOP,
+  hike: DIRT_TOP,
+  'trail-run': DIRT_TOP,
+};
+
+/**
+ * The extruded symbol per tile (sRGB hex): deep blue on snow, dark umber on dirt, teal for adaptive, orange for tubing.
+ */
+const SNOW_MOTIF = '#1d3f8f';
+const DIRT_MOTIF = '#4a2f17';
+export const SYMBOL_COLOR: Record<TileName, string> = {
+  'downhill-run': SNOW_MOTIF,
+  'nordic-classic': SNOW_MOTIF,
+  'nordic-skate': SNOW_MOTIF,
+  snowboard: SNOW_MOTIF,
+  snowshoe: SNOW_MOTIF,
+  'fat-bike': SNOW_MOTIF,
+  tubing: '#e8741e',
+  adaptive: '#0f8a8a',
+  'mtb-trail': DIRT_MOTIF,
+  hike: DIRT_MOTIF,
+  'trail-run': DIRT_MOTIF,
 };

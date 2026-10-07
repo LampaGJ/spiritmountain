@@ -8,7 +8,8 @@ import {
   TILE_NAMES,
   TILES,
   tileForArea,
-  parseTiles,
+  scaleTiles,
+  TILE_PHYSICAL,
 } from '../../src/scene/ribbon-kinds';
 import { assignTiles, buildRibbonLayer } from '../../src/scene/ribbons';
 import type { Activity } from '../../src/ui/filter-predicate';
@@ -55,7 +56,7 @@ describe('activity to tile map', () => {
     expect([...used].sort()).toEqual([...TILE_NAMES].sort());
   });
 
-  it('the manifest carries a width and period for every tile', () => {
+  it('the tile table carries a width and period for every tile', () => {
     for (const name of TILE_NAMES) {
       expect(TILES[name].widthM, name).toBeGreaterThan(0);
       expect(TILES[name].periodM, name).toBeGreaterThan(0);
@@ -69,8 +70,15 @@ describe('activity to tile map', () => {
     expect(TILES.snowboard.symbolScale).toBeCloseTo(20 / 12, 9);
   });
 
-  it('parseTiles rejects a manifest that lacks a tile', () => {
-    expect(() => parseTiles({ tiles: {} })).toThrow(/no tile/);
+  it('scaleTiles names each tile symbol SVG and scales width and period together', () => {
+    const scaled = scaleTiles(TILE_PHYSICAL);
+    for (const name of TILE_NAMES) {
+      expect(scaled[name].symbol).toBe(`${name}.svg`);
+      expect(scaled[name].widthM / scaled[name].periodM).toBeCloseTo(
+        TILE_PHYSICAL[name].widthM / TILE_PHYSICAL[name].periodM,
+        9,
+      );
+    }
   });
 });
 
@@ -141,7 +149,7 @@ describe('assignTiles and the ribbon layer', () => {
     ['way/2', note('way/2', 'mountain-bike')],
   ]);
   const layer = () =>
-    buildRibbonLayer(areas, surface, toScene, TILES, {}, { fadeCentre: { east: 0, north: 0 } });
+    buildRibbonLayer(areas, surface, toScene, TILES, { fadeCentre: { east: 0, north: 0 } });
 
   it('hides filtered-out areas and never routes a lift', () => {
     const a = assignTiles(areas, annotations, none, new Set(['way/1']));
@@ -213,7 +221,7 @@ describe('ribbon stations on a composite surface (#36)', () => {
   const toScene = (e: number, n: number, z: number): [number, number, number] => [e, z, -n];
   const areas = [area('way/1', 'mtb-trail')];
   const layer = () =>
-    buildRibbonLayer(areas, bare, toScene, TILES, {}, { fadeCentre: { east: 0, north: 0 } });
+    buildRibbonLayer(areas, bare, toScene, TILES, { fadeCentre: { east: 0, north: 0 } });
 
   it('re-lays stations at the canopy mesh edges when re-draped, and back when restored', () => {
     const cols = 41;

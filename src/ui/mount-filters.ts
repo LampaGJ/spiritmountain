@@ -2,6 +2,7 @@ import './filters.css';
 import type { AreaEntry } from '../scene/areas';
 import { applyFilter } from '../scene/filter-apply';
 import type { RibbonLayer } from '../scene/ribbons';
+import type { SymbolLayer } from '../scene/symbols';
 import type { AnnotationsHandle } from '../wire-annotations';
 import { SeasonSchema } from '../schema/annotation';
 import { browserHash, mountFilterStrip, TOGGLE_ACTIVITIES, type FilterStrip } from './filters';
@@ -24,6 +25,8 @@ export interface MountFiltersDeps {
   readonly setExaggeration?: (k: number) => void;
   /** The trail ribbons. Every filter change re-routes them: hidden areas lose their ribbon, the Activity selection picks each area's tile. */
   readonly ribbons?: RibbonLayer;
+  /** The extruded trail symbols, routed exactly as the ribbons on every filter change. */
+  readonly symbols?: SymbolLayer;
 }
 
 /** Shown instead of the strip when the annotations load failed (#13 Decision 5). */
@@ -39,6 +42,7 @@ export function mountFilters(deps: MountFiltersDeps): FilterStrip {
     setTrees,
     setExaggeration,
     ribbons,
+    symbols,
   } = deps;
   const host = document.createElement('div');
   host.id = 'filters';
@@ -64,6 +68,7 @@ export function mountFilters(deps: MountFiltersDeps): FilterStrip {
     apply: (filter) => {
       const result = applyFilter(registry, annotations, filter);
       ribbons?.applyFilter(annotations, filter.activities, result.visibleIds);
+      symbols?.applyFilter(annotations, filter.activities, result.visibleIds);
       handle.onFilterApplied(result.visibleIds);
       return {
         ...result,
