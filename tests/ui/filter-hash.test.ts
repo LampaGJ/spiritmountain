@@ -65,3 +65,39 @@ describe('hash codec', () => {
     expect(encodeHash(d.filter)).toBe('#activity=hike');
   });
 });
+
+describe('imagery key', () => {
+  it('encodes imagery=off last and nothing when imagery is on or absent', () => {
+    expect(encodeHash({ activity: [], season: [], imagery: false })).toBe('#imagery=off');
+    expect(encodeHash({ activity: ['hike'], season: ['winter'], imagery: false })).toBe(
+      '#activity=hike&season=winter&imagery=off',
+    );
+    expect(encodeHash({ activity: [], season: [], imagery: true })).toBe('');
+    expect(encodeHash({ activity: [], season: [] })).toBe('');
+  });
+
+  it('round trips every subset with imagery off', () => {
+    for (const activity of subsets(ActivitySchema.options, 2)) {
+      for (const season of subsets(SeasonSchema.options, 2)) {
+        const state: HashFilter = { activity, season, imagery: false };
+        expect(decodeHash(encodeHash(state)).filter).toEqual(state);
+      }
+    }
+  });
+
+  it('decodes off to false, absent to undefined, and accepts on silently as the default', () => {
+    expect(decodeHash('#imagery=off').filter.imagery).toBe(false);
+    expect(decodeHash('').filter.imagery).toBeUndefined();
+    const on = decodeHash('#imagery=on');
+    expect(on.filter.imagery).toBeUndefined();
+    expect(on.ignored).toEqual([]);
+  });
+
+  it('drops a bad token, reports the whole pair, and leaves imagery on', () => {
+    const d = decodeHash('#imagery=maybe&activity=hike');
+    expect(d.filter.imagery).toBeUndefined();
+    expect(d.ignored).toEqual(['imagery=maybe']);
+    expect(decodeHash('#imagery=OFF').ignored).toEqual(['imagery=OFF']);
+    expect(decodeHash('#imagery').ignored).toEqual(['imagery']);
+  });
+});
