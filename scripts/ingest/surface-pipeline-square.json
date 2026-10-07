@@ -1,0 +1,54 @@
+{
+  "pipeline": [
+    {
+      "type": "readers.ept",
+      "tag": "west",
+      "filename": "{{EPT_URL_WEST}}",
+      "bounds": "{{BOUNDS_WEST}}",
+      "resolution": 2
+    },
+    {
+      "type": "readers.ept",
+      "tag": "east",
+      "filename": "{{EPT_URL_EAST}}",
+      "bounds": "{{BOUNDS_EAST}}",
+      "resolution": 2
+    },
+    {
+      "type": "filters.merge",
+      "inputs": ["west", "east"]
+    },
+    {
+      "type": "filters.stats",
+      "tag": "read",
+      "dimensions": "ReturnNumber"
+    },
+    {
+      "type": "filters.range",
+      "limits": "ReturnNumber[1:1]"
+    },
+    {
+      "type": "filters.stats",
+      "tag": "first",
+      "dimensions": "ReturnNumber"
+    },
+    {
+      "type": "filters.reprojection",
+      "out_srs": "EPSG:26915"
+    },
+    {
+      "type": "writers.gdal",
+      "filename": "{{OUTPUT_TIF}}",
+      "resolution": "{{RESOLUTION}}",
+      "output_type": "max",
+      "gdaldriver": "GTiff",
+      "nodata": -9999,
+      "data_type": "float32",
+      "gdalopts": "COMPRESS=LZW",
+      "origin_x": "{{ORIGIN_X}}",
+      "origin_y": "{{ORIGIN_Y}}",
+      "width": "{{WIDTH}}",
+      "height": "{{HEIGHT}}"
+    }
+  ]
+}

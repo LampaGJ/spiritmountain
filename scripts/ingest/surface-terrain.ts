@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { ReplayRecordSchema } from '../../src/schema/replay';
 import { TerrainHeaderSchema, type TerrainHeader } from '../../src/schema/terrain';
 import { SurfaceManifestSchema } from './surface-manifest-schema';
+import { seamEastingAtNorthing } from './surface-window';
 import {
   LOCKFILE_URL,
   lockSubtreeSha256,
@@ -29,6 +30,8 @@ export const TRANSFORM_SOURCES: string[] = [
   'scripts/ingest/replay.ts',
   'scripts/ingest/surface-manifest-schema.ts',
   'scripts/ingest/surface-terrain.ts',
+  'scripts/ingest/surface-window.ts',
+  'scripts/ingest/local-frame.ts',
   'scripts/ingest/terrain-deps.ts',
   'scripts/ingest/terrain.ts',
   'src/schema/frame.ts',
@@ -68,21 +71,56 @@ export const SURFACE_REPLAY_NAME = 'surface.replay.json';
  * @tacticalObjective Validates the base record plus outputs, toolVersions (geotiff only) and lockSubtreeSha256 before data/surface/surface.replay.json is written.
  */
 export const SurfaceReplaySchema = ReplayRecordSchema.extend({
-  outputs: z.strictObject({ [SURFACE_F32_NAME]: Sha256Schema, [SURFACE_JSON_NAME]: Sha256Schema }),
+  outputs: z.record(z.string(), Sha256Schema),
   toolVersions: z.strictObject({ geotiff: z.string().min(1) }),
   lockSubtreeSha256: Sha256Schema,
   // The header's strict source block cannot carry these, so the record does.
-  decodeResolutionM: z.literal(2),
+  decodeResolutionM: z.union([z.literal(2), z.literal(4)]),
   pooling: z.literal('max'),
+  /** Square window only: fraction of seam-column cells with a valid return before the fill. */
+  seamValidFraction: z.number().min(0).max(1).optional(),
+  /** Square window only: mean valid fraction of the columns 4 to 12 cells either side of the seam, the stripe gate's baseline. */
+  neighbourValidFraction: z.number().min(0).max(1).optional(),
 });
 export type SurfaceReplay = z.infer<typeof SurfaceReplaySchema>;
 
-/** Output cell size in metres: the pinned 1 m raster is max-pooled 2x2. */
-export const DECODE_RESOLUTION_M = 2;
+export const SURFACE_WINDOWS = ['core', 'square'] as const;
+export type SurfaceWindowName = (typeof SURFACE_WINDOWS)[number];
+
+/** Minimum valid fraction of the cells on the dataset seam, before the fill, for the square window. */
+export const SEAM_MIN_VALID_FRACTION = 0.9;
+/**
+ * The seam also passes when it is no emptier than its neighbours by more than this. Lidar returns nothing from water, so
+ * the real data has voids (about 20 percent east of the resort) that are not a stripe; a stripe is a drop at the seam.
+ */
+export const SEAM_MAX_DROP = 0.05;
+
+/** Per-window file names and output cell size (the pinned raster is max-pooled to it, 2x2). */
+export const WINDOW_CONFIG = {
+  core: {
+    manifest: 'surface-manifest.json',
+    tif: 'surface-core.tif',
+    f32: 'core.f32',
+    json: 'core.json',
+    replay: 'surface.replay.json',
+    cellM: 2,
+    checkSeam: false,
+  },
+  square: {
+    manifest: 'surface-square-manifest.json',
+    tif: 'surface-square.tif',
+    f32: 'square.f32',
+    json: 'square.json',
+    replay: 'square.replay.json',
+    cellM: 4,
+    checkSeam: true,
+  },
+} as const;
 
 /**
  * Max-pools 2x2 blocks of a row-major raster. Nodata-aware: the output is the max over the valid cells of the block;
- * a block with no valid cell is nodata (mask 1, value 0) for the nearest-valid fill. Width and height must be even.
+ * a block with no valid cell is nodata (mask 1, value 0) for the nearest-valid fill. An odd width or height gives a
+ * clipped last block, so the output is ceil(width / 2) by ceil(height / 2).
  */
 export function maxPool2(
   values: Float32Array,
@@ -90,11 +128,8 @@ export function maxPool2(
   width: number,
   height: number,
 ): { values: Float32Array; nodata: Uint8Array; width: number; height: number } {
-  if (width % 2 !== 0 || height % 2 !== 0) {
-    throw new TerrainError('BadRaster', `cannot 2x2 pool a ${width}x${height} raster`);
-  }
-  const w = width / 2;
-  const h = height / 2;
+  const w = Math.ceil(width / 2);
+  const h = Math.ceil(height / 2);
   const out = new Float32Array(w * h);
   const mask = new Uint8Array(w * h).fill(1);
   for (let r = 0; r < h; r += 1) {
@@ -106,6 +141,7 @@ export function maxPool2(
         [1, 0],
         [1, 1],
       ] as const) {
+        if (2 * r + dr >= height || 2 * c + dc >= width) continue;
         const i = (2 * r + dr) * width + 2 * c + dc;
         if (nodata[i] === 0 && (values[i] as number) > best) best = values[i] as number;
       }
@@ -127,11 +163,24 @@ const round6 = (value: number): number => Math.round(value * 1e6) / 1e6;
  */
 export async function buildSurface(
   tiffBytes: Uint8Array,
-  ctx: { frame: Frame; frameSha256: string; inputSha256: string; sourcePath: string },
+  ctx: {
+    frame: Frame;
+    frameSha256: string;
+    inputSha256: string;
+    sourcePath: string;
+    /** Output cell size in metres; the input must be this or half of it. */
+    cellM: number;
+    /** Measure the valid fraction on the EPT dataset seam before the fill. */
+    checkSeam: boolean;
+  },
 ): Promise<{
   f32: Uint8Array;
   header: TerrainHeader;
   bbox: { xmin: number; ymin: number; xmax: number; ymax: number };
+  /** Valid fraction of the seam-column cells before the fill; null unless ctx.checkSeam. */
+  seamValidFraction: number | null;
+  /** Mean valid fraction of the columns 4, 8 and 12 cells either side of the seam; null unless ctx.checkSeam. */
+  neighbourValidFraction: number | null;
 }> {
   const arrayBuffer = tiffBytes.buffer.slice(
     tiffBytes.byteOffset,
@@ -152,8 +201,16 @@ export async function buildSurface(
     throw new TerrainError('WrongCrs', `ProjectedCSTypeGeoKey is ${String(crs)}, expected 26915`);
   if (!image.pixelIsArea()) throw new TerrainError('NotPixelIsArea', 'expected PixelIsArea');
   const [xmin, ymin, xmax, ymax] = image.getBoundingBox() as [number, number, number, number];
-  if (Math.abs((xmax - xmin) / width - 1) > 1e-6 || Math.abs((ymax - ymin) / height - 1) > 1e-6) {
-    throw new TerrainError('NonSquareCells', 'expected 1 m square cells');
+  const inCellM = (xmax - xmin) / width;
+  if (Math.abs((ymax - ymin) / height - inCellM) > 1e-6) {
+    throw new TerrainError('NonSquareCells', 'expected square cells');
+  }
+  const factor = Math.round(ctx.cellM / inCellM);
+  if (Math.abs(ctx.cellM / inCellM - factor) > 1e-6 || (factor !== 1 && factor !== 2)) {
+    throw new TerrainError(
+      'NonSquareCells',
+      `input cells of ${inCellM} m cannot be pooled to ${ctx.cellM} m by a factor of 1 or 2`,
+    );
   }
   const directory = image.getFileDirectory();
   const sentinel = parseGdalNodata(
@@ -177,7 +234,33 @@ export async function buildSurface(
     )
       mask[i] = 1;
   }
-  const pooled = maxPool2(band, mask, width, height);
+  const pooled =
+    factor === 2
+      ? maxPool2(band, mask, width, height)
+      : { values: band, nodata: mask, width, height };
+  let seamValidFraction: number | null = null;
+  let neighbourValidFraction: number | null = null;
+  if (ctx.checkSeam) {
+    /** Valid fraction of the cells offset columns east of the seam line, row by row, before the fill. */
+    const validAt = (offset: number): number | null => {
+      let valid = 0;
+      let counted = 0;
+      for (let r = 0; r < pooled.height; r += 1) {
+        const northing = ymax - (r + 0.5) * ctx.cellM;
+        const col = Math.floor((seamEastingAtNorthing(northing) - xmin) / ctx.cellM) + offset;
+        if (col < 0 || col >= pooled.width) continue;
+        counted += 1;
+        if (pooled.nodata[r * pooled.width + col] === 0) valid += 1;
+      }
+      return counted === 0 ? null : valid / counted;
+    };
+    seamValidFraction = validAt(0);
+    if (seamValidFraction === null)
+      throw new TerrainError('BadRaster', 'the dataset seam is outside the raster');
+    const around = [-12, -8, -4, 4, 8, 12].map(validAt).filter((x): x is number => x !== null);
+    neighbourValidFraction =
+      around.length === 0 ? seamValidFraction : around.reduce((p, q) => p + q, 0) / around.length;
+  }
   const nodataFilled = fillNodata(pooled.values, pooled.nodata, pooled.width, pooled.height);
   const total = pooled.width * pooled.height;
   const f32 = new Uint8Array(total * 4);
@@ -197,8 +280,8 @@ export async function buildSurface(
     originX: round6(xmin - ctx.frame.originE),
     originY: round6(ymax - ctx.frame.originN),
     originCorner: 'top-left-of-top-left-pixel',
-    cellSizeX: DECODE_RESOLUTION_M,
-    cellSizeY: DECODE_RESOLUTION_M,
+    cellSizeX: ctx.cellM,
+    cellSizeY: ctx.cellM,
     rowOrder: 'north-to-south',
     columnOrder: 'west-to-east',
     byteOrder: 'LE',
@@ -215,7 +298,13 @@ export async function buildSurface(
     source: { path: ctx.sourcePath, sha256: ctx.inputSha256 },
   });
   if (!checked.success) throw new TerrainError('HeaderInvalid', checked.error.message);
-  return { f32, header: checked.data, bbox: { xmin, ymin, xmax, ymax } };
+  return {
+    f32,
+    header: checked.data,
+    bbox: { xmin, ymin, xmax, ymax },
+    seamValidFraction,
+    neighbourValidFraction,
+  };
 }
 
 const PackageSchema = z.looseObject({ dependencies: z.record(z.string(), z.string()) });
@@ -236,6 +325,8 @@ function writeAtomic(path: string, bytes: Uint8Array): void {
 
 export interface SurfaceTerrainOptions {
   dataDir: string;
+  /** Which pinned raster to decode; default core. */
+  window?: SurfaceWindowName;
   frame: Frame;
   frameSha256: string;
   lockSubtree: string;
@@ -250,15 +341,16 @@ export interface SurfaceTerrainOptions {
 export async function runSurfaceTerrain(
   options: SurfaceTerrainOptions,
 ): Promise<{ header: TerrainHeader; replay: SurfaceReplay }> {
+  const config = WINDOW_CONFIG[options.window ?? 'core'];
   const manifest = SurfaceManifestSchema.parse(
-    JSON.parse(readFileSync(join(options.dataDir, 'raw', 'surface-manifest.json'), 'utf8')),
+    JSON.parse(readFileSync(join(options.dataDir, 'raw', config.manifest), 'utf8')),
   );
-  const tiff = readFileSync(join(options.dataDir, 'raw', 'surface-core.tif'));
+  const tiff = readFileSync(join(options.dataDir, 'raw', config.tif));
   const inputSha256 = sha256Hex(tiff);
   if (inputSha256 !== manifest.sha256) {
     throw new TerrainError(
       'PinnedInputHashMismatch',
-      `surface-core.tif sha256 ${inputSha256} differs from the manifest pin ${manifest.sha256}`,
+      `${config.tif} sha256 ${inputSha256} differs from the manifest pin ${manifest.sha256}`,
     );
   }
   const built = await buildSurface(tiff, {
@@ -266,18 +358,34 @@ export async function runSurfaceTerrain(
     frameSha256: options.frameSha256,
     inputSha256,
     sourcePath: manifest.path,
+    cellM: config.cellM,
+    checkSeam: config.checkSeam,
   });
-  if (
-    built.header.width * DECODE_RESOLUTION_M !== manifest.width * manifest.resolutionM ||
-    built.header.height * DECODE_RESOLUTION_M !== manifest.height * manifest.resolutionM
-  ) {
+  const expectedW = Math.ceil((manifest.width * manifest.resolutionM) / config.cellM);
+  const expectedH = Math.ceil((manifest.height * manifest.resolutionM) / config.cellM);
+  if (built.header.width !== expectedW || built.header.height !== expectedH) {
     throw new TerrainError(
       'ManifestDimensionMismatch',
-      `decoded ${built.header.width}x${built.header.height} cells of ${DECODE_RESOLUTION_M} m differs from manifest ${manifest.width}x${manifest.height} cells of ${manifest.resolutionM} m`,
+      `decoded ${built.header.width}x${built.header.height} cells of ${config.cellM} m, expected ${expectedW}x${expectedH} from manifest ${manifest.width}x${manifest.height} cells of ${manifest.resolutionM} m`,
     );
   }
+  if (
+    built.seamValidFraction !== null &&
+    built.neighbourValidFraction !== null &&
+    built.seamValidFraction <= SEAM_MIN_VALID_FRACTION &&
+    built.seamValidFraction < built.neighbourValidFraction - SEAM_MAX_DROP
+  ) {
+    const e = new Error(
+      `SurfaceSeamStripe: the dataset-seam cells are ${built.seamValidFraction.toFixed(4)} valid against ${built.neighbourValidFraction.toFixed(4)} for their neighbours (a drop of more than ${SEAM_MAX_DROP}), and not above ${SEAM_MIN_VALID_FRACTION}`,
+    );
+    e.name = 'SurfaceSeamStripe';
+    throw e;
+  }
   for (const side of ['xmin', 'ymin', 'xmax', 'ymax'] as const) {
-    if (Math.abs(built.bbox[side] - manifest.window26915[side]) > 1e-6) {
+    // The raster may overhang the window's north and east sides by less than one input cell (ceil of the cell count).
+    const slack = side === 'xmax' || side === 'ymax' ? manifest.resolutionM : 1e-6;
+    const diff = built.bbox[side] - manifest.window26915[side];
+    if (diff < -1e-6 || diff > slack + 1e-6) {
       throw new TerrainError(
         'ManifestDimensionMismatch',
         `decoded bbox ${side} ${built.bbox[side]} differs from manifest ${manifest.window26915[side]}`,
@@ -297,21 +405,27 @@ export async function runSurfaceTerrain(
     outputHash: sha256Hex(Buffer.concat([built.f32, jsonBytes])),
     effect: 'preserves',
     outputs: {
-      [SURFACE_F32_NAME]: sha256Hex(built.f32),
-      [SURFACE_JSON_NAME]: sha256Hex(jsonBytes),
+      [config.f32]: sha256Hex(built.f32),
+      [config.json]: sha256Hex(jsonBytes),
     },
     toolVersions: { geotiff: geotiffVersion() },
     lockSubtreeSha256: options.lockSubtree,
-    decodeResolutionM: DECODE_RESOLUTION_M,
+    decodeResolutionM: config.cellM,
     pooling: 'max',
+    ...(built.seamValidFraction === null
+      ? {}
+      : {
+          seamValidFraction: Math.round(built.seamValidFraction * 1e6) / 1e6,
+          neighbourValidFraction: Math.round((built.neighbourValidFraction ?? 0) * 1e6) / 1e6,
+        }),
   };
   const replay = SurfaceReplaySchema.parse(replayCandidate);
   const outDir = join(options.dataDir, 'surface');
   mkdirSync(outDir, { recursive: true });
-  writeAtomic(join(outDir, SURFACE_F32_NAME), built.f32);
-  writeAtomic(join(outDir, SURFACE_JSON_NAME), jsonBytes);
+  writeAtomic(join(outDir, config.f32), built.f32);
+  writeAtomic(join(outDir, config.json), jsonBytes);
   writeAtomic(
-    join(outDir, SURFACE_REPLAY_NAME),
+    join(outDir, config.replay),
     Buffer.from(`${JSON.stringify(replayCandidate, null, 2)}\n`, 'utf8'),
   );
   return { header, replay };
@@ -323,20 +437,23 @@ async function main(argv: string[]): Promise<void> {
     options: {
       'data-dir': { type: 'string', default: 'data' },
       'allow-dirty': { type: 'boolean', default: false },
+      window: { type: 'string', default: 'core' },
     },
   });
   const dataDir = values['data-dir'] ?? 'data';
   const allowDirty = values['allow-dirty'] === true;
   const frameBytes = readFileSync(join(dataDir, 'frame.json'));
-  const { header } = await runSurfaceTerrain({
+  const windowName = z.enum(SURFACE_WINDOWS).parse(values.window);
+  const { header, replay } = await runSurfaceTerrain({
     dataDir,
+    window: windowName,
     frame: readFrame(frameBytes),
     frameSha256: sha256Hex(frameBytes),
     lockSubtree: lockSubtreeSha256(readFileSync(LOCKFILE_URL, 'utf8'), LOCK_ROOTS),
     resolveCommit: () => resolveCodeCommit(TRANSFORM_SOURCES, { allowDirty }),
   });
   process.stdout.write(
-    `ingest:surface-terrain ok ${header.width}x${header.height} elev ${header.minElev}..${header.maxElev} nodataFilled=${header.nodataFilled}\n`,
+    `ingest:surface-terrain ok ${header.width}x${header.height} elev ${header.minElev}..${header.maxElev} nodataFilled=${header.nodataFilled}${replay.seamValidFraction === undefined ? '' : ` seamValidFraction=${replay.seamValidFraction} neighbourValidFraction=${replay.neighbourValidFraction}`}\n`,
   );
 }
 

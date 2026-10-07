@@ -23,9 +23,11 @@ export const ResolvedPipelineSchema = z.strictObject({
 export const SurfaceManifestSchema = z
   .strictObject({
     version: z.literal(1),
-    name: z.literal('surface-core'),
+    name: z.enum(['surface-core', 'surface-square']),
     path: z.string().min(1),
     eptUrl: z.url(),
+    /** Further point clouds read and merged (the square window also reads MN_LakeSuperior_1_2021). */
+    extraEptUrls: z.array(z.url()).optional(),
     pdalVersion: z.string().min(1),
     pipeline: ResolvedPipelineSchema,
     epsg: z.literal(26915),
@@ -49,11 +51,12 @@ export const SurfaceManifestSchema = z
       ['width', m.width, w.xmax - w.xmin],
       ['height', m.height, w.ymax - w.ymin],
     ] as const) {
-      if (Math.abs(size * m.resolutionM - span) > 1e-6) {
+      // The raster has ceil(span / resolution) cells; it overhangs the window by less than one cell when span is not a multiple.
+      if (size !== Math.ceil(span / m.resolutionM - 1e-9)) {
         ctx.addIssue({
           code: 'custom',
           path: [axis],
-          message: `${axis} ${size} x ${m.resolutionM} m does not equal the window span ${span}`,
+          message: `${axis} ${size} x ${m.resolutionM} m does not cover the window span ${span}`,
         });
       }
     }

@@ -17,6 +17,7 @@ import type { Progress, ProgressOptions } from '../progress';
 import { IngestError } from './fetch';
 import { ORIGIN } from './local-frame';
 import { sha256Hex } from './replay';
+import { SEAM_X_3857, SQUARE_UTM } from './surface-window';
 import {
   ResolvedPipelineSchema,
   SurfaceManifestSchema,
@@ -33,6 +34,18 @@ import {
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 export const EPT_URL = 'https://usgs-lidar-public.s3.amazonaws.com/MN_LakeSuperior_2_2021/ept.json';
+/** The eastern dataset, read for the square window only. */
+export const EPT_URL_EAST =
+  'https://usgs-lidar-public.s3.amazonaws.com/MN_LakeSuperior_1_2021/ept.json';
+/** MN_LakeSuperior_1_2021 extent in EPSG:3857, from its ept.json. */
+export const EPT_EAST_EXTENT_3857 = {
+  xmin: -10264000,
+  xmax: -10150401,
+  ymin: 5882379,
+  ymax: 6036521,
+} as const;
+export const SURFACE_WINDOWS = ['core', 'square'] as const;
+export type SurfaceWindowName = (typeof SURFACE_WINDOWS)[number];
 /** The dataset's EPSG:3857 extent from ept.json, which the window must lie inside. */
 export const EPT_EXTENT_3857 = {
   xmin: -10363055,
@@ -47,6 +60,7 @@ export const WINDOW_SIZE_M = 2500;
 export const FOCUS_BOX = { minEast: -437, maxEast: 657, minNorth: 464, maxNorth: 1170 } as const;
 /** Local east of the data edge of MN_LakeSuperior_2_2021 (no points beyond it); the window's east edge never exceeds this. */
 export const DATA_EAST_EDGE_LOCAL_M = 950;
+const PDAL_TRIES = 4;
 export const MAX_RASTER_BYTES = 20_000_000;
 
 proj4.defs('EPSG:26915', '+proj=utm +zone=15 +datum=NAD83 +units=m +no_defs');
@@ -140,8 +154,7 @@ export function computeSurfaceWindow(
 }
 
 /** Throws when the EPSG:3857 box is not inside the dataset extent recorded in ept.json. */
-export function assertInsideEptExtent(box: Box): void {
-  const e = EPT_EXTENT_3857;
+export function assertInsideEptExtent(box: Box, e: Box = EPT_EXTENT_3857): void {
   if (box.xmin < e.xmin || box.xmax > e.xmax || box.ymin < e.ymin || box.ymax > e.ymax) {
     throw new IngestError(
       'SurfaceOutsideEpt',
@@ -150,9 +163,34 @@ export function assertInsideEptExtent(box: Box): void {
   }
 }
 
+export interface SquareWindow {
+  utm: Box;
+  /** Envelope of the square in EPSG:3857. */
+  ept3857: Box;
+  /** Western reader: MN_LakeSuperior_2_2021 up to the end of its extent. */
+  boundsWest: Box;
+  /** Eastern reader: MN_LakeSuperior_1_2021 from the seam eastward. The two overlap, and the writer keeps the max per cell. */
+  boundsEast: Box;
+}
+
+/** The whole terrain square, with the per-dataset EPSG:3857 read bounds; both are asserted to lie inside their dataset. */
+export function computeSquareWindow(): SquareWindow {
+  const utm: Box = { ...SQUARE_UTM };
+  const env = toEpt3857(utm);
+  const boundsWest = { ...env, xmax: Math.min(env.xmax, EPT_EXTENT_3857.xmax) };
+  const boundsEast = { ...env, xmin: Math.max(env.xmin, SEAM_X_3857) };
+  assertInsideEptExtent(boundsWest);
+  assertInsideEptExtent(boundsEast, EPT_EAST_EXTENT_3857);
+  return { utm, ept3857: env, boundsWest, boundsEast };
+}
+
 const TEMPLATE_FILE = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
   'surface-pipeline.json',
+);
+export const SQUARE_TEMPLATE_FILE = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  'surface-pipeline-square.json',
 );
 const PLACEHOLDER = /^\{\{([A-Z0-9_]+)\}\}$/;
 
@@ -273,88 +311,144 @@ function writeAtomic(file: string, data: string) {
 
 export interface SurfaceRunOptions {
   force?: boolean;
-  /** Window edge in metres; tests and the trial run pass a small one. */
+  /** Which window to pin: the 2.5 km resort core (default) or the whole terrain square. */
+  window?: SurfaceWindowName;
+  /** Core window edge in metres; tests and the trial run pass a small one. */
   sizeM?: number;
   dataDir?: string;
   progressDir?: string;
   progressFactory?: ProgressFactory;
 }
 
-/** Computes the window, runs PDAL (retrying at 2 m if the raster is over the size cap), and writes the raster, resolved pipeline and manifest. */
+const boundsText = (b: Box) => `([${b.xmin},${b.xmax}],[${b.ymin},${b.ymax}])`;
+
+/** File names, window and pipeline inputs for one window. */
+export function planFor(windowName: SurfaceWindowName, sizeM: number = WINDOW_SIZE_M) {
+  if (windowName === 'core') {
+    const w = computeSurfaceWindow(sizeM);
+    assertInsideEptExtent(w.ept3857);
+    return {
+      name: 'surface-core' as const,
+      tif: 'surface-core.tif',
+      manifest: 'surface-manifest.json',
+      pipeline: 'surface-pipeline.resolved.json',
+      templateFile: TEMPLATE_FILE,
+      utm: w.utm,
+      ept3857: w.ept3857,
+      resolutions: [1, 2] as const,
+      extraEptUrls: [] as string[],
+      readerValues: { EPT_URL, BOUNDS_3857: boundsText(w.ept3857) } as Record<string, string>,
+    };
+  }
+  const w = computeSquareWindow();
+  return {
+    name: 'surface-square' as const,
+    tif: 'surface-square.tif',
+    manifest: 'surface-square-manifest.json',
+    pipeline: 'surface-square-pipeline.resolved.json',
+    templateFile: SQUARE_TEMPLATE_FILE,
+    utm: w.utm,
+    ept3857: w.ept3857,
+    resolutions: [2, 4] as const,
+    extraEptUrls: [EPT_URL_EAST],
+    readerValues: {
+      EPT_URL_WEST: EPT_URL,
+      BOUNDS_WEST: boundsText(w.boundsWest),
+      EPT_URL_EAST,
+      BOUNDS_EAST: boundsText(w.boundsEast),
+    } as Record<string, string>,
+  };
+}
+
+/** Computes the window, runs PDAL (retrying at the coarser resolution if the raster is over the size cap), and writes the raster, resolved pipeline and manifest. */
 export async function runSurface(opts: SurfaceRunOptions = {}): Promise<SurfaceManifest> {
   const {
     force = false,
+    window: windowName = 'core',
     sizeM = WINDOW_SIZE_M,
     dataDir = path.join(REPO_ROOT, 'data'),
     progressDir = 'reports/.progress',
     progressFactory = noopProgress,
   } = opts;
+  const plan = planFor(windowName, sizeM);
   const rawDir = path.join(dataDir, 'raw');
-  const tifFile = path.join(rawDir, 'surface-core.tif');
-  const manifestFile = path.join(rawDir, 'surface-manifest.json');
-  const pipelineFile = path.join(rawDir, 'surface-pipeline.resolved.json');
-  const metadataFile = path.join(rawDir, 'surface-pdal-metadata.tmp.json');
+  const tifFile = path.join(rawDir, plan.tif);
+  const manifestFile = path.join(rawDir, plan.manifest);
+  const pipelineFile = path.join(rawDir, plan.pipeline);
+  const metadataFile = path.join(rawDir, `${plan.name}-pdal-metadata.tmp.json`);
   const pinned = [tifFile, manifestFile, pipelineFile].filter((f) => existsSync(f));
   if (pinned.length > 0 && !force) {
     throw new IngestError('AlreadyPinned', `${pinned.join(', ')} exist; pass --force to supersede`);
   }
 
-  const window = computeSurfaceWindow(sizeM);
-  assertInsideEptExtent(window.ept3857);
   const version = pdalVersion();
-  const template: unknown = JSON.parse(readFileSync(TEMPLATE_FILE, 'utf8'));
-  const b = window.ept3857;
-  const p = progressFactory('ingest-surface', { dir: progressDir, total: 1, everyN: 1 });
+  const template: unknown = JSON.parse(readFileSync(plan.templateFile, 'utf8'));
+  const p = progressFactory(`ingest-${plan.name}`, { dir: progressDir, total: 1, everyN: 1 });
   mkdirSync(rawDir, { recursive: true });
-
   const rel = path.relative(REPO_ROOT, tifFile);
   const outputTif = rel.startsWith('..') ? tifFile : rel;
+  const spanX = plan.utm.xmax - plan.utm.xmin;
+  const spanY = plan.utm.ymax - plan.utm.ymin;
 
   const attempt = async (resolutionM: number) => {
-    const cells = sizeM / resolutionM;
     const resolved = resolvePipeline(template, {
-      EPT_URL: EPT_URL,
-      BOUNDS_3857: `([${b.xmin},${b.xmax}],[${b.ymin},${b.ymax}])`,
+      ...plan.readerValues,
       OUTPUT_TIF: outputTif,
       RESOLUTION: resolutionM,
-      ORIGIN_X: window.utm.xmin,
-      ORIGIN_Y: window.utm.ymin,
-      WIDTH: cells,
-      HEIGHT: cells,
+      ORIGIN_X: plan.utm.xmin,
+      ORIGIN_Y: plan.utm.ymin,
+      WIDTH: Math.ceil(spanX / resolutionM),
+      HEIGHT: Math.ceil(spanY / resolutionM),
     });
     writeAtomic(pipelineFile, `${JSON.stringify(resolved, null, 2)}\n`);
     rmSync(tifFile, { force: true });
     const started = performance.now();
     // PDAL resolves a relative filename against its cwd, so it runs from the repo root.
-    const metadata = await runPdal(pipelineFile, metadataFile, p);
+    // EPT reads hit thousands of small S3 objects; one failed GET aborts PDAL, so a failed run is retried.
+    let metadata: unknown;
+    for (let tries = 1; ; tries += 1) {
+      try {
+        metadata = await runPdal(pipelineFile, metadataFile, p);
+        break;
+      } catch (err) {
+        const retry =
+          err instanceof IngestError &&
+          err.code === 'SurfacePdalFailed' &&
+          /Could not read|curl|connection|timed out/i.test(err.message) &&
+          tries < PDAL_TRIES;
+        if (!retry) throw err;
+        p.tick(0, { phase: 'pdal-retry', tries });
+      }
+    }
     const seconds = (performance.now() - started) / 1000;
     rmSync(metadataFile, { force: true });
-    return { resolved, metadata, seconds, cells, bytes: statSync(tifFile).size };
+    return { resolved, metadata, seconds, bytes: statSync(tifFile).size };
   };
 
-  let resolutionM = 1;
+  let resolutionM: number = plan.resolutions[0];
   let first = await attempt(resolutionM);
   let firstAttemptBytes: number | null = null;
   if (first.bytes > MAX_RASTER_BYTES) {
     firstAttemptBytes = first.bytes;
-    resolutionM = 2;
+    resolutionM = plan.resolutions[1];
     first = await attempt(resolutionM);
   }
   const tif = readFileSync(tifFile);
   const counts = parsePointCounts(first.metadata);
   const manifest = SurfaceManifestSchema.parse({
     version: 1,
-    name: 'surface-core',
-    path: 'data/raw/surface-core.tif',
+    name: plan.name,
+    path: `data/raw/${plan.tif}`,
     eptUrl: EPT_URL,
+    ...(plan.extraEptUrls.length > 0 ? { extraEptUrls: plan.extraEptUrls } : {}),
     pdalVersion: version,
     pipeline: first.resolved,
     epsg: 26915,
-    window26915: window.utm,
-    window3857: window.ept3857,
+    window26915: plan.utm,
+    window3857: plan.ept3857,
     resolutionM,
-    width: first.cells,
-    height: first.cells,
+    width: Math.ceil(spanX / resolutionM),
+    height: Math.ceil(spanY / resolutionM),
     pointsRead: counts.pointsRead,
     firstReturnsKept: counts.firstReturns,
     byteLength: tif.byteLength,
@@ -372,6 +466,7 @@ async function main() {
   const { values } = parseArgs({
     options: {
       force: { type: 'boolean', default: false },
+      window: { type: 'string', default: 'core' },
       'size-m': { type: 'string' },
       'data-dir': { type: 'string' },
     },
@@ -385,10 +480,12 @@ async function main() {
     console.error('heartbeat disabled: helper absent');
   }
   try {
+    const windowName = z.enum(SURFACE_WINDOWS).parse(values.window);
     const dataDir = values['data-dir'];
     const sizeM = values['size-m'];
     const m = await runSurface({
       force: values.force,
+      window: windowName,
       progressFactory,
       ...(sizeM === undefined ? {} : { sizeM: Number(sizeM) }),
       ...(dataDir === undefined ? {} : { dataDir: path.resolve(dataDir) }),

@@ -17,6 +17,7 @@ import {
   TRANSFORM_SOURCES,
   runSurfaceTerrain,
 } from '../../scripts/ingest/surface-terrain';
+import { seamEastingAtNorthing } from '../../scripts/ingest/surface-window';
 import { readFrame } from '../../scripts/ingest/terrain-deps';
 import { TerrainHeaderSchema } from '../../src/schema/terrain';
 import { buildFixtureTiff } from './terrain-fixture';
@@ -50,8 +51,10 @@ describe('maxPool2', () => {
     expect(out.values[0]).toBe(9);
     expect([...out.nodata]).toEqual([0, 1]);
   });
-  it('rejects odd dimensions', () => {
-    expect(() => maxPool2(new Float32Array(3), new Uint8Array(3), 3, 1)).toThrow(/BadRaster/);
+  it('clips the last block of an odd-sized raster, giving ceil(w / 2) by ceil(h / 2)', () => {
+    const out = maxPool2(Float32Array.from([1, 2, 7]), new Uint8Array(3), 3, 1);
+    expect([out.width, out.height]).toEqual([2, 1]);
+    expect([...out.values]).toEqual([2, 7]);
   });
 });
 
@@ -180,5 +183,95 @@ describe('surface terrain on a synthetic 4x4 TIFF', () => {
       }),
     );
     await expect(runSurfaceTerrain(options(dir))).rejects.toThrow(/PinnedInputHashMismatch/);
+  });
+});
+
+describe('square window decode and the dataset seam', () => {
+  const frameBytes = readFileSync('data/frame.json');
+  const MAX_Y = 5174000;
+  const SIZE = 64; // 64 x 64 cells of 2 m, pooled to 32 x 32 cells of 4 m
+  const minX = Math.floor(seamEastingAtNorthing(MAX_Y - SIZE)) - SIZE; // the seam crosses the raster's middle
+
+  const stage = (cells: number[]) => {
+    const dir = mkdtempSync(join(tmpdir(), 'surface-sq-'));
+    mkdirSync(join(dir, 'raw'), { recursive: true });
+    copyFileSync('data/frame.json', join(dir, 'frame.json'));
+    const tiff = buildFixtureTiff({
+      width: SIZE,
+      height: SIZE,
+      values: cells,
+      nodata: '-9999',
+      resolution: 2,
+      minX,
+      maxY: MAX_Y,
+    });
+    writeFileSync(join(dir, 'raw', 'surface-square.tif'), tiff);
+    writeFileSync(
+      join(dir, 'raw', 'surface-square-manifest.json'),
+      JSON.stringify({
+        version: 1,
+        name: 'surface-square',
+        path: 'data/raw/surface-square.tif',
+        eptUrl: 'https://usgs-lidar-public.s3.amazonaws.com/MN_LakeSuperior_2_2021/ept.json',
+        extraEptUrls: [
+          'https://usgs-lidar-public.s3.amazonaws.com/MN_LakeSuperior_1_2021/ept.json',
+        ],
+        pdalVersion: '2.10.2',
+        pipeline: { pipeline: [{ type: 'readers.ept' }] },
+        epsg: 26915,
+        window26915: { xmin: minX, ymin: MAX_Y - 2 * SIZE, xmax: minX + 2 * SIZE, ymax: MAX_Y },
+        window3857: { xmin: 0, ymin: 0, xmax: 10, ymax: 10 },
+        resolutionM: 2,
+        width: SIZE,
+        height: SIZE,
+        pointsRead: 100,
+        firstReturnsKept: 90,
+        byteLength: tiff.byteLength,
+        sha256: sha256Hex(tiff),
+        seconds: 1,
+        fetchedAt: '2026-10-06T00:00:00.000Z',
+        firstAttemptBytes: null,
+      }),
+    );
+    return dir;
+  };
+  const options = (dataDir: string) => ({
+    dataDir,
+    window: 'square' as const,
+    frame: readFrame(frameBytes),
+    frameSha256: sha256Hex(frameBytes),
+    lockSubtree: 'c'.repeat(64),
+    resolveCommit: () => 'd'.repeat(40),
+  });
+  const all = (v: number) => new Array<number>(SIZE * SIZE).fill(v);
+
+  it('writes square.f32/json/replay at 4 m with the seam valid fraction recorded', async () => {
+    const dir = stage(all(300));
+    const { header, replay } = await runSurfaceTerrain(options(dir));
+    expect(header).toMatchObject({ width: 32, height: 32, cellSizeX: 4, byteLength: 4096 });
+    expect(header.source.path).toBe('data/raw/surface-square.tif');
+    expect(replay.decodeResolutionM).toBe(4);
+    expect(replay.seamValidFraction).toBe(1);
+    expect(Object.keys(replay.outputs).sort()).toEqual(['square.f32', 'square.json']);
+    expect(readFileSync(join(dir, 'surface', 'square.f32')).byteLength).toBe(4096);
+    expect(JSON.parse(readFileSync(join(dir, 'surface', 'square.replay.json'), 'utf8'))).toEqual(
+      replay,
+    );
+  });
+
+  it('refuses a stripe: an empty seam column between valid neighbours fails the gate', async () => {
+    // 2 m columns 30..35 are nodata, which empties the seam's 4 m column (the seam is at 2 m column 32)
+    const cells = all(300).map((v, i) => {
+      const col = i % SIZE;
+      return col >= 30 && col <= 35 ? -9999 : v;
+    });
+    await expect(runSurfaceTerrain(options(stage(cells)))).rejects.toThrow(/SurfaceSeamStripe/);
+  });
+
+  it('accepts a void that spans the seam (water), because the seam is no emptier than its neighbours', async () => {
+    const cells = all(300).map((v, i) => (Math.floor(i / SIZE) < SIZE / 2 ? -9999 : v));
+    const { replay } = await runSurfaceTerrain(options(stage(cells)));
+    expect(replay.seamValidFraction).toBeCloseTo(0.5, 1);
+    expect(replay.neighbourValidFraction).toBeCloseTo(0.5, 1);
   });
 });
