@@ -27,6 +27,8 @@ export interface FilterStripDeps {
   readonly writeHash: (hash: string) => void;
   /** Called with the imagery switch on mount and whenever it changes. Absent means no Imagery button. */
   readonly setImagery?: (on: boolean) => void;
+  /** Called with the buildings switch on mount and whenever it changes. Absent means no Buildings button. */
+  readonly setBuildings?: (on: boolean) => void;
 }
 
 export interface FilterStrip {
@@ -63,6 +65,8 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
   let state: HashFilter = { activity: [], season: [] };
   let imageryButton: HTMLButtonElement | undefined;
   let imageryApplied: boolean | undefined;
+  let buildingsButton: HTMLButtonElement | undefined;
+  let buildingsApplied: boolean | undefined;
 
   const count = el('p', undefined, 'filter-count');
   count.setAttribute('role', 'status');
@@ -107,6 +111,14 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
         deps.setImagery?.(on);
       }
     }
+    if (buildingsButton) {
+      const on = state.buildings !== false;
+      buildingsButton.setAttribute('aria-pressed', String(on));
+      if (buildingsApplied !== on) {
+        buildingsApplied = on;
+        deps.setBuildings?.(on);
+      }
+    }
   };
 
   const writeIfChanged = (): void => {
@@ -134,9 +146,21 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
     render();
   };
 
-  /** Clear resets the activity and season toggles only; the imagery switch is a layer, not a filter. */
+  const toggleBuildings = (): void => {
+    state = HashFilterSchema.parse({ ...state, buildings: state.buildings === false });
+    notice.textContent = '';
+    writeIfChanged();
+    render();
+  };
+
+  /** Clear resets the activity and season toggles only; the imagery and buildings switches are layers, not filters. */
   const clear = (): void => {
-    state = { activity: [], season: [], ...(state.imagery === false ? { imagery: false } : {}) };
+    state = {
+      activity: [],
+      season: [],
+      ...(state.imagery === false ? { imagery: false } : {}),
+      ...(state.buildings === false ? { buildings: false } : {}),
+    };
     notice.textContent = '';
     writeIfChanged();
     render();
@@ -170,11 +194,11 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
   const head = el('div', undefined, 'console-head');
   head.append(el('h2', 'Filter areas', 'console-title'), count, clearKey.root);
 
-  // The Imagery fieldset is mounted only when the host supplies setImagery.
+  // The Layers fieldset is mounted only when the host supplies setImagery or setBuildings.
   const imagerySlot = el('fieldset', undefined, 'console-group console-slot');
   imagerySlot.dataset.slot = 'imagery';
   const imageryRow = el('div', undefined, 'key-row');
-  imagerySlot.append(el('legend', 'Imagery'), imageryRow);
+  imagerySlot.append(el('legend', 'Layers'), imageryRow);
   if (deps.setImagery) {
     const imageryKey = createToggleKey('Imagery');
     imageryKey.button.setAttribute('aria-pressed', 'true');
@@ -182,12 +206,19 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
     imageryButton = imageryKey.button;
     imageryRow.appendChild(imageryKey.root);
   }
+  if (deps.setBuildings) {
+    const buildingsKey = createToggleKey('Buildings');
+    buildingsKey.button.setAttribute('aria-pressed', 'true');
+    buildingsKey.button.addEventListener('click', toggleBuildings);
+    buildingsButton = buildingsKey.button;
+    imageryRow.appendChild(buildingsKey.root);
+  }
 
   deps.host.replaceChildren(
     head,
     group('Activity', 'activity', TOGGLE_ACTIVITIES),
     group('Season', 'season', SeasonSchema.options),
-    ...(deps.setImagery ? [imagerySlot] : []),
+    ...(deps.setImagery || deps.setBuildings ? [imagerySlot] : []),
     notice,
   );
   window.addEventListener('hashchange', sync);

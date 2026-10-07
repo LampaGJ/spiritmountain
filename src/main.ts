@@ -91,18 +91,14 @@ function reportAreasFailure(message: string): { error: string } {
   return { error: message };
 }
 
+const meshSurface = createMeshSurface(heightfield);
 let areaLayerResult: AreaLayer | { error: string };
 try {
   const areas = await loadAreas(areasUrl);
-  areaLayerResult = installAreas(
-    handle.scene,
-    areas,
-    createMeshSurface(heightfield),
-    (east, north, elevation) => {
-      const p = toScene(east, north, elevation);
-      return [p.x, p.y, p.z];
-    },
-  );
+  areaLayerResult = installAreas(handle.scene, areas, meshSurface, (east, north, elevation) => {
+    const p = toScene(east, north, elevation);
+    return [p.x, p.y, p.z];
+  });
 } catch (error) {
   areaLayerResult = reportAreasFailure(error instanceof Error ? error.message : String(error));
 }
@@ -122,6 +118,49 @@ if (!('error' in areaLayerResult)) {
   }
 }
 handle.setFadeCentre(fadeCentre);
+
+import buildingsUrl from '../data/buildings.geojson?url';
+import { loadBuildings } from './data/load-buildings';
+import { buildBuildingsLayer, type BuildingsLayer } from './scene/buildings';
+
+/** One line in the imagery status element for the buildings layer; the terrain and areas are never touched. */
+function reportBuildingsFailure(message: string): void {
+  console.error(`buildings: ${message}`);
+  let status = document.getElementById('imagery-status');
+  if (!status) {
+    status = document.createElement('div');
+    status.id = 'imagery-status';
+    status.setAttribute('role', 'alert');
+    document.body.append(status);
+  }
+  status.textContent = `buildings unavailable: ${message.split('\n')[0] ?? message}`;
+}
+
+let buildingsLayer: BuildingsLayer | null = null;
+let buildingsWanted = decodeHash(location.hash).filter.buildings !== false;
+/** The filter strip calls this on mount and on every toggle; it can fire before the buildings have loaded. */
+export const setBuildingsWanted = (on: boolean): void => {
+  buildingsWanted = on;
+  buildingsLayer?.setVisible(on);
+};
+
+// Not awaited: the terrain and areas are already usable, and a failure here only adds a status line.
+void loadBuildings(buildingsUrl)
+  .then((result) => {
+    if ('error' in result) return reportBuildingsFailure(result.error);
+    const layer = buildBuildingsLayer(result.features, meshSurface, { centre: fadeCentre });
+    layer.setVisible(buildingsWanted);
+    handle.scene.add(layer.mesh);
+    buildingsLayer = layer;
+    if (layer.dropped.length > 0) {
+      console.warn(
+        `buildings: ${layer.dropped.length} footprints dropped (${layer.dropped[0]?.id}: ${layer.dropped[0]?.reason})`,
+      );
+    }
+  })
+  .catch((error: unknown) => {
+    reportBuildingsFailure(error instanceof Error ? error.message : String(error));
+  });
 
 /** One line in the imagery status element for the context ring; a failure here never touches the centre terrain. */
 function reportContextFailure(message: string): void {
@@ -213,7 +252,12 @@ mountViews({
 void annotationsReady.then((handle) => {
   const registry: ReadonlyMap<string, AreaEntry> =
     'error' in areaLayer ? new Map() : areaLayer.registry;
-  mountFilters({ registry, handle, setImagery: setImageryWanted });
+  mountFilters({
+    registry,
+    handle,
+    setImagery: setImageryWanted,
+    setBuildings: setBuildingsWanted,
+  });
 });
 
 export { handle, heightfield, toScene };

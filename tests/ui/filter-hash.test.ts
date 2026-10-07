@@ -101,3 +101,27 @@ describe('imagery key', () => {
     expect(decodeHash('#imagery').ignored).toEqual(['imagery']);
   });
 });
+
+describe('buildings key', () => {
+  it('encodes buildings=off after imagery and nothing when on or absent', () => {
+    expect(encodeHash({ activity: [], season: [], buildings: false })).toBe('#buildings=off');
+    expect(encodeHash({ activity: [], season: [], imagery: false, buildings: false })).toBe(
+      '#imagery=off&buildings=off',
+    );
+    expect(encodeHash({ activity: [], season: [], buildings: true })).toBe('');
+  });
+
+  it('round trips with buildings off', () => {
+    const state: HashFilter = { activity: ['hike'], season: ['winter'], buildings: false };
+    expect(decodeHash(encodeHash(state)).filter).toEqual(state);
+  });
+
+  it('decodes off to false, absent and on to undefined, and reports a bad token', () => {
+    expect(decodeHash('#buildings=off').filter.buildings).toBe(false);
+    expect(decodeHash('').filter.buildings).toBeUndefined();
+    const on = decodeHash('#buildings=on');
+    expect(on.filter.buildings).toBeUndefined();
+    expect(on.ignored).toEqual([]);
+    expect(decodeHash('#buildings=maybe').ignored).toEqual(['buildings=maybe']);
+  });
+});
