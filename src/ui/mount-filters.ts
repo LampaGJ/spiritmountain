@@ -4,6 +4,7 @@ import { applyFilter } from '../scene/filter-apply';
 import type { AnnotationsHandle } from '../wire-annotations';
 import { SeasonSchema } from '../schema/annotation';
 import { browserHash, mountFilterStrip, TOGGLE_ACTIVITIES, type FilterStrip } from './filters';
+import { getRail } from './rail';
 import { facetCounts } from './filter-predicate';
 
 export interface MountFiltersDeps {
@@ -23,10 +24,10 @@ export function mountFilters(deps: MountFiltersDeps): FilterStrip {
   const { registry, handle, setImagery, setBuildings } = deps;
   const host = document.createElement('div');
   host.id = 'filters';
-  host.className = 'sm-plate sm-console';
+  host.className = 'sm-console';
   host.setAttribute('role', 'group');
   host.setAttribute('aria-label', 'Activity and season filters');
-  document.body.appendChild(host);
+  getRail().appendChild(host);
   if (handle.annotations.status === 'failed') {
     // No hash-derived filter is applied and the hash is not rewritten, so the user's link survives the failure.
     host.textContent = FILTERS_UNAVAILABLE_TEXT;

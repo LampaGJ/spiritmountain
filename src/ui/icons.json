@@ -1,0 +1,147 @@
+{
+  "alpine-ski": {
+    "symbol": "downhill_skiing",
+    "label": "Alpine Ski",
+    "rationale": "Iconic: crouched skier with poles on fixed-heel skis, the pictogram for downhill."
+  },
+  "snowboard": {
+    "symbol": "snowboarding",
+    "label": "Snowboard",
+    "rationale": "Iconic: rider sideways on a single board; the board silhouette separates it from two-ski figures."
+  },
+  "nordic-classic": {
+    "symbol": "nordic_walking",
+    "label": "Nordic Classic",
+    "rationale": "Iconic/indexical: upright striding figure with poles, the kick-and-glide pole gait; no ski or crouch, so it differs from alpine."
+  },
+  "nordic-skate": {
+    "symbol": "ice_skating",
+    "label": "Nordic Skate",
+    "rationale": "Indexical: skate boot with blade stands for the skating stride; distinct footwear-only silhouette."
+  },
+  "snowshoe": {
+    "symbol": "snowshoeing",
+    "label": "Snowshoe",
+    "rationale": "Iconic: walker with oversized snowshoe flotation."
+  },
+  "fat-bike": {
+    "symbol": "pedal_bike",
+    "label": "Fat Bike",
+    "rationale": "Iconic: bare bicycle, riderless, distinguished from the rider figure used for mountain bike."
+  },
+  "mountain-bike": {
+    "symbol": "directions_bike",
+    "label": "Mountain Bike",
+    "rationale": "Iconic: rider on a bike, the standard cycling pictogram."
+  },
+  "hike": {
+    "symbol": "hiking",
+    "label": "Hike",
+    "rationale": "Iconic: walker with pack and trekking pole."
+  },
+  "trail-run": {
+    "symbol": "directions_run",
+    "label": "Trail Run",
+    "rationale": "Iconic: figure in running stride."
+  },
+  "tubing": {
+    "symbol": "sledding",
+    "label": "Tubing",
+    "rationale": "Iconic/indexical: figure riding a sled down a slope, nearest sliding-on-snow sign."
+  },
+  "adaptive": {
+    "symbol": "accessible_forward",
+    "label": "Adaptive",
+    "rationale": "Symbolic: ISA wheelchair user, the learned sign for accessible; forward-leaning variant is the dynamic reading."
+  },
+  "lift-ride": {
+    "symbol": "gondola_lift",
+    "label": "Lift Ride",
+    "rationale": "Iconic: gondola cabin hanging from a cable."
+  },
+  "winter": {
+    "symbol": "snowflake",
+    "label": "Winter",
+    "rationale": "Iconic: snowflake, the unambiguous winter sign; chosen over ac_unit which reads as air conditioning."
+  },
+  "spring": {
+    "symbol": "local_florist",
+    "label": "Spring",
+    "rationale": "Symbolic: blossom, the conventional sign of spring; round-petalled silhouette."
+  },
+  "summer": {
+    "symbol": "sunny",
+    "label": "Summer",
+    "rationale": "Iconic: sun with rays, radial silhouette."
+  },
+  "fall": {
+    "symbol": "eco",
+    "label": "Fall",
+    "rationale": "Iconic: single leaf; asymmetric leaf shape differs from the radial sun and snowflake."
+  },
+  "imagery": {
+    "symbol": "satellite_alt",
+    "label": "Imagery",
+    "rationale": "Indexical: satellite is the source of aerial photography."
+  },
+  "buildings": {
+    "symbol": "apartment",
+    "label": "Buildings",
+    "rationale": "Iconic: tall block with windows stands for extruded footprints."
+  },
+  "surface": {
+    "symbol": "forest",
+    "label": "Surface",
+    "rationale": "Iconic: trees stand for the canopy; roofs are covered by the buildings icon and the label."
+  },
+  "terrain-exaggeration": {
+    "symbol": "height",
+    "label": "Terrain Exaggeration",
+    "rationale": "Indexical: vertical arrows with bars signal stretching along the vertical axis."
+  },
+  "resort": {
+    "symbol": "streetview",
+    "label": "Resort",
+    "rationale": "Symbolic: person-on-pin is the Street View convention for eye-level viewpoint."
+  },
+  "overview": {
+    "symbol": "terrain",
+    "label": "Overview",
+    "rationale": "Iconic: mountain range stands for the whole terrain seen from above at an angle."
+  },
+  "top-down": {
+    "symbol": "map",
+    "label": "Top Down",
+    "rationale": "Symbolic: folded map is the convention for plan view."
+  },
+  "clear-filters": {
+    "symbol": "filter_alt_off",
+    "label": "Clear Filters",
+    "rationale": "Symbolic: funnel with a slash, the convention for removing filters."
+  },
+  "close-panel": {
+    "symbol": "close",
+    "label": "Close Panel",
+    "rationale": "Symbolic: X, the universal dismiss."
+  },
+  "group-activity": {
+    "symbol": "sports",
+    "label": "Activity",
+    "rationale": "Symbolic: whistle for organised activity; avoids reusing any single activity glyph."
+  },
+  "group-season": {
+    "symbol": "calendar_month",
+    "label": "Season",
+    "rationale": "Symbolic: calendar for time of year."
+  },
+  "group-layers": {
+    "symbol": "layers",
+    "label": "Layers",
+    "rationale": "Iconic: stacked sheets, the layers convention."
+  },
+  "group-view": {
+    "symbol": "visibility",
+    "label": "View",
+    "rationale": "Iconic: eye, the view convention."
+  }
+}

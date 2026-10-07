@@ -8,6 +8,8 @@ import {
   type HashFilter,
 } from './filter-hash';
 import { createClickKey, createToggleKey, type ClickyKey } from './clicky-key';
+import { iconFor } from './icons';
+import { groupHead } from './rail';
 import type { FacetCounts, Filter } from './filter-predicate';
 
 export interface StripCounts {
@@ -174,52 +176,58 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
     render();
   };
 
-  const group = (label: string, key: Key, options: readonly string[]): HTMLFieldSetElement => {
-    const fieldset = el('fieldset', undefined, 'console-group');
-    fieldset.appendChild(el('legend', label));
+  const section = (headIconId: string, slot?: string): HTMLDivElement => {
+    const wrap = el('div', undefined, 'console-group');
+    wrap.setAttribute('role', 'group');
+    const headId = `console-head-${headIconId}`;
+    wrap.setAttribute('aria-labelledby', headId);
+    wrap.appendChild(groupHead(headIconId, headId));
+    if (slot !== undefined) wrap.dataset.slot = slot;
+    return wrap;
+  };
+
+  const group = (headIconId: string, key: Key, options: readonly string[]): HTMLDivElement => {
+    const wrap = section(headIconId);
     const row = el('div', undefined, 'key-row');
     for (const value of options) {
-      const handle = createToggleKey(value);
+      const { symbol, label } = iconFor(value);
+      const handle = createToggleKey(label, { icon: symbol });
       handle.button.addEventListener('click', () => toggle(key, value));
       row.appendChild(handle.root);
       buttons.push({ key, value, handle });
     }
-    fieldset.appendChild(row);
-    return fieldset;
+    wrap.appendChild(row);
+    return wrap;
   };
 
-  const clearKey = createClickKey('Clear');
+  const clearEntry = iconFor('clear-filters');
+  const clearKey = createClickKey(clearEntry.label, { icon: clearEntry.symbol });
   clearKey.button.addEventListener('click', clear);
 
-  const head = el('div', undefined, 'console-head');
-  head.append(el('h2', 'Filter areas', 'console-title'), count, clearKey.root);
+  // Clear sits under the Season group; the status line and the hash notice sit under Clear.
+  const foot = el('div', undefined, 'console-foot');
+  foot.append(clearKey.root, count, notice);
 
-  // The Layers fieldset is mounted only when the host supplies setImagery or setBuildings.
-  const imagerySlot = el('fieldset', undefined, 'console-group console-slot');
-  imagerySlot.dataset.slot = 'imagery';
-  const imageryRow = el('div', undefined, 'key-row');
-  imagerySlot.append(el('legend', 'Layers'), imageryRow);
-  if (deps.setImagery) {
-    const imageryKey = createToggleKey('Imagery');
-    imageryKey.button.setAttribute('aria-pressed', 'true');
-    imageryKey.button.addEventListener('click', toggleImagery);
-    imageryButton = imageryKey.button;
-    imageryRow.appendChild(imageryKey.root);
-  }
-  if (deps.setBuildings) {
-    const buildingsKey = createToggleKey('Buildings');
-    buildingsKey.button.setAttribute('aria-pressed', 'true');
-    buildingsKey.button.addEventListener('click', toggleBuildings);
-    buildingsButton = buildingsKey.button;
-    imageryRow.appendChild(buildingsKey.root);
-  }
+  // The Layers group is mounted only when the host supplies setImagery or setBuildings.
+  const layersSlot = section('group-layers', 'imagery');
+  const layerRow = el('div', undefined, 'key-row');
+  layersSlot.append(layerRow);
+  const layerKey = (id: string, onClick: () => void): HTMLButtonElement => {
+    const { symbol, label } = iconFor(id);
+    const key = createToggleKey(label, { icon: symbol });
+    key.button.setAttribute('aria-pressed', 'true');
+    key.button.addEventListener('click', onClick);
+    layerRow.appendChild(key.root);
+    return key.button;
+  };
+  if (deps.setImagery) imageryButton = layerKey('imagery', toggleImagery);
+  if (deps.setBuildings) buildingsButton = layerKey('buildings', toggleBuildings);
 
   deps.host.replaceChildren(
-    head,
-    group('Activity', 'activity', TOGGLE_ACTIVITIES),
-    group('Season', 'season', SeasonSchema.options),
-    ...(deps.setImagery || deps.setBuildings ? [imagerySlot] : []),
-    notice,
+    group('group-activity', 'activity', TOGGLE_ACTIVITIES),
+    group('group-season', 'season', SeasonSchema.options),
+    foot,
+    ...(deps.setImagery || deps.setBuildings ? [layersSlot] : []),
   );
   window.addEventListener('hashchange', sync);
   sync();

@@ -1,4 +1,6 @@
 // @vitest-environment jsdom
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { Line2 } from 'three/addons/lines/Line2.js';
 import { afterEach, describe, expect, it } from 'vitest';
 import { ActivitySchema, SeasonSchema } from '../../src/schema/annotation';
@@ -9,6 +11,7 @@ import {
   TOGGLE_ACTIVITIES,
   type FilterStrip,
 } from '../../src/ui/filters';
+import { iconFor } from '../../src/ui/icons';
 import { mountFilters } from '../../src/ui/mount-filters';
 import { failedAnnotationsHandle, type AnnotationsHandle } from '../../src/wire-annotations';
 import { makeArea } from './filter-fixtures';
@@ -46,7 +49,7 @@ function setup(initialHash: string, withImagery = false, withBuildings = false) 
   strips.push(strip);
   const button = (text: string): HTMLButtonElement => {
     const found = [...host.querySelectorAll('button')].find(
-      (b) => (b.textContent ?? '').replace('✓ ', '') === text,
+      (b) => b.querySelector('.btn-label')?.textContent === text,
     );
     if (found === undefined) throw new Error(`no button ${text}`);
     return found;
@@ -64,24 +67,26 @@ function setup(initialHash: string, withImagery = false, withBuildings = false) 
 }
 
 describe('filter strip', () => {
-  it('generates toggles from the schemas and omits lift-ride', () => {
+  it('generates toggles from the schemas, shows title-case labels, and omits lift-ride', () => {
     const { host } = setup('');
-    const labels = [...host.querySelectorAll('button')].map((b) => b.textContent);
+    const labels = [...host.querySelectorAll('button .btn-label')].map((b) => b.textContent);
+    expect(labels).not.toContain('Lift Ride');
     expect(labels).not.toContain('lift-ride');
-    expect(labels.filter((l) => ActivitySchema.options.includes(l as never))).toHaveLength(
-      ActivitySchema.options.length - 1,
-    );
-    for (const season of SeasonSchema.options) expect(labels).toContain(season);
+    for (const id of TOGGLE_ACTIVITIES) expect(labels).toContain(iconFor(id).label);
+    for (const season of SeasonSchema.options) expect(labels).toContain(iconFor(season).label);
+    expect(TOGGLE_ACTIVITIES).toHaveLength(ActivitySchema.options.length - 1);
+    // Kebab-case ids stay internal: none of them is ever a visible label.
+    for (const id of ActivitySchema.options) expect(labels).not.toContain(id);
   });
 
   it('flips aria-pressed, writes the canonical hash and updates the count on click', () => {
     const { host, button, getHash } = setup('');
-    button('nordic-classic').click();
-    expect(button('nordic-classic').getAttribute('aria-pressed')).toBe('true');
+    button('Nordic Classic').click();
+    expect(button('Nordic Classic').getAttribute('aria-pressed')).toBe('true');
     expect(getHash()).toBe('#activity=nordic-classic');
     expect(host.querySelector('.filter-count')?.textContent).toBe('3 of 5 areas');
-    button('nordic-classic').click();
-    expect(button('nordic-classic').getAttribute('aria-pressed')).toBe('false');
+    button('Nordic Classic').click();
+    expect(button('Nordic Classic').getAttribute('aria-pressed')).toBe('false');
     expect(getHash()).toBe('');
   });
 
@@ -94,7 +99,7 @@ describe('filter strip', () => {
   it('does not write when the hash is already canonical', () => {
     const { writes, button } = setup('#season=winter');
     expect(writes).toHaveLength(0);
-    expect(button('winter').getAttribute('aria-pressed')).toBe('true');
+    expect(button('Winter').getAttribute('aria-pressed')).toBe('true');
   });
 
   it('ignores an unknown key, shows it in the notice, and rewrites the hash without it', () => {
@@ -104,10 +109,10 @@ describe('filter strip', () => {
   });
 
   it('clears all toggles', () => {
-    const { host, button, getHash } = setup('#activity=hike&season=winter');
-    [...host.querySelectorAll('button')].find((b) => b.textContent === 'Clear')?.click();
+    const { button, getHash } = setup('#activity=hike&season=winter');
+    button('Clear Filters').click();
     expect(getHash()).toBe('');
-    expect(button('hike').getAttribute('aria-pressed')).toBe('false');
+    expect(button('Hike').getAttribute('aria-pressed')).toBe('false');
   });
 
   it('stops reacting to hashchange after dispose', () => {
@@ -157,14 +162,14 @@ describe('facet counts and the zero state', () => {
 
   it('puts a count badge on every toggle', () => {
     const { key } = setupFacets('');
-    expect(key('nordic-classic').querySelector('.btn-count')?.textContent).toBe('40');
-    expect(key('winter').querySelector('.btn-count')?.textContent).toBe('12');
-    expect(key('spring').querySelector('.btn-count')?.textContent).toBe('0');
+    expect(key('Nordic Classic').querySelector('.btn-count')?.textContent).toBe('40');
+    expect(key('Winter').querySelector('.btn-count')?.textContent).toBe('12');
+    expect(key('Spring').querySelector('.btn-count')?.textContent).toBe('0');
   });
 
   it('renders a zero-count option as aria-disabled with the explanatory title, still focusable', () => {
     const { key } = setupFacets('');
-    for (const label of ['hike', 'tubing', 'spring']) {
+    for (const label of ['Hike', 'Tubing', 'Spring']) {
       const button = key(label);
       expect(button.getAttribute('aria-disabled')).toBe('true');
       expect(button.title).toBe(NO_MATCH_TITLE);
@@ -172,23 +177,23 @@ describe('facet counts and the zero state', () => {
       expect(button.tabIndex).toBeGreaterThanOrEqual(0);
       expect(button.closest('.cl-key')?.classList.contains('is-zero')).toBe(true);
     }
-    expect(key('nordic-classic').hasAttribute('aria-disabled')).toBe(false);
-    expect(key('nordic-classic').hasAttribute('title')).toBe(false);
+    expect(key('Nordic Classic').hasAttribute('aria-disabled')).toBe(false);
+    expect(key('Nordic Classic').hasAttribute('title')).toBe(false);
   });
 
   it('ignores a click on a zero-count option and leaves the hash alone', () => {
     const { key, getHash } = setupFacets('');
-    key('spring').click();
-    expect(key('spring').getAttribute('aria-pressed')).toBe('false');
+    key('Spring').click();
+    expect(key('Spring').getAttribute('aria-pressed')).toBe('false');
     expect(getHash()).toBe('');
   });
 
   it('keeps a latched zero-count option operable so it can be switched off', () => {
     const { key, getHash } = setupFacets('#season=spring', 0);
-    expect(key('spring').getAttribute('aria-pressed')).toBe('true');
-    expect(key('spring').hasAttribute('aria-disabled')).toBe(false);
-    key('spring').click();
-    expect(key('spring').getAttribute('aria-pressed')).toBe('false');
+    expect(key('Spring').getAttribute('aria-pressed')).toBe('true');
+    expect(key('Spring').hasAttribute('aria-disabled')).toBe(false);
+    key('Spring').click();
+    expect(key('Spring').getAttribute('aria-pressed')).toBe('false');
     expect(getHash()).toBe('');
   });
 
@@ -226,10 +231,10 @@ describe('imagery toggle', () => {
   });
 
   it('starts off from #imagery=off, and Clear keeps imagery off', () => {
-    const { host, button, getHash, imageryCalls } = setup('#imagery=off&activity=hike', true);
+    const { button, getHash, imageryCalls } = setup('#imagery=off&activity=hike', true);
     expect(button('Imagery').getAttribute('aria-pressed')).toBe('false');
     expect(imageryCalls).toEqual([false]);
-    [...host.querySelectorAll('button')].find((b) => b.textContent === 'Clear')?.click();
+    button('Clear Filters').click();
     expect(getHash()).toBe('#imagery=off');
     expect(imageryCalls).toEqual([false]);
   });
@@ -259,7 +264,7 @@ describe('buildings toggle', () => {
   });
 
   it('starts off from #buildings=off, and Clear keeps buildings off and imagery independent', () => {
-    const { host, button, getHash, buildingsCalls, imageryCalls } = setup(
+    const { button, getHash, buildingsCalls, imageryCalls } = setup(
       '#buildings=off&activity=hike',
       true,
       true,
@@ -267,7 +272,7 @@ describe('buildings toggle', () => {
     expect(button('Buildings').getAttribute('aria-pressed')).toBe('false');
     expect(buildingsCalls).toEqual([false]);
     expect(imageryCalls).toEqual([true]);
-    [...host.querySelectorAll('button')].find((b) => b.textContent === 'Clear')?.click();
+    button('Clear Filters').click();
     expect(getHash()).toBe('#buildings=off');
     expect(buildingsCalls).toEqual([false]);
   });
@@ -309,5 +314,79 @@ describe('mountFilters and the #13 handle', () => {
     expect(line.visible).toBe(false); // an unannotated trail is hidden while a filter is active
     expect(reported.length).toBeGreaterThan(0);
     expect([...(reported[reported.length - 1] ?? [])]).toEqual([]);
+  });
+});
+
+describe('rail markup', () => {
+  const loadedHandle: AnnotationsHandle = {
+    ...failedAnnotationsHandle(''),
+    annotations: { status: 'loaded', map: new Map() },
+  };
+  const mountReal = (): HTMLElement => {
+    strips.push(
+      mountFilters({
+        registry: new Map(),
+        handle: loadedHandle,
+        setImagery: () => {},
+        setBuildings: () => {},
+      }),
+    );
+    const host = document.getElementById('filters');
+    if (host === null) throw new Error('no #filters');
+    return host;
+  };
+
+  it('mounts inside the shared rail with no plate, box or background class anywhere', () => {
+    const host = mountReal();
+    expect(host.parentElement?.id).toBe('rail');
+    expect(document.querySelector('.sm-plate')).toBeNull();
+    expect(host.classList.contains('sm-plate')).toBe(false);
+  });
+
+  it('gives every key an aria-hidden .ms icon span and keeps the badge on each key', () => {
+    const host = mountReal();
+    const keys = [...host.querySelectorAll('button')];
+    expect(keys).toHaveLength(TOGGLE_ACTIVITIES.length + 4 + 1 + 2);
+    for (const key of keys) {
+      const icon = key.querySelector(':scope > .btn-face > .ms');
+      expect(icon, key.textContent ?? '').not.toBeNull();
+      expect(icon?.getAttribute('aria-hidden')).toBe('true');
+    }
+  });
+
+  it('orders the groups Activity, Season, Clear then the status line, then Layers', () => {
+    const host = mountReal();
+    const order = [...host.children].map((c) =>
+      c.classList.contains('console-foot')
+        ? 'foot'
+        : (c.querySelector('.group-head-text')?.textContent ?? '?'),
+    );
+    expect(order).toEqual(['Activity', 'Season', 'foot', 'Layers']);
+    const foot = host.querySelector('.console-foot');
+    const parts = [...(foot?.children ?? [])].map(
+      (c) => c.querySelector('.btn-label')?.textContent ?? c.className,
+    );
+    expect(parts).toEqual(['Clear Filters', 'filter-count', 'filter-notice']);
+  });
+
+  it('labels each group by its header and marks the header icon aria-hidden', () => {
+    const host = mountReal();
+    for (const group of host.querySelectorAll('.console-group')) {
+      const head = group.querySelector('.group-head');
+      expect(group.getAttribute('aria-labelledby')).toBe(head?.id);
+      expect(head?.querySelector('.ms')?.getAttribute('aria-hidden')).toBe('true');
+    }
+  });
+
+  it('phone layout is structural: a scrolling row whose headers are chips, same keys', () => {
+    const host = mountReal();
+    // jsdom has no layout, so assert the structure the phone CSS targets and that the CSS declares the row.
+    const css = readFileSync(resolve(__dirname, '../../src/ui/rail.css'), 'utf8');
+    const phone = css.slice(css.indexOf('@media (max-width: 719px)'));
+    expect(phone).toMatch(/#rail \{[^}]*flex-direction: row;/);
+    expect(phone).toMatch(/overflow-x: auto;/);
+    expect(phone).toMatch(/#rail \.group-head \{[^}]*border-radius: 999px;/);
+    expect(host.querySelectorAll('.console-group > .group-head')).toHaveLength(3);
+    expect(host.querySelectorAll('.console-group .key-row .cl-key').length).toBeGreaterThan(0);
   });
 });

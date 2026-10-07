@@ -1,12 +1,20 @@
 import './views.css';
 import type { ViewName } from '../scene/views';
 import { createClickKey } from './clicky-key';
+import { iconFor } from './icons';
+import { getRail, groupHead, releaseRail } from './rail';
 
 /** The camera views offered on the strip, in display order. summit-south stays reachable through the API only. */
-export const STRIP_VIEWS: readonly { readonly name: ViewName; readonly label: string }[] = [
-  { name: 'resort', label: 'Resort' },
-  { name: 'overview', label: 'Overview' },
-  { name: 'topdown', label: 'Top-down' },
+export const STRIP_VIEWS: readonly {
+  readonly name: ViewName;
+  /** The id in icons.json (kebab-case, internal). */
+  readonly iconId: string;
+  /** The visible title-case label, from icons.json. */
+  readonly label: string;
+}[] = [
+  { name: 'resort', iconId: 'resort', label: iconFor('resort').label },
+  { name: 'overview', iconId: 'overview', label: iconFor('overview').label },
+  { name: 'topdown', iconId: 'top-down', label: iconFor('top-down').label },
 ];
 
 export interface ViewsDeps {
@@ -29,19 +37,16 @@ export interface ViewsStrip {
 /**
  * @displayName Camera view strip
  * @strategicPurpose Lets a reviewer jump between the named camera views without knowing the orbit gestures.
- * @tacticalObjective Mounts a bottom-left group of click keys that call setView(name) and mark the active view with aria-current.
+ * @tacticalObjective Mounts a group of click keys at the bottom of the left rail that call setView(name) and mark the active view with aria-current.
  */
 export function mountViews(deps: ViewsDeps): ViewsStrip {
   const root = document.createElement('div');
   root.id = 'views';
-  root.className = 'sm-plate sm-views';
+  root.className = 'sm-views';
   root.setAttribute('role', 'group');
   root.setAttribute('aria-label', 'Camera view');
 
-  const caption = document.createElement('span');
-  caption.className = 'views-caption';
-  caption.textContent = 'View';
-  root.append(caption);
+  root.append(groupHead('group-view'));
 
   const buttons = new Map<ViewName, HTMLButtonElement>();
   const mark = (current: ViewName | null): void => {
@@ -51,8 +56,8 @@ export function mountViews(deps: ViewsDeps): ViewsStrip {
     }
   };
 
-  for (const { name, label } of STRIP_VIEWS) {
-    const { root: keyRoot, button } = createClickKey(label);
+  for (const { name, iconId, label } of STRIP_VIEWS) {
+    const { root: keyRoot, button } = createClickKey(label, { icon: iconFor(iconId).symbol });
     button.dataset.view = name;
     button.addEventListener('click', () => {
       deps.setView(name);
@@ -64,13 +69,14 @@ export function mountViews(deps: ViewsDeps): ViewsStrip {
   mark(deps.initial ?? null);
 
   const unsubscribe = deps.onUserMove?.(() => mark(null));
-  document.body.append(root);
+  getRail().append(root);
 
   return {
     root,
     dispose() {
       unsubscribe?.();
       root.remove();
+      releaseRail();
     },
   };
 }

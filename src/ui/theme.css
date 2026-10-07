@@ -11,9 +11,13 @@
   --sm-plate-solid: #181d22;
   --sm-line: #3a434c;
   --sm-focus: #e6f7ff;
-  --sm-accent: #0b7e8d;
+  --sm-accent: #087282;
   --sm-font: 13px/1.4 system-ui, -apple-system, 'Segoe UI', sans-serif;
   --sm-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* Legibility halo for text and glyphs that sit directly on the scene (no plate). A soft dark blur, not a box. */
+  --sm-halo:
+    0 0 1px rgb(0 0 0 / 0.95), 0 0 2px rgb(0 0 0 / 0.9), 0 1px 3px rgb(0 0 0 / 0.8),
+    0 0 7px rgb(0 0 0 / 0.65);
   /* Key type size and height. Width follows the label length (--cl-chars, set by clicky-key.ts). */
   --cl-font: 13px;
   --cl-h: 2.45em;
@@ -65,9 +69,9 @@
   font-size: var(--cl-font);
   line-height: 1;
 }
-/* Toggle keys always reserve room for the check mark, so latching never changes a key's width. */
-.cl-key.cl-t {
-  --cl-extra: 1.3em;
+/* A key with a glyph reserves room for it (24 px glyph plus gap, about 2.2em at the 13 px key type). */
+.cl-key.has-icon {
+  --cl-extra: 2.2em;
 }
 .cl-key:is(.cl-t, .cl-c) .btn-scale {
   /* About 0.62em per character plus the face padding; a ratio of the type size, not a fixed length. */
@@ -88,15 +92,55 @@
   font-size: var(--cl-font);
 }
 
-/* Latched keys carry a check mark as well as the accent face, so state never rests on colour alone. */
-.cl-t .clicky-toggle[aria-pressed='true'] .btn-label::before {
-  content: '\2713\00a0';
+/*
+ * Material Symbols Outlined glyph, rendered as a ligature. 24 px, weight 400; FILL 1 when the key is latched.
+ * The box is clipped to the glyph size so, if the font has not loaded, the ligature text never spills out of the key.
+ */
+.ms {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  overflow: hidden;
+  font-family: 'Material Symbols Outlined';
+  font-size: 24px;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-indent: 0;
+  text-transform: none;
+  white-space: nowrap;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'liga';
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+  user-select: none;
 }
+.cl-t .clicky-toggle[aria-pressed='true'] .ms {
+  font-variation-settings:
+    'FILL' 1,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+}
+
+/* Latched keys read as latched without colour: sunk wall (generated), filled glyph (above) and the accent face. */
 
 /* The key the camera is in (views strip). A dot, not just a colour. */
 .cl-c .clicky-btn[aria-current='true'] .btn-label::before {
   content: '\25cf\00a0';
   color: var(--sm-focus);
+}
+.cl-c .clicky-btn[aria-current='true'] .ms {
+  font-variation-settings:
+    'FILL' 1,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
 }
 
 /* Count badge on a toggle key. The pill is a darker wash over whatever the face colour is. */

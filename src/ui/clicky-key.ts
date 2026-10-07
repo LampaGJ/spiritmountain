@@ -4,7 +4,7 @@ import './clicky.css';
 /**
  * @displayName Clicky key builders
  * @strategicPurpose One place that knows the clicky-button markup contract, so every control in the console, the views strip and the panel is the same tactile key.
- * @tacticalObjective Builds `.btn-scale > .btn-housing > .btn-cell > button` with createElement and textContent only; toggle keys carry aria-pressed, click keys are plain buttons.
+ * @tacticalObjective Builds `.btn-scale > .btn-housing > .btn-cell > button` with createElement and textContent only; toggle keys carry aria-pressed, click keys are plain buttons; an optional Material Symbols glyph sits left of the label in an aria-hidden `.ms` span.
  */
 export interface ClickyKey {
   /** The outer `.cl-key` element to append to the page. */
@@ -21,6 +21,17 @@ export interface ClickyKey {
 export interface KeyOptions {
   /** Extra class on the button itself (for example `panel-close`). */
   readonly buttonClass?: string;
+  /** Material Symbols Outlined ligature name (for example `downhill_skiing`). Rendered aria-hidden, so the label stays the accessible name. */
+  readonly icon?: string;
+}
+
+/** The glyph span: ligature text in the Material Symbols font, hidden from assistive technology. */
+export function iconSpan(symbol: string, className = 'ms'): HTMLSpanElement {
+  const node = document.createElement('span');
+  node.className = className;
+  node.setAttribute('aria-hidden', 'true');
+  node.textContent = symbol;
+  return node;
 }
 
 function slugOf(label: string): string {
@@ -46,7 +57,7 @@ function buildKey(
   label: string,
   options: KeyOptions,
 ): ClickyKey {
-  const root = div(`cl-key ${scope}`);
+  const root = div(`cl-key ${scope}${options.icon === undefined ? '' : ' has-icon'}`);
   // The label length sizes the key (see theme.css); the font size is constant across keys.
   root.style.setProperty('--cl-chars', String(label.length));
   const scale = div('btn-scale');
@@ -58,6 +69,7 @@ function buildKey(
     .filter((c): c is string => c !== undefined && c !== '')
     .join(' ');
   const face = span('btn-face');
+  if (options.icon !== undefined) face.append(iconSpan(options.icon));
   face.append(span('btn-label', label));
   button.append(span('btn-wall'), face);
   cell.append(button);

@@ -10,19 +10,19 @@
   --grid-gap: 12px;
   --grid-justify: center;
   --grid-align: center;
-  --housing-width: 126px;
-  --housing-height: 39px;
-  --housing-width-base: 126px;
-  --housing-height-base: 39px;
-  --container-width: 120px;
+  --housing-width: 212px;
+  --housing-height: 38px;
+  --housing-width-base: 212px;
+  --housing-height-base: 38px;
+  --container-width: 208px;
   --container-height: 36px;
-  --radius: 14px;
-  --radius-bot: 17px;
+  --radius: 16px;
+  --radius-bot: 18px;
   --face-color: #343c45;
   --face-pressed: #2d343b;
-  --face-toggled: #096c79;
+  --face-toggled: #076270;
   --text-color: #f4f6f8;
-  --font-size: min(10px, 8px);
+  --font-size: min(17px, 8px);
   --font-weight: 600;
   --letter-spacing: 0.02em;
   --border: none;
@@ -37,7 +37,7 @@
   --icon-color-pressed: #d2d4d5;
   --light-x: 50%;
   --light-y: 25%;
-  --specular-alpha: 0.14;
+  --specular-alpha: 0.1;
   --specular-size: 45%;
   --taper: 0px;
   --dish: 0;
@@ -51,36 +51,35 @@
   --cavity-wall-shadow-edge-ratio: 0.6;
   --cavity-wall-gradient-lo: 40%;
   --cavity-wall-gradient-hi: 60%;
-  --ambient-color: rgba(0, 0, 0, 0.3);
-  --ambient-blur: 8px;
-  --ambient-y: 5px;
+  --ambient-color: rgba(0, 0, 0, 0.14);
+  --ambient-blur: 5px;
+  --ambient-y: 3px;
   --ambient-spread: 0px;
-  --housing-shadow: 0 5px 8px 0 rgba(0, 0, 0, 0.3), 0 1px 3px 0 rgba(0, 0, 0, 0.12);
-  --housing-shadow-pressed: 0 3px 4px 0 rgba(0, 0, 0, 0.15), 0 1px 2px 0 rgba(0, 0, 0, 0.12);
+  --housing-shadow: 0 3px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+  --housing-shadow-pressed: 0 2px 2px 0 rgba(0, 0, 0, 0.07), 0 1px 2px 0 rgba(0, 0, 0, 0.1);
   --face-shadow-resting:
     inset 0 0 0 0 transparent, inset 0 0 0 0 rgba(0, 0, 0, 0.55), inset 0 0 0 0 rgba(0, 0, 0, 0.3),
     inset 0 0 0 0 transparent, inset 0 -1px 0 0 rgba(0, 0, 0, 0.14);
   --face-shadow-pressed:
-    inset 0 0 0 0 transparent, inset 0 2px 2px 0 rgba(0, 0, 0, 0.55),
-    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.3), inset 0 0 0 0 transparent,
-    inset 0 -1px 0 0 rgba(0, 0, 0, 0.14);
-  --rim-shadow: inset 0 2px 2px 0 rgba(255, 255, 255, 0.16);
-  --wall-h: 5px;
-  --press-translate: 6px;
-  --toggle-height: 4px;
-  --frame-width: 3px;
+    inset 0 0 0 0 transparent, inset 0 0 0 0 rgba(0, 0, 0, 0.55), inset 0 0 0 0 rgba(0, 0, 0, 0.3),
+    inset 0 0 0 0 transparent, inset 0 -1px 0 0 rgba(0, 0, 0, 0.14);
+  --rim-shadow: inset 0 1px 2px 0 rgba(255, 255, 255, 0.12);
+  --wall-h: 3px;
+  --press-translate: 3px;
+  --toggle-height: 2px;
+  --frame-width: 2px;
   --frame-color: #3a434c;
   --frame-color-hi: #66717c;
   --frame-color-lo: #1c2127;
-  --frame-bevel-alpha: 0.22;
-  --frame-bevel-alpha-shadow: 0.154;
+  --frame-bevel-alpha: 0.16;
+  --frame-bevel-alpha-shadow: 0.112;
   --frame-bevel-width: 1px;
   --duration: 55ms;
   --press-duration: 28ms;
-  --shadow-flush-frac: 0.833;
-  --shadow-press-delay: calc(var(--press-duration) * 0.833);
-  --shadow-press-dur: calc(var(--press-duration) * 0.167);
-  --shadow-release-dur: calc(var(--duration) * 0.167);
+  --shadow-flush-frac: 1;
+  --shadow-press-delay: calc(var(--press-duration) * 1);
+  --shadow-press-dur: calc(var(--press-duration) * 0);
+  --shadow-release-dur: calc(var(--duration) * 0);
   --color-anim-delay-frac: 0;
   --color-anim-frac: 1;
   --transform-easing: cubic-bezier(0.25, 0.1, 0.25, 1);
@@ -92,14 +91,14 @@
   .cl-t {
     --housing-width: 100cqw;
     --housing-height: 100cqh;
-    --frame-width: 7.1429cqmin;
+    --frame-width: 5cqmin;
     --container-width: calc(100cqw - 2 * var(--frame-width));
     --container-height: calc(100cqh - 2 * var(--frame-width));
-    --wall-h: calc(var(--container-height) * 0.14);
-    --press-translate: calc(var(--container-height) * 0.17);
+    --wall-h: calc(var(--container-height) * 0.08);
+    --press-translate: calc(var(--container-height) * 0.09);
     --toggle-height: calc(var(--press-translate) * 0.7);
     --radius: min(
-      calc(var(--container-width) * 0.12),
+      calc(var(--container-width) * 0.22),
       calc(var(--container-width) / 2),
       calc((var(--container-height) - var(--wall-h)) / 2),
       calc(var(--container-height) / 2)
@@ -110,27 +109,24 @@
       calc(var(--housing-height) / 2)
     );
     --housing-shadow:
-      0 calc(var(--wall-h) * 1) calc(var(--wall-h) * 1.6) 0 rgba(0, 0, 0, 0.3),
+      0 calc(var(--wall-h) * 1) calc(var(--wall-h) * 1.6) 0 rgba(0, 0, 0, 0.14),
       0 max(1px, calc(var(--wall-h) * 0.25)) max(2px, calc(var(--wall-h) * 0.5)) 0
-        rgba(0, 0, 0, 0.12);
+        rgba(0, 0, 0, 0.1);
     --housing-shadow-pressed:
-      0 calc(var(--wall-h) * 0.5) calc(var(--wall-h) * 0.8) 0 rgba(0, 0, 0, 0.15),
+      0 calc(var(--wall-h) * 0.5) calc(var(--wall-h) * 0.8) 0 rgba(0, 0, 0, 0.07),
       0 max(1px, calc(var(--wall-h) * 0.125)) max(2px, calc(var(--wall-h) * 0.25)) 0
-        rgba(0, 0, 0, 0.12);
+        rgba(0, 0, 0, 0.1);
     --font-size: min(calc(var(--container-width) * 0.08), calc(var(--container-height) * 0.22));
     --face-shadow-resting:
       inset 0 0 0 0 transparent, inset 0 0 0 0 rgba(0, 0, 0, 0.55),
       inset 0 0 0 0 rgba(0, 0, 0, 0.3), inset 0 0 0 0 transparent,
       inset 0 -1px 0 0 rgba(0, 0, 0, 0.14);
     --face-shadow-pressed:
-      inset 0 0 0 0 transparent,
-      inset 0 calc(var(--container-height) * 0.06) calc(var(--container-height) * 0.06) 0
-        rgba(0, 0, 0, 0.55),
-      inset 0 calc(var(--container-height) * -0.03) calc(var(--container-height) * 0.04) 0
-        rgba(0, 0, 0, 0.3),
-      inset 0 0 0 0 transparent, inset 0 -1px 0 0 rgba(0, 0, 0, 0.14);
-    --rim-shadow: inset 0 calc(var(--container-height) * 0.05) calc(var(--container-height) * 0.03)
-      0 rgba(255, 255, 255, 0.16);
+      inset 0 0 0 0 transparent, inset 0 0 0 0 rgba(0, 0, 0, 0.55),
+      inset 0 0 0 0 rgba(0, 0, 0, 0.3), inset 0 0 0 0 transparent,
+      inset 0 -1px 0 0 rgba(0, 0, 0, 0.14);
+    --rim-shadow: inset 0 calc(var(--container-height) * 0.03) calc(var(--container-height) * 0.02)
+      0 rgba(255, 255, 255, 0.12);
   }
 }
 
@@ -623,19 +619,19 @@
   --grid-gap: 12px;
   --grid-justify: center;
   --grid-align: center;
-  --housing-width: 126px;
-  --housing-height: 39px;
-  --housing-width-base: 126px;
-  --housing-height-base: 39px;
-  --container-width: 120px;
+  --housing-width: 212px;
+  --housing-height: 38px;
+  --housing-width-base: 212px;
+  --housing-height-base: 38px;
+  --container-width: 208px;
   --container-height: 36px;
-  --radius: 14px;
-  --radius-bot: 17px;
+  --radius: 16px;
+  --radius-bot: 18px;
   --face-color: #3f4952;
   --face-pressed: #363f47;
   --face-toggled: #363f47;
   --text-color: #f4f6f8;
-  --font-size: min(10px, 8px);
+  --font-size: min(17px, 8px);
   --font-weight: 600;
   --letter-spacing: 0.02em;
   --border: none;
@@ -650,7 +646,7 @@
   --icon-color-pressed: #d2d4d5;
   --light-x: 50%;
   --light-y: 25%;
-  --specular-alpha: 0.14;
+  --specular-alpha: 0.1;
   --specular-size: 45%;
   --taper: 0px;
   --dish: 0;
@@ -664,36 +660,35 @@
   --cavity-wall-shadow-edge-ratio: 0.6;
   --cavity-wall-gradient-lo: 40%;
   --cavity-wall-gradient-hi: 60%;
-  --ambient-color: rgba(0, 0, 0, 0.3);
-  --ambient-blur: 8px;
-  --ambient-y: 5px;
+  --ambient-color: rgba(0, 0, 0, 0.14);
+  --ambient-blur: 5px;
+  --ambient-y: 3px;
   --ambient-spread: 0px;
-  --housing-shadow: 0 5px 8px 0 rgba(0, 0, 0, 0.3), 0 1px 3px 0 rgba(0, 0, 0, 0.12);
-  --housing-shadow-pressed: 0 3px 4px 0 rgba(0, 0, 0, 0.15), 0 1px 2px 0 rgba(0, 0, 0, 0.12);
+  --housing-shadow: 0 3px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+  --housing-shadow-pressed: 0 2px 2px 0 rgba(0, 0, 0, 0.07), 0 1px 2px 0 rgba(0, 0, 0, 0.1);
   --face-shadow-resting:
     inset 0 0 0 0 transparent, inset 0 0 0 0 rgba(0, 0, 0, 0.55), inset 0 0 0 0 rgba(0, 0, 0, 0.3),
     inset 0 0 0 0 transparent, inset 0 -1px 0 0 rgba(0, 0, 0, 0.14);
   --face-shadow-pressed:
-    inset 0 0 0 0 transparent, inset 0 2px 2px 0 rgba(0, 0, 0, 0.55),
-    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.3), inset 0 0 0 0 transparent,
-    inset 0 -1px 0 0 rgba(0, 0, 0, 0.14);
-  --rim-shadow: inset 0 2px 2px 0 rgba(255, 255, 255, 0.16);
-  --wall-h: 5px;
-  --press-translate: 6px;
-  --toggle-height: 3px;
-  --frame-width: 3px;
+    inset 0 0 0 0 transparent, inset 0 0 0 0 rgba(0, 0, 0, 0.55), inset 0 0 0 0 rgba(0, 0, 0, 0.3),
+    inset 0 0 0 0 transparent, inset 0 -1px 0 0 rgba(0, 0, 0, 0.14);
+  --rim-shadow: inset 0 1px 2px 0 rgba(255, 255, 255, 0.12);
+  --wall-h: 3px;
+  --press-translate: 3px;
+  --toggle-height: 2px;
+  --frame-width: 2px;
   --frame-color: #3a434c;
   --frame-color-hi: #66717c;
   --frame-color-lo: #1c2127;
-  --frame-bevel-alpha: 0.22;
-  --frame-bevel-alpha-shadow: 0.154;
+  --frame-bevel-alpha: 0.16;
+  --frame-bevel-alpha-shadow: 0.112;
   --frame-bevel-width: 1px;
   --duration: 55ms;
   --press-duration: 28ms;
-  --shadow-flush-frac: 0.833;
-  --shadow-press-delay: calc(var(--press-duration) * 0.833);
-  --shadow-press-dur: calc(var(--press-duration) * 0.167);
-  --shadow-release-dur: calc(var(--duration) * 0.167);
+  --shadow-flush-frac: 1;
+  --shadow-press-delay: calc(var(--press-duration) * 1);
+  --shadow-press-dur: calc(var(--press-duration) * 0);
+  --shadow-release-dur: calc(var(--duration) * 0);
   --color-anim-delay-frac: 0;
   --color-anim-frac: 1;
   --transform-easing: cubic-bezier(0.25, 0.1, 0.25, 1);
@@ -705,14 +700,14 @@
   .cl-c {
     --housing-width: 100cqw;
     --housing-height: 100cqh;
-    --frame-width: 7.1429cqmin;
+    --frame-width: 5cqmin;
     --container-width: calc(100cqw - 2 * var(--frame-width));
     --container-height: calc(100cqh - 2 * var(--frame-width));
-    --wall-h: calc(var(--container-height) * 0.14);
-    --press-translate: calc(var(--container-height) * 0.17);
+    --wall-h: calc(var(--container-height) * 0.08);
+    --press-translate: calc(var(--container-height) * 0.09);
     --toggle-height: calc(var(--press-translate) * 0.5);
     --radius: min(
-      calc(var(--container-width) * 0.12),
+      calc(var(--container-width) * 0.22),
       calc(var(--container-width) / 2),
       calc((var(--container-height) - var(--wall-h)) / 2),
       calc(var(--container-height) / 2)
@@ -723,27 +718,24 @@
       calc(var(--housing-height) / 2)
     );
     --housing-shadow:
-      0 calc(var(--wall-h) * 1) calc(var(--wall-h) * 1.6) 0 rgba(0, 0, 0, 0.3),
+      0 calc(var(--wall-h) * 1) calc(var(--wall-h) * 1.6) 0 rgba(0, 0, 0, 0.14),
       0 max(1px, calc(var(--wall-h) * 0.25)) max(2px, calc(var(--wall-h) * 0.5)) 0
-        rgba(0, 0, 0, 0.12);
+        rgba(0, 0, 0, 0.1);
     --housing-shadow-pressed:
-      0 calc(var(--wall-h) * 0.5) calc(var(--wall-h) * 0.8) 0 rgba(0, 0, 0, 0.15),
+      0 calc(var(--wall-h) * 0.5) calc(var(--wall-h) * 0.8) 0 rgba(0, 0, 0, 0.07),
       0 max(1px, calc(var(--wall-h) * 0.125)) max(2px, calc(var(--wall-h) * 0.25)) 0
-        rgba(0, 0, 0, 0.12);
+        rgba(0, 0, 0, 0.1);
     --font-size: min(calc(var(--container-width) * 0.08), calc(var(--container-height) * 0.22));
     --face-shadow-resting:
       inset 0 0 0 0 transparent, inset 0 0 0 0 rgba(0, 0, 0, 0.55),
       inset 0 0 0 0 rgba(0, 0, 0, 0.3), inset 0 0 0 0 transparent,
       inset 0 -1px 0 0 rgba(0, 0, 0, 0.14);
     --face-shadow-pressed:
-      inset 0 0 0 0 transparent,
-      inset 0 calc(var(--container-height) * 0.06) calc(var(--container-height) * 0.06) 0
-        rgba(0, 0, 0, 0.55),
-      inset 0 calc(var(--container-height) * -0.03) calc(var(--container-height) * 0.04) 0
-        rgba(0, 0, 0, 0.3),
-      inset 0 0 0 0 transparent, inset 0 -1px 0 0 rgba(0, 0, 0, 0.14);
-    --rim-shadow: inset 0 calc(var(--container-height) * 0.05) calc(var(--container-height) * 0.03)
-      0 rgba(255, 255, 255, 0.16);
+      inset 0 0 0 0 transparent, inset 0 0 0 0 rgba(0, 0, 0, 0.55),
+      inset 0 0 0 0 rgba(0, 0, 0, 0.3), inset 0 0 0 0 transparent,
+      inset 0 -1px 0 0 rgba(0, 0, 0, 0.14);
+    --rim-shadow: inset 0 calc(var(--container-height) * 0.03) calc(var(--container-height) * 0.02)
+      0 rgba(255, 255, 255, 0.12);
   }
 }
 
@@ -975,19 +967,13 @@
 }
 
 /* The recess shadow holds its resting value until the face goes FLUSH
-   (27.78% of the cycle), ramps only while the face is below the
+   (33.33% of the cycle), ramps only while the face is below the
    plate, and is gone again the moment it clears on the way up
-   (44.44%). Those two windows are different lengths — which is why
+   (33.33%). Those two windows are different lengths — which is why
    the offsets carry the timing here rather than one centred delay. */
 @keyframes clicky-shadow-cycle-1ngc96 {
+  /* press depth never carries the face below flush ⇒ never recessed */
   0%,
-  27.78% {
-    box-shadow: var(--face-shadow-resting);
-  }
-  33.33% {
-    box-shadow: var(--face-shadow-pressed);
-  }
-  44.44%,
   100% {
     box-shadow: var(--face-shadow-resting);
   }
