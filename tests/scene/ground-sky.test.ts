@@ -12,7 +12,13 @@ import { describe, expect, it } from 'vitest';
 import { loadSky } from '../../src/data/load-sky';
 import { elevationToSceneY } from '../../src/scene/frame';
 import { createGround, GROUND_SIZE_M, groundSlopeColor } from '../../src/scene/ground';
-import { createSkyControl, SKY_FALLBACK_COLOR } from '../../src/scene/sky';
+import {
+  createSkyControl,
+  SKY_ENVIRONMENT_INTENSITY,
+  SKY_FALLBACK_COLOR,
+  SKY_HEMI_FACTOR,
+  SKY_SUN_FACTOR,
+} from '../../src/scene/sky';
 
 describe('createGround', () => {
   it('puts a 60 km opaque plane 0.5 m under the base elevation, in the given colour, first in draw order', () => {
@@ -52,8 +58,9 @@ describe('sky control', () => {
     control.setSky(texture);
     expect(scene.background).toBe(texture);
     expect(scene.environment).toBe(texture);
-    expect(sun.intensity).toBeCloseTo(1.32, 9);
-    expect(hemisphere.intensity).toBeCloseTo(0.3, 9);
+    expect(sun.intensity).toBeCloseTo(2.2 * SKY_SUN_FACTOR, 9);
+    expect(hemisphere.intensity).toBeCloseTo(1.2 * SKY_HEMI_FACTOR, 9);
+    expect(scene.environmentIntensity).toBe(SKY_ENVIRONMENT_INTENSITY);
   });
 
   it('restores the flat colour, no environment and the original intensities', () => {
