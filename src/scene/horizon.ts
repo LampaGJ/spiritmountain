@@ -15,13 +15,18 @@ export const HORIZON_NEAR_FRACTION = 0.88;
  * When the far plane caps the horizon short of the true one (high cameras), the ground ends at an artificial edge
  * on a flat, detail-free plane, so a wider band hides that edge instead of drawing a disc rim.
  */
-export const CAPPED_NEAR_FRACTION = 0.5;
+export const CAPPED_NEAR_FRACTION = 0.75;
 /**
  * Aerial perspective length scale in metres: ground colour relaxes toward the horizon sky as 1 - exp(-d / L).
  * Koschmieder with a very clear day, visibility near 300 km (L = V / 3.912). At 5 km this tints by 6 percent, at
  * 20 km by 22 percent, so the near slopes stay saturated and only far ground picks up blue.
  */
 export const AERIAL_SCALE_M = 80_000;
+/**
+ * The colour far ground relaxes toward: a muted atmospheric blue-grey (sRGB), not the panorama's horizon band. The
+ * band is near white in every daytime sky, and mixing ground toward white over tens of kilometres read as smog.
+ */
+export const AERIAL_TINT = 0xa9bccd;
 
 /** Distance in metres to the geometric horizon from an eye heightM above the ground plane: sqrt(2 R h), at least 1 km. */
 export function horizonDistanceM(heightM: number): number {
@@ -119,6 +124,8 @@ export function applyHorizonBlend(material: Material, shared: HorizonUniforms): 
     // takes on. The curvature term blends toward the sky in the fragment's own view direction, so wherever the
     // ground ends (true horizon, or the far-plane cap seen from a high camera) it matches the background behind it
     // and leaves no ring.
+    const tint = new Color(AERIAL_TINT);
+    const aerialTint = `vec3(${tint.r.toFixed(5)}, ${tint.g.toFixed(5)}, ${tint.b.toFixed(5)})`;
     const blend = `{
   vec3 horizonOffset = vHorizonPos - uCameraPos;
   float horizonDist = length(horizonOffset.xz);
@@ -130,7 +137,7 @@ export function applyHorizonBlend(material: Material, shared: HorizonUniforms): 
   vec3 behindSky = uHasSky > 0.5 ? textureLod(uSkyMap, vec2(horizonU, horizonV), 0.0).rgb : uFallbackColor;
   float aerial = 1.0 - exp(-horizonDist / ${AERIAL_SCALE_M.toFixed(1)});
   float curvature = smoothstep(uHorizonNear, uHorizonDist, horizonDist);
-  gl_FragColor.rgb = mix(gl_FragColor.rgb, horizonSky, aerial);
+  gl_FragColor.rgb = mix(gl_FragColor.rgb, ${aerialTint}, aerial);
   gl_FragColor.rgb = mix(gl_FragColor.rgb, behindSky, curvature);
 }`;
     shader.fragmentShader = shader.fragmentShader

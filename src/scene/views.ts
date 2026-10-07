@@ -16,6 +16,9 @@ export interface CameraView {
   readonly distance?: number;
 }
 
+/** Far over near: 24-bit depth stays usable for a 1 m line lift at 5 km with this ratio; the live far plane keeps it too. */
+export const NEAR_FAR_RATIO = 5000;
+
 export interface ViewSet {
   readonly views: Record<ViewName, CameraView>;
   /** Scene-space bounds of the displaced terrain. */
@@ -242,7 +245,7 @@ export function computeViews(
   );
 
   const far = fitDistance + 2 * sphere.radius;
-  const near = Math.max(1, far / 5000);
+  const near = Math.max(1, far / NEAR_FAR_RATIO);
   return {
     views: { overview, topdown, 'summit-south': summitSouth, resort },
     box,
