@@ -96,6 +96,9 @@ if (!imageryManifest.success) {
 import areasUrl from '../data/areas.geojson?url';
 import { loadAreas } from './data/load-areas';
 import { installAreas, type AreaLayer } from './scene/areas';
+import { TILES } from './scene/ribbon-kinds';
+import { loadRibbonTextures } from './scene/ribbon-textures';
+import { buildRibbonLayer, type RibbonLayer } from './scene/ribbons';
 import { createMeshSurface } from './scene/heightfield';
 import { deriveLandmarks } from './scene/landmarks';
 import { focusBoxOf, type FocusBox } from './scene/views';
@@ -146,6 +149,34 @@ if (!('error' in areaLayerResult)) {
   }
 }
 handle.setFadeCentre(fadeCentre);
+// Trail ribbons: closed volumes (patterned top, walls) per area, in the elevated group. Routed by kind until the filter
+// strip mounts and routes them by activity (src/scene/ribbon-kinds.ts). Lifts stay cables.
+export const ribbonLayer: RibbonLayer | null = (() => {
+  if ('error' in areaLayerResult) return null;
+  try {
+    const layer = buildRibbonLayer(
+      [...areaLayerResult.registry.values()].map((entry) => entry.area),
+      meshSurface,
+      (east, north, elevation) => {
+        const p = toScene(east, north, elevation);
+        return [p.x, p.y, p.z];
+      },
+      TILES,
+      loadRibbonTextures(),
+      { fadeCentre },
+    );
+    for (const material of layer.allMaterials()) handle.applyHorizon(material);
+    handle.elevated.add(layer.group);
+    const stats = layer.stats();
+    console.info(
+      `ribbons: ${stats.areaCount} areas, ${stats.pathCount} paths, ${stats.vertexCount} vertices, ${stats.triangleCount} triangles`,
+    );
+    return layer;
+  } catch (error) {
+    console.error(`ribbons: ${error instanceof Error ? error.message : String(error)}`);
+    return null;
+  }
+})();
 // #exag=2.5 is honoured here, once the terrain, areas and view are in, so a failed annotations load cannot lose it.
 const setSceneExaggeration = (k: number): void => handle.setExaggeration(k);
 setSceneExaggeration(decodeHash(location.hash).filter.exag ?? 1);
@@ -231,6 +262,8 @@ void loadBuildings(buildingsUrl)
     layer.setVisible(buildingsWanted);
     handle.applyHorizon(layer.mesh.material as Material);
     handle.elevated.add(layer.mesh);
+    // Ribbons keep off roofs: where one crosses a footprint its top drapes on bare earth.
+    ribbonLayer?.setFootprints(result.features.map((f) => f.geometry.coordinates[0] ?? []));
     buildingsLayer = layer;
     if (layer.dropped.length > 0) {
       console.warn(
@@ -285,9 +318,9 @@ let surfaceRequested = false;
 /** Area lines follow the drawn surface while it is visible, and return to bare earth when it is hidden. */
 const applySurfaceDrape = (): void => {
   if ('error' in areaLayerResult) return;
-  areaLayerResult.redrape(
-    surfaceWanted && surfaceHandle ? surfaceHandle.sampler(meshSurface) : meshSurface,
-  );
+  const active = surfaceWanted && surfaceHandle ? surfaceHandle.sampler(meshSurface) : meshSurface;
+  areaLayerResult.redrape(active);
+  ribbonLayer?.redrape(active);
 };
 
 /** Loads and builds the surface the first time it is wanted; the default page with Surface off never pays for it. */
@@ -494,6 +527,7 @@ void annotationsReady.then((handle) => {
     setSurface: setSurfaceWanted,
     setTrees: setTreesWanted,
     setExaggeration: setSceneExaggeration,
+    ...(ribbonLayer ? { ribbons: ribbonLayer } : {}),
   });
 });
 

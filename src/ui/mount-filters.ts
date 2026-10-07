@@ -1,6 +1,7 @@
 import './filters.css';
 import type { AreaEntry } from '../scene/areas';
 import { applyFilter } from '../scene/filter-apply';
+import type { RibbonLayer } from '../scene/ribbons';
 import type { AnnotationsHandle } from '../wire-annotations';
 import { SeasonSchema } from '../schema/annotation';
 import { browserHash, mountFilterStrip, TOGGLE_ACTIVITIES, type FilterStrip } from './filters';
@@ -21,14 +22,24 @@ export interface MountFiltersDeps {
   readonly setTrees?: (on: boolean) => void;
   /** Sets the terrain exaggeration factor (0 to 10). Absent means no slider. */
   readonly setExaggeration?: (k: number) => void;
+  /** The trail ribbons. Every filter change re-routes them: hidden areas lose their ribbon, the Activity selection picks each area's tile. */
+  readonly ribbons?: RibbonLayer;
 }
 
 /** Shown instead of the strip when the annotations load failed (#13 Decision 5). */
 export const FILTERS_UNAVAILABLE_TEXT = 'filters unavailable: annotations failed to load';
 
 export function mountFilters(deps: MountFiltersDeps): FilterStrip {
-  const { registry, handle, setImagery, setBuildings, setSurface, setTrees, setExaggeration } =
-    deps;
+  const {
+    registry,
+    handle,
+    setImagery,
+    setBuildings,
+    setSurface,
+    setTrees,
+    setExaggeration,
+    ribbons,
+  } = deps;
   const host = document.createElement('div');
   host.id = 'filters';
   host.className = 'sm-console';
@@ -52,6 +63,7 @@ export function mountFilters(deps: MountFiltersDeps): FilterStrip {
     ...(setExaggeration ? { setExaggeration } : {}),
     apply: (filter) => {
       const result = applyFilter(registry, annotations, filter);
+      ribbons?.applyFilter(annotations, filter.activities, result.visibleIds);
       handle.onFilterApplied(result.visibleIds);
       return {
         ...result,
