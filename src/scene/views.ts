@@ -72,6 +72,14 @@ export const RESORT_TARGET_SLOPE_FRACTION = 0.35;
 export const RESORT_VIEW_MIN_ELEVATION_DEG = -30;
 /** The resort camera stands this far beyond the lift base, away from the lift top, in metres (the parking lot). */
 export const RESORT_LANDMARK_BACK_OFF_M = 60;
+/**
+ * Downward pitch of the resort view in degrees (#44). With the 120 degree horizontal fov this puts the true horizon
+ * about 18 percent from the top of a 16:9 frame and 21 percent on a phone, so the hill fills the frame below it.
+ * Graham: "tilted downwards such that the horizon is closer to top of screen and more of resort is visible vertically".
+ */
+export const RESORT_PITCH_DEG = 32;
+/** The orbit centre sits this fraction of the way up the lift line from its base, on the terrain. */
+export const RESORT_TARGET_ALONG_FRACTION = 0.45;
 /** Roof height assumed for the Upper Chalet when the data gives none, in metres. */
 export const RESORT_LANDMARK_DEFAULT_ROOF_M = 8;
 /** Fraction of each half-angle the chalet and lift top may occupy; the rest is the 10 percent margin. */
@@ -324,8 +332,9 @@ function resortView(
 }
 
 /**
- * Landmark resort view: the camera stands RESORT_LANDMARK_BACK_OFF_M beyond the lift base, away from the lift top,
- * at eye height above the terrain there; the target is the Upper Chalet at half its roof height (or fallbackTarget).
+ * Landmark resort view (#44): the orbit centre is the terrain RESORT_TARGET_ALONG_FRACTION of the way up the lift
+ * line; the camera stands RESORT_LANDMARK_BACK_OFF_M beyond the lift base, raised so it pitches RESORT_PITCH_DEG
+ * down onto that centre (never below the terrain clearance), with the lift top and the Upper Chalet fitted in frame.
  * Null when base and top coincide, since the lift then gives no direction.
  */
 function landmarkView(
@@ -339,33 +348,46 @@ function landmarkView(
   const dNorth = liftBase.north - liftTop.north;
   const length = Math.hypot(dEast, dNorth);
   if (length === 0) return null;
+  // Orbit centre: a point on the terrain part way up the lift line (#44).
+  const alongEast =
+    liftTop.east + (liftBase.east - liftTop.east) * (1 - RESORT_TARGET_ALONG_FRACTION);
+  const alongNorth =
+    liftTop.north + (liftBase.north - liftTop.north) * (1 - RESORT_TARGET_ALONG_FRACTION);
+  const tScene = toScene(alongEast, alongNorth, surface.sample(alongEast, alongNorth).height);
+  const target = new Vector3(tScene.x, tScene.y, tScene.z);
+  // Camera: on the sight line beyond the lift base, raised so the view pitches RESORT_PITCH_DEG down onto the
+  // target, never below the terrain clearance there.
+  const tanPitch = Math.tan((RESORT_PITCH_DEG * Math.PI) / 180);
   const eyeAt = (east: number, north: number): Vector3 => {
-    const eye = toScene(east, north, surface.sample(east, north).height);
-    return new Vector3(eye.x, eye.y + CAMERA_CLEARANCE_M, eye.z);
+    const ground = toScene(east, north, surface.sample(east, north).height);
+    const horizontal = Math.hypot(target.x - ground.x, target.z - ground.z);
+    const y = Math.max(target.y + horizontal * tanPitch, ground.y + CAMERA_CLEARANCE_M);
+    return new Vector3(ground.x, y, ground.z);
   };
   const east0 = liftBase.east + (dEast / length) * RESORT_LANDMARK_BACK_OFF_M;
   const north0 = liftBase.north + (dNorth / length) * RESORT_LANDMARK_BACK_OFF_M;
   let position = eyeAt(east0, north0);
-  let target = fallbackTarget;
-  if (upperChalet) {
-    const roofM = upperChalet.roofM ?? RESORT_LANDMARK_DEFAULT_ROOF_M;
-    const t = toScene(
-      upperChalet.east,
-      upperChalet.north,
-      surface.sample(upperChalet.east, upperChalet.north).height + roofM / 2,
-    );
-    target = new Vector3(t.x, t.y, t.z);
-  }
   const up = new Vector3(0, 1, 0);
 
-  // Fit: the lift top must sit inside the frame (with a margin) as seen from the chosen position; if not,
-  // back the camera off along the horizontal sight line, never beyond RESORT_FIT_MAX_DISTANCE_FACTOR.
+  // Fit: the lift top and the Upper Chalet (or the fallback target) must sit inside the frame (with a margin) as
+  // seen from the chosen position; if not, back the camera off along the horizontal sight line, never beyond
+  // RESORT_FIT_MAX_DISTANCE_FACTOR.
   const topScene = toScene(
     liftTop.east,
     liftTop.north,
     surface.sample(liftTop.east, liftTop.north).height,
   );
-  const points = [target, new Vector3(topScene.x, topScene.y, topScene.z)];
+  let chalet = fallbackTarget;
+  if (upperChalet) {
+    const roofM = upperChalet.roofM ?? RESORT_LANDMARK_DEFAULT_ROOF_M;
+    const c = toScene(
+      upperChalet.east,
+      upperChalet.north,
+      surface.sample(upperChalet.east, upperChalet.north).height + roofM / 2,
+    );
+    chalet = new Vector3(c.x, c.y, c.z);
+  }
+  const points = [target, chalet, new Vector3(topScene.x, topScene.y, topScene.z)];
   const halfV = (fovDeg / 2) * (Math.PI / 180);
   const tanV = Math.tan(halfV) * RESORT_FIT_FRAME_FRACTION;
   const tanH = Math.tan(halfV) * aspect * RESORT_FIT_FRAME_FRACTION;
