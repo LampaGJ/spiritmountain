@@ -10,7 +10,8 @@ import {
 } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { createMeshSurface, type Heightfield, type MeshSurface } from './heightfield';
-import { createTerrainMesh, setTerrainImagery } from './terrain';
+import { setFadeCentre } from './fade';
+import { createTerrainMesh, setTerrainImagery, terrainFade } from './terrain';
 import { computeViews, minCameraY, verticalFovDeg, type FocusBox, type ViewName } from './views';
 
 export type FrameCallback = (deltaMs: number) => void;
@@ -27,6 +28,13 @@ export interface SceneHandle {
   setView(name: ViewName, focus?: FocusBox): void;
   /** Shows the texture on the terrain, or restores slope shading with null. */
   setImagery(texture: Texture | null): void;
+  /** Moves the radial fade centre of the centre terrain (local metres east and north). */
+  setFadeCentre(centre: { readonly east: number; readonly north: number }): void;
+  /**
+   * Makes room for geometry that reaches radiusM beyond the centre tile (the context ring): the camera far plane
+   * grows by 2 x radiusM, the same rule computeViews applies to the centre tile's own radius, and controls.maxDistance follows.
+   */
+  setContextExtent(radiusM: number): void;
   /** Registers a per-frame callback; returns an unsubscribe function. */
   onFrame(callback: FrameCallback): () => void;
   /** Stops the loop and releases geometry, material, renderer, controls and the resize observer. */
@@ -65,13 +73,16 @@ export function createScene(container: HTMLElement, field: Heightfield): SceneHa
   controls.minDistance = 50;
   controls.maxDistance = initial.far * 0.9;
 
+  let contextRadius = 0;
+  const farOf = (computed: number): number => computed + 2 * contextRadius;
   let lastFocus: FocusBox | undefined;
   const setView = (name: ViewName, focus?: FocusBox): void => {
     if (focus) lastFocus = focus;
     const set = computeViews(surface, aspectOf(), lastFocus);
     const view = set.views[name];
     camera.near = set.near;
-    camera.far = set.far;
+    camera.far = farOf(set.far);
+    controls.maxDistance = camera.far * 0.9;
     camera.fov = set.fov;
     camera.up.copy(view.up);
     camera.position.copy(view.position);
@@ -120,6 +131,15 @@ export function createScene(container: HTMLElement, field: Heightfield): SceneHa
     setView,
     setImagery(texture) {
       setTerrainImagery(terrain, texture);
+    },
+    setFadeCentre(centre) {
+      setFadeCentre(terrainFade(terrain), centre);
+    },
+    setContextExtent(radiusM) {
+      contextRadius = radiusM;
+      camera.far = farOf(computeViews(surface, aspectOf(), lastFocus).far);
+      controls.maxDistance = camera.far * 0.9;
+      camera.updateProjectionMatrix();
     },
     onFrame(callback) {
       callbacks.add(callback);
