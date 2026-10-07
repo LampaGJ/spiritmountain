@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "count": 106098,
+  "recordFloats": 9,
+  "byteOrder": "LE",
+  "dtype": "float32",
+  "fields": [
+    "east",
+    "north",
+    "groundElev",
+    "height",
+    "type",
+    "rotation",
+    "r",
+    "g",
+    "b"
+  ],
+  "byteLength": 3819528,
+  "types": {
+    "broadleaf": 85938,
+    "conifer": 20160
+  },
+  "archetypes": [
+    21325,
+    21692,
+    21495,
+    21426,
+    10221,
+    9939
+  ],
+  "params": {
+    "seed": 30,
+    "density": 0.85,
+    "blockCells": 3,
+    "blockMinCanopyCells": 5,
+    "canopyMinChmM": 3,
+    "greenMargin": 8,
+    "jitterM": 1.5,
+    "heightMinM": 3,
+    "heightMaxM": 35,
+    "heightJitter": 0.1,
+    "peakDeltaM": 1.5,
+    "typeOverride": 0.2,
+    "broadleafShare": 0.75,
+    "darken": 0.85
+  },
+  "canopyCells": 1112570,
+  "nocanopyCellsReplaced": 1124408,
+  "frame": {
+    "file": "data/frame.json",
+    "sha256": "68400bc7bf517d7870decf26c3c4c67d720347c85c35c567629d043b51698c38"
+  },
+  "sources": [
+    {
+      "path": "data/surface/core.f32",
+      "sha256": "d64881f43e82fbc2cc6c501885373751d86ea52ba2e6b4e22efe9fc2ffc535dd"
+    },
+    {
+      "path": "data/surface/core.json",
+      "sha256": "a162d77d69f0e450465518a541b2ac1dfb1a8d7cfa7abf97ae9d9dda48c0530d"
+    },
+    {
+      "path": "data/terrain.f32+terrain.json",
+      "sha256": "366f7d45b315839c6eaa6c034dbc5a5b80555ae9f5e82a6a3203f96eb23f29ee"
+    },
+    {
+      "path": "data/raw/naip.jpg",
+      "sha256": "d63d92a84a9b26e34f9848007de753b12a647b558e8600d289ab860a24162521"
+    },
+    {
+      "path": "data/buildings.geojson",
+      "sha256": "dbd75576d015ce7a451e3b1a90096724ea28a93157b8e3f6ca9f88bc4b840cf2"
+    }
+  ]
+}
