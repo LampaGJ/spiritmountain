@@ -112,6 +112,7 @@ if (!imageryManifest.success) {
 import areasUrl from '../data/areas.geojson?url';
 import { loadAreas } from './data/load-areas';
 import { installAreas, type AreaLayer } from './scene/areas';
+import { buildBillboardLayer, type BillboardLayer } from './scene/billboards';
 import { createMeshSurface } from './scene/heightfield';
 import { deriveLandmarks } from './scene/landmarks';
 import { focusBoxOf, type FocusBox } from './scene/views';
@@ -163,6 +164,30 @@ if (!('error' in areaLayerResult)) {
 }
 readiness.register('areas', Promise.resolve());
 handle.setFadeCentre(fadeCentre);
+
+// Sport billboards (#43): one sign per same-sport cluster, inside the elevated group. A failure only loses the signs.
+let billboardLayer: BillboardLayer | null = null;
+if (!('error' in areaLayerResult)) {
+  try {
+    billboardLayer = buildBillboardLayer(
+      [...areaLayerResult.registry.values()].map((entry) => entry.area),
+      meshSurface,
+      (east, north, elevation) => {
+        const p = toScene(east, north, elevation);
+        return [p.x, p.y, p.z];
+      },
+      {
+        host: handle,
+        fadeCentre: { east: fadeCentre.east, north: fadeCentre.north },
+        resolution: { width: window.innerWidth, height: window.innerHeight },
+      },
+    );
+    handle.elevated.add(billboardLayer.group);
+  } catch (error) {
+    console.error('billboards:', error);
+    billboardLayer = null;
+  }
+}
 // #exag=2.5 is honoured here, once the terrain, areas and view are in, so a failed annotations load cannot lose it.
 const setSceneExaggeration = (k: number): void => handle.setExaggeration(k);
 setSceneExaggeration(decodeHash(location.hash).filter.exag ?? 1);
@@ -312,6 +337,7 @@ const applySurfaceDrape = (): void => {
   if ('error' in areaLayerResult) return;
   const active = surfaceWanted && surfaceHandle ? surfaceHandle.sampler(meshSurface) : meshSurface;
   areaLayerResult.redrape(active);
+  billboardLayer?.redrape(active);
 };
 
 /** Loads and builds the surface the first time it is wanted; the default page with Surface off never pays for it. */
@@ -523,6 +549,7 @@ readiness.register(
       setTrees: setTreesWanted,
       setExaggeration: setSceneExaggeration,
       ...('error' in areaLayer ? {} : { routeSport: areaLayer.route }),
+      ...(billboardLayer ? { billboards: billboardLayer } : {}),
     });
   }),
 );
@@ -532,6 +559,7 @@ if (import.meta.env.DEV) {
   (window as unknown as { __spirit: unknown }).__spirit = {
     renderer: handle.renderer,
     scene: handle.scene,
+    billboards: billboardLayer,
   };
 }
 

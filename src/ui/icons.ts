@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import iconData from './icons.json';
+import type { Activity } from '../scene/sport-routing';
 
 /**
  * @displayName Control icon map
@@ -19,6 +20,12 @@ export type IconEntry = z.infer<typeof IconEntrySchema>;
 export const ICONS: Readonly<Record<string, IconEntry>> = z
   .record(z.string(), IconEntrySchema)
   .parse(iconData);
+
+/** The rail glyph and label for one sport, for the 3D sign (#43). Wraps iconFor, so an unknown activity throws. */
+export function signGlyph(activity: Activity): { symbol: string; label: string } {
+  const { symbol, label } = iconFor(activity);
+  return { symbol, label };
+}
 
 /** Looks up a control by its internal (kebab-case) id. Throws on an unknown id so a typo cannot ship a blank key. */
 export function iconFor(id: string): IconEntry {
