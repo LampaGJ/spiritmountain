@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ActivitySchema, SeasonSchema } from '../../src/schema/annotation';
 import iconJson from '../../src/ui/icons.json';
 import { ICONS } from '../../src/ui/icons';
+import { seasonActivities, seasonCounts } from '../../src/ui/filter-predicate';
 import { mountFilterStrip, type FilterStrip } from '../../src/ui/filters';
 import { mountViews, STRIP_VIEWS, type ViewsStrip } from '../../src/ui/views-strip';
 
@@ -52,6 +53,9 @@ describe('every key carries an icon from icons.json', () => {
       setBuildings: () => {},
       readHash: () => '',
       writeHash: () => {},
+      // The four season keys live in the top season bar (#42), mounted on document.body.
+      seasonMap: seasonActivities(new Map()),
+      seasonCounts: seasonCounts([], new Map()),
     });
     const views: ViewsStrip = mountViews({ setView: vi.fn() });
     disposables.push(strip, views);

@@ -1,0 +1,150 @@
+/*
+ * The season menu (#42): four season keys along the top of the page, and under them a row of the active season's
+ * activities. Desktop: left-aligned at the rail inset, clear of the annotation panel on the right (panel.css). The rail
+ * moves down by --sm-season-h, or by --sm-season-open-h while a season is open (rail.css). Phone: a full-width surface
+ * at the top; the rail is the bottom bar there, so nothing else moves.
+ * The key look (faces, pressed state, hover and focus-visible lift) is generated into clicky.css.
+ */
+:root:has(#season-bar) {
+  /* 36 px key plus 8 px above and below; the open value adds the activity row. */
+  --sm-season-h: 52px;
+  --sm-season-open-h: 100px;
+}
+@media (pointer: coarse) {
+  :root:has(#season-bar) {
+    /* 44 px touch keys. */
+    --sm-season-h: 60px;
+    --sm-season-open-h: 116px;
+  }
+}
+
+#season-bar {
+  --cl-h: 36px;
+  position: fixed;
+  z-index: 5;
+  top: calc(var(--rail-inset, 16px) + env(safe-area-inset-top, 0px));
+  left: calc(var(--rail-inset, 16px) + env(safe-area-inset-left, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: calc(100vw - 2 * var(--rail-inset, 16px));
+  /* Gaps between keys pass pointer events through to the scene, like #rail; keys take them back. */
+  pointer-events: none;
+  color: var(--sm-ink);
+  font: var(--sm-font);
+  animation: sm-rise 260ms var(--sm-ease) both;
+}
+@media (pointer: coarse) {
+  #season-bar {
+    --cl-h: 44px;
+  }
+}
+#season-bar .cl-key {
+  pointer-events: auto;
+}
+#season-bar .sm-season-keys,
+#season-bar .sm-season-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  /* Room for the key's drop shadow and the focus ring. */
+  padding: 2px 4px 6px 3px;
+}
+#season-bar .sm-season-row[hidden] {
+  display: none;
+}
+
+/* Mirrors #rail .cl-key (rail.css): icon left, label, badge right; narrow season keys. */
+#season-bar .cl-key {
+  display: block;
+  flex: 0 0 auto;
+}
+/* 11em fits "Winter" plus a two-digit badge without an ellipsis; four keys end near x 610, clear of the panel at x 828. */
+#season-bar .sm-season-keys .cl-key .btn-scale {
+  width: 11em;
+}
+/* Row keys keep the engine's label-length width, with room for the glyph, the swatch and the gaps of the left-aligned face. */
+#season-bar .sm-season-row .cl-key.has-icon {
+  --cl-extra: 3.9em;
+}
+#season-bar .cl-key .btn-face {
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 0 10px 0 8px;
+  text-indent: 0;
+  letter-spacing: 0.01em;
+}
+#season-bar .cl-key .btn-label {
+  flex: 1 1 auto;
+  text-align: left;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+#season-bar .cl-key .btn-count {
+  margin-left: auto;
+}
+
+/* The activity's line colour (SPORT_COLOR), so the row doubles as the legend. */
+#season-bar .sm-swatch {
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--sm-swatch, transparent);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.6);
+}
+@media (hover: hover) {
+  #season-bar .cl-key button:hover .sm-swatch,
+  #season-bar .cl-key button:focus-visible .sm-swatch {
+    box-shadow: 0 0 0 2px var(--sm-ink);
+  }
+}
+
+/* Rail Activity keys hidden while a season is active and does not offer them (filters.ts render). */
+#rail .cl-key.is-off-season {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #season-bar {
+    animation: none;
+  }
+}
+
+/* Phone: a full-width surface at the top; both rows scroll sideways. The rail stays the bottom bar (rail.css). */
+@media (max-width: 719px) {
+  #season-bar {
+    box-sizing: border-box;
+    top: 0;
+    left: 0;
+    right: 0;
+    max-width: none;
+    gap: 0;
+    padding: env(safe-area-inset-top, 0px) calc(4px + env(safe-area-inset-right, 0px)) 0
+      calc(4px + env(safe-area-inset-left, 0px));
+    pointer-events: auto;
+    background: rgb(14 18 22 / 0.8);
+    border-bottom: 1px solid var(--sm-line);
+  }
+  @supports (backdrop-filter: blur(1px)) {
+    #season-bar {
+      backdrop-filter: blur(8px);
+    }
+  }
+  #season-bar .sm-season-keys,
+  #season-bar .sm-season-row {
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+    scrollbar-width: none;
+    padding: 6px 4px 6px;
+  }
+  #season-bar .sm-season-keys::-webkit-scrollbar,
+  #season-bar .sm-season-row::-webkit-scrollbar {
+    display: none;
+  }
+}

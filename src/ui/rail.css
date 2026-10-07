@@ -13,7 +13,8 @@
   --cl-h: 36px;
   position: fixed;
   z-index: 5;
-  top: calc(var(--rail-inset) + env(safe-area-inset-top, 0px));
+  /* Below the top season bar (season-menu.css); 0 when the bar is absent. */
+  top: calc(var(--rail-inset) + env(safe-area-inset-top, 0px) + var(--sm-season-h, 0px));
   left: calc(var(--rail-inset) + env(safe-area-inset-left, 0px));
   bottom: calc(var(--rail-inset) + env(safe-area-inset-bottom, 0px));
   display: flex;
@@ -31,6 +32,15 @@
   color: var(--sm-ink);
   font: var(--sm-font);
   animation: sm-rise 260ms var(--sm-ease) both;
+}
+/*
+ * While a season is open its activity row sits under the season keys, so the rail starts lower. Desktop only: this
+ * selector outranks the phone block's #rail { top: auto }, which must keep the rail at the bottom there.
+ */
+@media (min-width: 720px) {
+  body:has(#season-bar[data-open]) #rail {
+    top: calc(var(--rail-inset) + env(safe-area-inset-top, 0px) + var(--sm-season-open-h, 0px));
+  }
 }
 #rail::-webkit-scrollbar {
   display: none;
