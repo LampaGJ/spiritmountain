@@ -25,7 +25,14 @@ import {
 } from './horizon';
 import { createSkyControl, SKY_FALLBACK_COLOR } from './sky';
 import { createTerrainMesh, setTerrainImagery, terrainFade } from './terrain';
-import { computeViews, minCameraY, verticalFovDeg, type FocusBox, type ViewName } from './views';
+import {
+  computeViews,
+  minCameraY,
+  verticalFovDeg,
+  type FocusBox,
+  type Landmarks,
+  type ViewName,
+} from './views';
 
 export type FrameCallback = (deltaMs: number) => void;
 
@@ -39,8 +46,10 @@ export interface SceneHandle {
   /** The group every elevation-bearing layer is added to (terrain, context, areas, buildings, surface). Ground and sky stay outside it. */
   readonly elevated: ElevatedGroup;
   readonly surface: MeshSurface;
-  /** Moves the camera to a named view. A focus box is remembered and reused by later calls without one. */
-  setView(name: ViewName, focus?: FocusBox): void;
+  /** Moves the camera to a named view. A focus box and landmarks are remembered and reused by later calls without one. */
+  setView(name: ViewName, focus?: FocusBox, landmarks?: Landmarks): void;
+  /** Re-applies the last named view for the current aspect, unless the user has moved the camera since. Call it on orientation change. */
+  refit(): void;
   /** Shows the texture on the terrain, or restores slope shading with null. */
   setImagery(texture: Texture | null): void;
   /** Photo sky as background and environment light; the sun and hemisphere are trimmed so it is not blown out. */
@@ -134,9 +143,15 @@ export function createScene(
   let contextRadius = 0;
   const farOf = (computed: number): number => computed + 2 * contextRadius;
   let lastFocus: FocusBox | undefined;
-  const setView = (name: ViewName, focus?: FocusBox): void => {
+  let lastLandmarks: Landmarks | undefined;
+  let lastName: ViewName = 'overview';
+  let userMoved = false;
+  const setView = (name: ViewName, focus?: FocusBox, landmarks?: Landmarks): void => {
+    lastName = name;
+    userMoved = false;
     if (focus) lastFocus = focus;
-    const set = computeViews(surface, aspectOf(), lastFocus);
+    if (landmarks) lastLandmarks = landmarks;
+    const set = computeViews(surface, aspectOf(), lastFocus, lastLandmarks);
     const view = set.views[name];
     camera.near = set.near;
     camera.far = farOf(set.far);
@@ -153,12 +168,16 @@ export function createScene(
     controls.update();
   };
   setView('overview');
+  controls.addEventListener('start', () => {
+    userMoved = true;
+  });
 
   const resize = (): void => {
     renderer.setSize(container.clientWidth, container.clientHeight);
     camera.aspect = aspectOf();
     camera.fov = verticalFovDeg(camera.aspect);
     camera.updateProjectionMatrix();
+    if (!userMoved) setView(lastName);
   };
   const observer = new ResizeObserver(resize);
   observer.observe(container);
@@ -246,9 +265,12 @@ export function createScene(
     setFadeCentre(centre) {
       setFadeCentre(terrainFade(terrain), centre);
     },
+    refit() {
+      if (!userMoved) setView(lastName);
+    },
     setContextExtent(radiusM) {
       contextRadius = radiusM;
-      camera.far = farOf(computeViews(surface, aspectOf(), lastFocus).far);
+      camera.far = farOf(computeViews(surface, aspectOf(), lastFocus, lastLandmarks).far);
       controls.maxDistance = camera.far * 0.9;
       camera.updateProjectionMatrix();
     },
