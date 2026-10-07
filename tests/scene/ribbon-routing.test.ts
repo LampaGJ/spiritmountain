@@ -60,8 +60,13 @@ describe('activity to tile map', () => {
       expect(TILES[name].widthM, name).toBeGreaterThan(0);
       expect(TILES[name].periodM, name).toBeGreaterThan(0);
     }
-    expect(TILES['mtb-trail'].widthM).toBe(1.5);
-    expect(TILES['downhill-run'].widthM).toBe(12);
+    // Drawn sizes carry the cartographic enlargement (#37): mtb 1.5 m x 5, downhill-run 12 m capped at 20 m wide.
+    expect(TILES['mtb-trail'].symbolScale).toBe(5);
+    expect(TILES['mtb-trail'].widthM).toBe(7.5);
+    expect(TILES['mtb-trail'].periodM).toBeCloseTo(6, 9);
+    expect(TILES['downhill-run'].symbolScale).toBeCloseTo(20 / 12, 9);
+    expect(TILES['downhill-run'].widthM).toBeCloseTo(20, 9);
+    expect(TILES.snowboard.symbolScale).toBe(1);
   });
 
   it('parseTiles rejects a manifest that lacks a tile', () => {
