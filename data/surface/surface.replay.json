@@ -1,16 +1,30 @@
 {
   "inputHash": "057eb7ddf0f03d3c95e93aa70af50dc26257cf57555f5503cc993745da06b17d",
-  "codeCommit": "f50ce8e19f33a451ffeca568845db36dcea29abd",
-  "outputHash": "97fd84adbf2f5e0c2da9c500e6a179d2816b6f66a504ec64e17a778ec457d775",
+  "codeCommit": "6c64263625d4b58fe3bd6462cc2ec76bef9d3227",
+  "outputHash": "3595f6afc4f669fcf97fd68a2a983f4ed3f19777d0eb5c45e7ffec8133be873d",
   "effect": "preserves",
   "outputs": {
-    "core.f32": "20d4097690a134554c7cd8c6ef4c361c3fa732fc00c6d691f8be38f10e296411",
-    "core.json": "5f62df697491247031731d6cb11a0e52378f7ae5e219cedfc060560d7da2394a"
+    "core.f32": "61d988021fbfa854ecc74cac94fbbbe14433b022fe9ace30cae4d525a6a733b3",
+    "core.json": "277b3d2b51c3789e5e2dc0ae4d552b43ef2063fff6d4ae9dbc24035f56726dba"
   },
   "toolVersions": {
     "geotiff": "3.0.5"
   },
   "lockSubtreeSha256": "70e39a4155e68d4e88179ebe1818e7905f29b7e6a98f493ef80f6692be05d6cb",
   "decodeResolutionM": 2,
-  "pooling": "max"
+  "pooling": "max",
+  "despike": {
+    "passes": [
+      {
+        "spikesRemoved": 1480,
+        "maxDelta": 69.459991
+      },
+      {
+        "spikesRemoved": 399,
+        "maxDelta": 66.839996
+      }
+    ],
+    "maxBefore": 484.67999267578125,
+    "maxAfter": 461.17999267578125
+  }
 }

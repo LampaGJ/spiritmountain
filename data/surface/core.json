@@ -13,7 +13,7 @@
   "dtype": "float32",
   "byteLength": 6250000,
   "minElev": 183.52999877929688,
-  "maxElev": 484.67999267578125,
+  "maxElev": 461.17999267578125,
   "plausibleRangeM": [
     150,
     500

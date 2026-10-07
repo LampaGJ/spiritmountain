@@ -1,10 +1,10 @@
 {
   "inputHash": "277f670d879922503d9fb9794ad6c0c16c201e3c187e08421a03e42779d9fa73",
-  "codeCommit": "f50ce8e19f33a451ffeca568845db36dcea29abd",
-  "outputHash": "938588bc3f1bcd9aaba3634fff9b0f3bf9ca248b27bdb4c5e4da1cf6e8cbca97",
+  "codeCommit": "6c64263625d4b58fe3bd6462cc2ec76bef9d3227",
+  "outputHash": "4f39fe4b04055663bda3b37fe781aafabbb5ce159f28f7565526afb755f2638c",
   "effect": "preserves",
   "outputs": {
-    "square.f32": "452c65664728b7d28bf4f342c6777670c739d37171035e547a38d08cc650c3e2",
+    "square.f32": "9050dcda96d80de5a992efae8f4209a77ec00f36e8688e6262661ae951cb12e2",
     "square.json": "9a79431d2703798dc98f0df1240c02c6bebd0ad0981a5583bad1d120413eae5b"
   },
   "toolVersions": {
@@ -13,6 +13,20 @@
   "lockSubtreeSha256": "70e39a4155e68d4e88179ebe1818e7905f29b7e6a98f493ef80f6692be05d6cb",
   "decodeResolutionM": 4,
   "pooling": "max",
+  "despike": {
+    "passes": [
+      {
+        "spikesRemoved": 1042,
+        "maxDelta": 65.880005
+      },
+      {
+        "spikesRemoved": 215,
+        "maxDelta": 55.519989
+      }
+    ],
+    "maxBefore": 489.7900085449219,
+    "maxAfter": 489.7900085449219
+  },
   "seamValidFraction": 0.792285,
   "neighbourValidFraction": 0.811573
 }
