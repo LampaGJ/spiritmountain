@@ -6,7 +6,17 @@ import { fromArrayBuffer } from 'geotiff';
 import { z } from 'zod';
 import { ReplayRecordSchema } from '../../src/schema/replay';
 import { TerrainHeaderSchema, type TerrainHeader } from '../../src/schema/terrain';
-import { despike } from './despike';
+import {
+  CANOPY_CAP_M,
+  SPIKE_K,
+  SPIKE_MIN_M,
+  SPIKE_SUPPORT,
+  SPIKE_SUPPORT_TOL_M,
+  SPIKE_SUPPORT_WIDE,
+  SPIKE_WINDOW,
+  despike,
+  type GroundSampler,
+} from './despike';
 import { SurfaceManifestSchema } from './surface-manifest-schema';
 import { seamEastingAtNorthing } from './surface-window';
 import {
@@ -85,14 +95,86 @@ export const SurfaceReplaySchema = ReplayRecordSchema.extend({
   neighbourValidFraction: z.number().min(0).max(1).optional(),
   /** The isolated-spike filter: per-pass counts and largest removed delta, and the max elevation before and after. */
   despike: z.strictObject({
+    window: z.number().int().positive(),
     passes: z.array(
       z.strictObject({ spikesRemoved: z.number().int().min(0), maxDelta: z.number().min(0) }),
     ),
+    /** Cells clamped by the bare-earth ceiling (ground + canopyCapM); includes any legitimate tall structure. */
+    cappedToCanopy: z.number().int().min(0),
+    maxExcessM: z.number().min(0),
     maxBefore: z.number(),
     maxAfter: z.number(),
+    constants: z.strictObject({
+      spikeMinM: z.number(),
+      spikeK: z.number(),
+      spikeSupport: z.number().int(),
+      spikeSupportTolM: z.number(),
+      spikeSupportWide: z.number().int(),
+      canopyCapM: z.number(),
+    }),
   }),
+  /** sha256 of data/terrain.f32 + data/terrain.json, the bare-earth heightfield the canopy cap samples; a second input to the replay. */
+  groundSha256: Sha256Schema,
 });
 export type SurfaceReplay = z.infer<typeof SurfaceReplaySchema>;
+
+/** The bare-earth heightfield the canopy cap samples (5 m cells, same local frame). */
+export const GROUND_F32_NAME = 'terrain.f32';
+export const GROUND_JSON_NAME = 'terrain.json';
+
+/** Bare-earth heightfield: its header and Float32 samples, north row first. */
+export interface Ground {
+  header: TerrainHeader;
+  values: Float32Array;
+  sha256: string;
+}
+
+/** Reads and checks data/terrain.f32 + terrain.json (byteLength against the header), hashing both. */
+export function loadGround(dataDir: string): Ground {
+  const jsonBytes = readFileSync(join(dataDir, GROUND_JSON_NAME));
+  const f32 = readFileSync(join(dataDir, GROUND_F32_NAME));
+  const parsed = TerrainHeaderSchema.safeParse(JSON.parse(jsonBytes.toString('utf8')));
+  if (!parsed.success) throw new TerrainError('HeaderInvalid', parsed.error.message);
+  const header = parsed.data;
+  if (f32.byteLength !== header.byteLength || f32.byteLength !== header.width * header.height * 4) {
+    throw new TerrainError(
+      'ManifestDimensionMismatch',
+      `${GROUND_F32_NAME} is ${f32.byteLength} bytes, header says ${header.byteLength}`,
+    );
+  }
+  const values = new Float32Array(header.width * header.height);
+  const view = new DataView(f32.buffer, f32.byteOffset, f32.byteLength);
+  for (let i = 0; i < values.length; i += 1) values[i] = view.getFloat32(i * 4, true);
+  return { header, values, sha256: sha256Hex(Buffer.concat([f32, jsonBytes])) };
+}
+
+/**
+ * Bilinear sampler of the bare-earth grid at the centre of each cell of a surface grid in the same local frame.
+ * Null where the surface cell centre lies outside the bare-earth grid's cell-centre extent (no ground known, so no cap).
+ */
+export function groundSampler(
+  ground: Ground,
+  surface: { originX: number; originY: number; cellM: number },
+): GroundSampler {
+  const { header, values } = ground;
+  return (row, col) => {
+    const x = surface.originX + (col + 0.5) * surface.cellM;
+    const y = surface.originY - (row + 0.5) * surface.cellM;
+    const fc = (x - header.originX) / header.cellSizeX - 0.5;
+    const fr = (header.originY - y) / header.cellSizeY - 0.5;
+    if (fc < 0 || fr < 0 || fc > header.width - 1 || fr > header.height - 1) return null;
+    const c0 = Math.min(Math.floor(fc), header.width - 2 < 0 ? 0 : header.width - 2);
+    const r0 = Math.min(Math.floor(fr), header.height - 2 < 0 ? 0 : header.height - 2);
+    const tc = fc - c0;
+    const tr = fr - r0;
+    const c1 = Math.min(c0 + 1, header.width - 1);
+    const r1 = Math.min(r0 + 1, header.height - 1);
+    const at = (r: number, c: number): number => values[r * header.width + c] as number;
+    const top = at(r0, c0) * (1 - tc) + at(r0, c1) * tc;
+    const bottom = at(r1, c0) * (1 - tc) + at(r1, c1) * tc;
+    return top * (1 - tr) + bottom * tr;
+  };
+}
 
 export const SURFACE_WINDOWS = ['core', 'square'] as const;
 export type SurfaceWindowName = (typeof SURFACE_WINDOWS)[number];
@@ -182,6 +264,8 @@ export async function buildSurface(
     cellM: number;
     /** Measure the valid fraction on the EPT dataset seam before the fill. */
     checkSeam: boolean;
+    /** The bare-earth heightfield for the canopy cap. */
+    ground: Ground;
   },
 ): Promise<{
   f32: Uint8Array;
@@ -192,11 +276,7 @@ export async function buildSurface(
   /** Mean valid fraction of the columns 4, 8 and 12 cells either side of the seam; null unless ctx.checkSeam. */
   neighbourValidFraction: number | null;
   /** The isolated-spike filter's counts, applied after pooling and before the nodata fill. */
-  despike: {
-    passes: { spikesRemoved: number; maxDelta: number }[];
-    maxBefore: number;
-    maxAfter: number;
-  };
+  despike: SurfaceReplay['despike'];
 }> {
   const arrayBuffer = tiffBytes.buffer.slice(
     tiffBytes.byteOffset,
@@ -277,7 +357,13 @@ export async function buildSurface(
     neighbourValidFraction =
       around.length === 0 ? seamValidFraction : around.reduce((p, q) => p + q, 0) / around.length;
   }
-  const despiked = despike(pooled.values, pooled.width, pooled.height, pooled.nodata);
+  const despiked = despike(pooled.values, pooled.width, pooled.height, pooled.nodata, {
+    ground: groundSampler(ctx.ground, {
+      originX: round6(xmin - ctx.frame.originE),
+      originY: round6(ymax - ctx.frame.originN),
+      cellM: ctx.cellM,
+    }),
+  });
   pooled.values.set(despiked.data);
   const nodataFilled = fillNodata(pooled.values, pooled.nodata, pooled.width, pooled.height);
   const total = pooled.width * pooled.height;
@@ -323,9 +409,20 @@ export async function buildSurface(
     seamValidFraction,
     neighbourValidFraction,
     despike: {
+      window: SPIKE_WINDOW,
       passes: despiked.passes,
+      cappedToCanopy: despiked.cappedToCanopy,
+      maxExcessM: despiked.maxExcessM,
       maxBefore: despiked.maxBefore,
       maxAfter: despiked.maxAfter,
+      constants: {
+        spikeMinM: SPIKE_MIN_M,
+        spikeK: SPIKE_K,
+        spikeSupport: SPIKE_SUPPORT,
+        spikeSupportTolM: SPIKE_SUPPORT_TOL_M,
+        spikeSupportWide: SPIKE_SUPPORT_WIDE,
+        canopyCapM: CANOPY_CAP_M,
+      },
     },
   };
 }
@@ -359,7 +456,7 @@ export interface SurfaceTerrainOptions {
 /**
  * @displayName Build surface heightfield
  * @strategicPurpose Converts the pinned 1 m first-return TIFF once into a 2 m typed-array heightfield (max over each 2x2 block, so roofs and canopy keep their peaks) in the shared local frame, with the same decode, nodata and header rules as the bare-earth terrain; pure so a rerun is byte-identical.
- * @tacticalObjective Verifies the TIFF against the surface manifest sha256, size and window, max-pools it 2x2 to 2 m cells, removes isolated spikes, fills remaining nodata, and writes data/surface/core.f32, core.json, then surface.replay.json last.
+ * @tacticalObjective Verifies the TIFF against the surface manifest sha256, size and window, max-pools it 2x2 to 2 m cells, removes isolated spikes and clamps cells above bare-earth + CANOPY_CAP_M, fills remaining nodata, and writes data/surface/core.f32, core.json, then surface.replay.json last.
  */
 export async function runSurfaceTerrain(
   options: SurfaceTerrainOptions,
@@ -376,7 +473,9 @@ export async function runSurfaceTerrain(
       `${config.tif} sha256 ${inputSha256} differs from the manifest pin ${manifest.sha256}`,
     );
   }
+  const ground = loadGround(options.dataDir);
   const built = await buildSurface(tiff, {
+    ground,
     frame: options.frame,
     frameSha256: options.frameSha256,
     inputSha256,
@@ -436,6 +535,7 @@ export async function runSurfaceTerrain(
     decodeResolutionM: config.cellM,
     pooling: 'max',
     despike: built.despike,
+    groundSha256: ground.sha256,
     ...(built.seamValidFraction === null
       ? {}
       : {
@@ -477,7 +577,7 @@ async function main(argv: string[]): Promise<void> {
     resolveCommit: () => resolveCodeCommit(TRANSFORM_SOURCES, { allowDirty }),
   });
   process.stdout.write(
-    `ingest:surface-terrain ok ${header.width}x${header.height} elev ${header.minElev}..${header.maxElev} nodataFilled=${header.nodataFilled} despiked=${replay.despike.passes.map((p) => p.spikesRemoved).join('+')} max ${replay.despike.maxBefore}->${replay.despike.maxAfter}${replay.seamValidFraction === undefined ? '' : ` seamValidFraction=${replay.seamValidFraction} neighbourValidFraction=${replay.neighbourValidFraction}`}\n`,
+    `ingest:surface-terrain ok ${header.width}x${header.height} elev ${header.minElev}..${header.maxElev} nodataFilled=${header.nodataFilled} despiked=${replay.despike.passes.map((p) => p.spikesRemoved).join('+')} cappedToCanopy=${replay.despike.cappedToCanopy} maxExcessM=${replay.despike.maxExcessM} max ${replay.despike.maxBefore}->${replay.despike.maxAfter}${replay.seamValidFraction === undefined ? '' : ` seamValidFraction=${replay.seamValidFraction} neighbourValidFraction=${replay.neighbourValidFraction}`}\n`,
   );
 }
 

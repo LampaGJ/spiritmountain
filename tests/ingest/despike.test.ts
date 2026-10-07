@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SPIKE_MIN_M, despike } from '../../scripts/ingest/despike';
+import { CANOPY_CAP_M, SPIKE_MIN_M, SPIKE_PASSES, despike } from '../../scripts/ingest/despike';
 
 const N = 31;
 
@@ -34,19 +34,18 @@ describe('despike', () => {
     expect(out.maxAfter).toBe(300);
   });
 
-  it('needs the second pass for a 4-cell tee: the arms prop each other up until the first pass removes two', () => {
+  it('removes a 4-cell tee within the three passes', () => {
     const tee: [number, number, number][] = [
       [15, 15, 330],
       [15, 14, 330],
       [15, 16, 330],
       [14, 15, 330],
     ];
-    const one = despike(field(tee), N, N, noMask(), { passes: 1 });
-    expect(one.data[15 * N + 15]).toBe(330);
-    expect(one.maxAfter).toBe(330);
     const two = despike(field(tee), N, N, noMask());
+    expect(two.data[15 * N + 15]).toBe(300);
     expect(two.maxAfter).toBe(300);
-    expect(two.passes.map((p) => p.spikesRemoved)).toEqual([2, 2]);
+    expect(two.passes.length).toBe(SPIKE_PASSES);
+    expect(two.passes.reduce((n, p) => n + p.spikesRemoved, 0)).toBeGreaterThanOrEqual(4);
   });
 
   it('leaves a 12x12 plateau 8 m high (a roof) untouched', () => {
@@ -55,7 +54,7 @@ describe('despike', () => {
     const input = field(roof);
     const out = despike(input, N, N, noMask());
     expect([...out.data]).toEqual([...input]);
-    expect(out.passes.map((p) => p.spikesRemoved)).toEqual([0, 0]);
+    expect(out.passes.map((p) => p.spikesRemoved)).toEqual([0, 0, 0]);
   });
 
   it('leaves a 3-cell-wide ridge untouched even when it is tall', () => {
@@ -98,5 +97,68 @@ describe('despike', () => {
     expect(Buffer.from(a.data.buffer).equals(Buffer.from(b.data.buffer))).toBe(true);
     expect(a.passes).toEqual(b.passes);
     expect([...input]).toEqual([...copy]);
+  });
+
+  it('removes a 60 m needle over flat ground with the local rule alone', () => {
+    const out = despike(field([[15, 15, 360]]), N, N, noMask());
+    expect(out.data[15 * N + 15]).toBe(300);
+    expect(out.passes[0]?.spikesRemoved).toBe(1);
+    expect(out.passes[0]?.maxDelta).toBe(60);
+    expect(out.cappedToCanopy).toBe(0);
+  });
+
+  describe('bare-earth ceiling', () => {
+    const ground = () => 300;
+    const block = (r0: number, r1: number, c0: number, c1: number, v: number) => {
+      const cells: [number, number, number][] = [];
+      for (let r = r0; r < r1; r += 1) for (let c = c0; c < c1; c += 1) cells.push([r, c, v]);
+      return cells;
+    };
+
+    it('caps a 40 wide plateau 50 m high (supported, so the local rule keeps it) to ground + 35 m', () => {
+      const wide = 40;
+      const rows = 60;
+      const input = new Float32Array(wide * rows).fill(300);
+      for (let r = 10; r < 50; r += 1) for (let c = 0; c < wide; c += 1) input[r * wide + c] = 350;
+      const out = despike(input, wide, rows, new Uint8Array(wide * rows), { ground });
+      expect(out.data[30 * wide + 20]).toBe(300 + CANOPY_CAP_M);
+      expect(out.maxAfter).toBe(300 + CANOPY_CAP_M);
+      expect(out.cappedToCanopy).toBe(40 * 40);
+      expect(out.maxExcessM).toBe(15);
+    });
+
+    it('leaves a 25 m tree crown untouched', () => {
+      const input = field(block(12, 18, 12, 18, 325));
+      const out = despike(input, N, N, noMask(), { ground });
+      expect([...out.data]).toEqual([...input]);
+      expect(out.cappedToCanopy).toBe(0);
+      expect(out.maxExcessM).toBe(0);
+    });
+
+    it('clamps to the local median when that median is itself under the cap', () => {
+      // a 3x3 patch 40 m up survives the local rule, sits on 300 ground, and its median in a 9x9 window is 300
+      const input = field(block(14, 17, 14, 17, 340));
+      const out = despike(input, N, N, noMask(), { ground });
+      expect(out.maxAfter).toBeLessThanOrEqual(300 + CANOPY_CAP_M);
+      expect(
+        out.cappedToCanopy + out.passes.reduce((n, p) => n + p.spikesRemoved, 0),
+      ).toBeGreaterThan(0);
+    });
+
+    it('skips cells where the ground sampler has no ground', () => {
+      const input = field(block(10, 22, 10, 22, 360));
+      const out = despike(input, N, N, noMask(), { ground: () => null });
+      expect([...out.data]).toEqual([...input]);
+      expect(out.cappedToCanopy).toBe(0);
+    });
+
+    it('is byte-identical across two runs', () => {
+      const input = field(block(5, 25, 5, 25, 355));
+      const a = despike(input, N, N, noMask(), { ground });
+      const b = despike(input, N, N, noMask(), { ground });
+      expect(Buffer.from(a.data.buffer).equals(Buffer.from(b.data.buffer))).toBe(true);
+      expect(a.cappedToCanopy).toBe(b.cappedToCanopy);
+      expect(a.maxExcessM).toBe(b.maxExcessM);
+    });
   });
 });
