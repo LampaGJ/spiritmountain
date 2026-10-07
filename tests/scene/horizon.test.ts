@@ -7,6 +7,9 @@ import {
 import { describe, expect, it } from 'vitest';
 import { applyRadialFade } from '../../src/scene/fade';
 import {
+  AERIAL_SCALE_M,
+  CAPPED_NEAR_FRACTION,
+  HORIZON_NEAR_FRACTION,
   applyHorizonBlend,
   createHorizonUniforms,
   equirectUv,
@@ -61,8 +64,10 @@ describe('applyHorizonBlend', () => {
     expect(count(frag, 'uniform sampler2D uSkyMap;')).toBe(1);
     expect(count(frag, 'uniform float uHorizonDist;')).toBe(1);
     expect(count(frag, 'varying vec2 vFadeXZ;')).toBe(1);
-    expect(count(frag, 'vHorizonXZ')).toBe(0);
+    expect(count(frag, 'varying vec3 vHorizonPos;')).toBe(1);
     expect(count(frag, 'smoothstep(uHorizonNear')).toBe(1);
+    expect(frag).toContain(`exp(-horizonDist / ${AERIAL_SCALE_M.toFixed(1)})`);
+    expect(frag).toContain('mix(gl_FragColor.rgb, behindSky, curvature)');
     expect(frag.indexOf('smoothstep(uHorizonNear')).toBeLessThan(
       frag.indexOf('#include <tonemapping_fragment>'),
     );
@@ -73,13 +78,13 @@ describe('applyHorizonBlend', () => {
     expect(material.customProgramCacheKey()).toBe('radial-fade+horizon');
   });
 
-  it('adds its own world-position varying when no fade patch is present', () => {
+  it('adds its own world-position varying', () => {
     const material = new MeshStandardMaterial();
     applyHorizonBlend(material, createHorizonUniforms(0x9db4c8));
     const shader = fakeShader();
     material.onBeforeCompile(shader, null as never);
-    expect(count(shader.vertexShader, 'varying vec2 vHorizonXZ;')).toBe(1);
-    expect(count(shader.fragmentShader, 'varying vec2 vHorizonXZ;')).toBe(1);
+    expect(count(shader.vertexShader, 'varying vec3 vHorizonPos;')).toBe(1);
+    expect(count(shader.fragmentShader, 'varying vec3 vHorizonPos;')).toBe(1);
   });
 
   it('shares one uniforms object across materials', () => {
@@ -98,11 +103,14 @@ describe('applyHorizonBlend', () => {
 });
 
 describe('horizon uniform helpers', () => {
-  it('updateHorizon sets distance and the 0.3 near fraction; the sky toggles uHasSky', () => {
+  it('updateHorizon sets distance and the HORIZON_NEAR_FRACTION near fraction; the sky toggles uHasSky', () => {
     const shared = createHorizonUniforms(0x9db4c8);
     updateHorizon(shared, new Vector3(1, 2, 3), 200);
     expect(shared.uHorizonDist.value).toBeCloseTo(50479, -2);
-    expect(shared.uHorizonNear.value).toBeCloseTo(0.3 * shared.uHorizonDist.value, 6);
+    expect(shared.uHorizonNear.value).toBeCloseTo(
+      HORIZON_NEAR_FRACTION * shared.uHorizonDist.value,
+      6,
+    );
     expect(shared.uCameraPos.value.toArray()).toEqual([1, 2, 3]);
     const texture = new Texture();
     setHorizonSkyTexture(shared, texture);
@@ -117,6 +125,6 @@ describe('updateHorizon cap', () => {
     const shared = createHorizonUniforms(0x9db4c8);
     updateHorizon(shared, new Vector3(), 5000, 40_000);
     expect(shared.uHorizonDist.value).toBe(40_000);
-    expect(shared.uHorizonNear.value).toBeCloseTo(12_000, 6);
+    expect(shared.uHorizonNear.value).toBeCloseTo(CAPPED_NEAR_FRACTION * 40_000, 6);
   });
 });
