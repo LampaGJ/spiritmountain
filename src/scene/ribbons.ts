@@ -1,9 +1,9 @@
 /**
- * Trail ribbons: each non-lift area becomes a closed volume (a patterned top strip, side walls, a base and end caps)
+ * Trail ribbons: each non-lift area becomes a closed volume (a flat-coloured top strip, side walls, a base and end caps)
  * that stands on the ground and rises through the canopy, so a trail stays readable over every layer.
  *
  * Geometry (buildRibbonGeometry) is pure three (no renderer, no DOM) so it tests in node. The layer (buildRibbonLayer)
- * owns one Mesh per pattern tile in use, rebuilt on a filter change and re-draped when the active heightfield changes.
+ * owns one Mesh per tile in use, rebuilt on a filter change and re-draped when the active heightfield changes.
  */
 import {
   BufferAttribute,
@@ -13,11 +13,7 @@ import {
   Mesh,
   MeshBasicMaterial,
   MeshStandardMaterial,
-  RepeatWrapping,
-  ClampToEdgeWrapping,
-  SRGBColorSpace,
   type Object3D,
-  type Texture,
 } from 'three';
 import type { Area } from '../schema/area';
 import type { Annotation } from '../schema/annotation';
@@ -27,6 +23,7 @@ import { applyRadialFade, type RadialFadeOptions } from './fade';
 import type { MeshSurface } from './heightfield';
 import type { SceneMapper } from './areas';
 import {
+  RIBBON_TOP_COLOR,
   TILE_EDGE_COLOR,
   TILE_NAMES,
   tileForArea,
@@ -48,8 +45,6 @@ export const MITER_LIMIT = 2.5;
 export const WALL_DARKEN = 0.65;
 /** The wall's base colour is the top colour times this, the subtle vertical gradient. */
 export const WALL_BASE_SHADE = 0.7;
-/** Top-strip pixels with alpha under this are not drawn, so the photo shows through the gaps in a tile. */
-export const RIBBON_ALPHA_TEST = 0.35;
 
 type Ring = ReadonlyArray<ReadonlyArray<number>>;
 
@@ -125,7 +120,7 @@ export interface RibbonPathInput {
 export interface RibbonSpec {
   /** Ribbon width in metres. */
   readonly widthM: number;
-  /** Metres of trail per texture repeat: u = cumulative length / periodM. */
+  /** Metres of trail per tile repeat: u = cumulative length / periodM (the symbols are spaced at the same period). */
   readonly periodM: number;
   /** Station spacing along the line; defaults to RIBBON_STEP_M. */
   readonly stepM?: number;
@@ -216,7 +211,7 @@ function layOutStations(
 }
 
 /**
- * Builds ONE BufferGeometry holding the closed volumes of every path, in two index groups: group 0 is the patterned
+ * Builds ONE BufferGeometry holding the closed volumes of every path, in two index groups: group 0 is the flat
  * top strip (material 0), group 1 the side walls, bottom and end caps (material 1, vertex-coloured).
  *
  * Vertex layout per path (N stations, C columns): N*C top, 2N left wall, 2N right wall, 2N bottom, then two end caps of C + 2.
@@ -417,20 +412,6 @@ export function buildRibbonGeometry(
   };
 }
 
-/**
- * Sets a loaded tile PNG up for a ribbon. The geometry's u runs along the trail and v across it, but the PNG
- * has the trail direction on its y axis and the width on x, so the texture matrix swaps the two:
- * image x = geometry v (clamped), image y = geometry u (repeating, one image per periodM).
- */
-export function configureRibbonTexture(texture: Texture): void {
-  texture.colorSpace = SRGBColorSpace;
-  texture.wrapS = ClampToEdgeWrapping;
-  texture.wrapT = RepeatWrapping;
-  texture.anisotropy = 8;
-  texture.matrixAutoUpdate = false;
-  texture.matrix.set(0, 1, 0, 1, 0, 0, 0, 0, 1);
-}
-
 /** The tile each area shows right now, null for no ribbon (lifts, or an area the filter hides). */
 export type RibbonAssignment = ReadonlyMap<string, TileName | null>;
 
@@ -462,7 +443,7 @@ export interface RibbonLayerStats {
 
 export interface RibbonLayer {
   readonly group: Group;
-  /** One unlit MeshBasicMaterial per tile (the patterned top): a map symbol, drawn at the tile's own colours. */
+  /** One unlit MeshBasicMaterial per tile (the top): a flat map colour (RIBBON_TOP_COLOR) the extruded symbols stand on. */
   readonly topMaterials: Readonly<Record<TileName, MeshBasicMaterial>>;
   /** The one vertex-coloured material every ribbon's walls, base and caps share. */
   readonly wallMaterial: MeshStandardMaterial;
@@ -493,7 +474,7 @@ export interface RibbonLayerOptions {
 }
 
 /** The centre lines of a non-lift area: the LineString, or every ring of a Polygon. */
-function linesOf(area: Area): Vec2[][] {
+export function linesOf(area: Area): Vec2[][] {
   if (area.kind === 'lift') return [];
   const raw =
     area.geometry.type === 'LineString' ? [area.geometry.coordinates] : area.geometry.coordinates;
@@ -501,8 +482,8 @@ function linesOf(area: Area): Vec2[][] {
 }
 
 /**
- * Builds the layer. `textures` supplies each tile's loaded PNG (a tile without one draws with no map); the layer
- * configures them with configureRibbonTexture. Starts routed by area kind (no annotations, no filter).
+ * Builds the layer. Each tile's top is a flat unlit colour; the symbols that mark the activity are a separate layer
+ * (symbols.ts). Starts routed by area kind (no annotations, no filter).
  * Materials get applyRadialFade; the caller applies the horizon blend to allMaterials().
  */
 export function buildRibbonLayer(
@@ -510,7 +491,6 @@ export function buildRibbonLayer(
   bare: MeshSurface,
   toScene: SceneMapper,
   tiles: Readonly<Record<TileName, TileInfo>>,
-  textures: Readonly<Partial<Record<TileName, Texture>>>,
   options: RibbonLayerOptions,
 ): RibbonLayer {
   const group = new Group();
@@ -525,14 +505,9 @@ export function buildRibbonLayer(
 
   const topMaterials = {} as Record<TileName, MeshBasicMaterial>;
   for (const name of TILE_NAMES) {
-    const texture = textures[name];
-    if (texture) configureRibbonTexture(texture);
-    // Unlit (#37): the top is a map symbol. Under the photo sky's dimmed sun and quarter hemisphere a lit white tile
-    // rendered mid grey, so every snow pattern read as a grey strip.
-    const material = new MeshBasicMaterial({
-      ...(texture ? { map: texture } : {}),
-      alphaTest: RIBBON_ALPHA_TEST,
-    });
+    // Unlit (#37): the top is a map colour. Under the photo sky's dimmed sun and quarter hemisphere a lit white top
+    // rendered mid grey, so every snow trail read as a grey strip.
+    const material = new MeshBasicMaterial({ color: RIBBON_TOP_COLOR[name] });
     // No polygonOffset: at a grazing view its slope term pushes a far ribbon behind the terrain it stands on.
     // The area line, level with the ribbon top, is pulled forward instead (see buildAreaLayer).
     applyRadialFade(material, { centre: options.fadeCentre });

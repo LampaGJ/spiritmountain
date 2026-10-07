@@ -151,7 +151,7 @@ To edit it, change the file directly and commit. The loader checks the whole fil
 Open work on GitHub (https://github.com/LampaGJ/spiritmountain/issues):
 
 - #30: the trees layer, with simulated trees from the canopy height model and photo greenness, replacing the lidar canopy blobs in the core.
-- #31: trail ribbons, with repeating pattern textures per trail kind draped along every contour.
+- #31: trail ribbons draped along every contour, a slab with thickness through the canopy; #38 replaced their pattern textures with extruded SVG symbols instanced along each trail (`src/scene/symbols.ts`, shapes in `src/scene/symbols/`).
 - #15 and #4: a manifest of the data seams and a registry of every artifact.
 - #19: a replay verifier that checks each record against its inputs.
 - #20: shared helpers for atomic writes and comparators.
