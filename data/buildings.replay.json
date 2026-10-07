@@ -1,0 +1,40 @@
+{
+  "inputHash": "5f23e73564024da7f4243e25fdca8220ed5dd90289476678ae9f300f89ce5424",
+  "codeCommit": "cd8289de6cb1e9be263e8ab22766c15a43c6e53a",
+  "outputHash": "dbd75576d015ce7a451e3b1a90096724ea28a93157b8e3f6ca9f88bc4b840cf2",
+  "effect": "reduces",
+  "toolVersions": {
+    "osmtogeojson": "3.0.0-beta.5",
+    "proj4": "2.22.0"
+  },
+  "lockSubtreeSha256": "59aa92ae8e489559c0812f8d56d434f5374a49eda46b5d86a33c78479ebc4fde",
+  "terrainBox": {
+    "xmin": -3472.1122557009803,
+    "ymin": -3367.4835588699207,
+    "xmax": 3477.8877442990197,
+    "ymax": 3372.5164411300793
+  },
+  "radiusM": null,
+  "counts": {
+    "droppedElements": 2,
+    "features": 2723,
+    "inputElements": 2702,
+    "producedElements": 2700,
+    "sourceHeight": 0,
+    "sourceLevels": 2,
+    "sourceTypeTable": 2721
+  },
+  "droppedCounts": {
+    "outside-terrain-box": 2
+  },
+  "dropped": [
+    {
+      "id": "way/1513632963",
+      "reason": "outside-terrain-box"
+    },
+    {
+      "id": "way/38403061",
+      "reason": "outside-terrain-box"
+    }
+  ]
+}
