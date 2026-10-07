@@ -19,6 +19,12 @@
         height: 100%;
         overflow: hidden;
       }
+      #reveal {
+        position: fixed;
+        inset: 0;
+        background: #000;
+        z-index: 4;
+      }
       #attribution {
         position: fixed;
         right: 8px;
@@ -46,6 +52,19 @@
     </style>
   </head>
   <body>
+    <div id="reveal" data-state="covered"></div>
+    <script>
+      // Failsafe, independent of the module graph: a startup error or a hung load must never leave the page black.
+      (function () {
+        function open() {
+          var el = document.getElementById('reveal');
+          if (el) el.remove();
+        }
+        window.addEventListener('error', open);
+        window.addEventListener('unhandledrejection', open);
+        setTimeout(open, 30000);
+      })();
+    </script>
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
     <aside id="annotation-panel" class="sm-plate" hidden></aside>

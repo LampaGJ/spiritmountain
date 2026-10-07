@@ -1,0 +1,77 @@
+@property --reveal-r {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+/* Covered: the transparent radius sits one feather below zero, so every pixel is opaque black. */
+#reveal {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  pointer-events: auto;
+  --reveal-r: -12vmax;
+  background: radial-gradient(
+    circle at 50% 50%,
+    transparent var(--reveal-r),
+    #000 calc(var(--reveal-r) + 12vmax)
+  );
+}
+
+#reveal[data-state='revealing'] {
+  animation: reveal-open 1.2s cubic-bezier(0, 0, 0.2, 1) forwards;
+}
+
+@keyframes reveal-open {
+  to {
+    --reveal-r: var(--reveal-end);
+  }
+}
+
+/* No registered property (or reduced motion): the whole overlay fades out instead of a hard cut. */
+#reveal[data-state='fade'] {
+  background: #000;
+  animation: reveal-fade 200ms linear forwards;
+}
+
+#reveal[data-state='covering'] {
+  background: #000;
+  animation: reveal-cover 200ms linear forwards;
+}
+
+@keyframes reveal-fade {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes reveal-cover {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #reveal[data-state='revealing'] {
+    background: #000;
+    animation: reveal-fade 200ms linear forwards;
+  }
+}
+
+#reveal-label {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 80vw;
+  text-align: center;
+  font:
+    12px/1.4 system-ui,
+    sans-serif;
+  color: #fff;
+  opacity: 0.7;
+}
+
+#reveal-label[hidden] {
+  display: none;
+}
