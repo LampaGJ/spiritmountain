@@ -1,0 +1,169 @@
+/*
+ * The control rail: one column of keys fixed to the left edge, no plate, no background, no border.
+ * The scene shows through everywhere between keys. Text and glyphs that sit directly on the scene
+ * (group headers, the status line) carry the --sm-halo blur shadow from theme.css instead of a box.
+ * No :hover rule lives here; the keys' hover and focus-visible lift is generated into clicky.css.
+ */
+#rail {
+  /* 16 px from the left edge, the top and the bottom, plus any device safe area (notch, home bar). */
+  --rail-inset: 16px;
+  /* A key's width is a multiple of its own type size (about 208 px at 13 px), so the column aligns and the key scales with the type. */
+  --rail-key-w: 16em;
+  /* Key height: 36 px, comfortably above the 24 x 24 CSS px minimum of WCAG 2.2 SC 2.5.8. */
+  --cl-h: 36px;
+  position: fixed;
+  z-index: 5;
+  top: calc(var(--rail-inset) + env(safe-area-inset-top, 0px));
+  left: calc(var(--rail-inset) + env(safe-area-inset-left, 0px));
+  bottom: calc(var(--rail-inset) + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: max-content;
+  max-width: calc(100vw - 2 * var(--rail-inset));
+  /* On a short screen the rail scrolls inside the viewport instead of running off it. */
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  /* Gaps between keys pass pointer events through to the scene (orbit drags start there); keys and headers take them back. */
+  pointer-events: none;
+  color: var(--sm-ink);
+  font: var(--sm-font);
+  animation: sm-rise 260ms var(--sm-ease) both;
+}
+#rail::-webkit-scrollbar {
+  display: none;
+}
+#rail .cl-key,
+#rail .group-head,
+#rail .filter-count,
+#rail .filter-notice {
+  pointer-events: auto;
+}
+/* Source order is not relied on: mount order differs between pages, CSS order fixes the sequence. */
+#rail > #filters {
+  order: 1;
+}
+#rail > #views {
+  order: 2;
+}
+
+#rail .cl-key {
+  display: block;
+}
+#rail .cl-key .btn-scale {
+  width: var(--rail-key-w);
+}
+/* Icon left, label, badge right. The engine centres the face content; a rail key aligns it to the left edge. */
+#rail .cl-key .btn-face {
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 0 10px 0 8px;
+  text-indent: 0;
+  letter-spacing: 0.01em;
+}
+#rail .cl-key .btn-label {
+  flex: 1 1 auto;
+  text-align: left;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+#rail .cl-key .btn-count {
+  margin-left: auto;
+}
+
+/* Group header: small uppercase label with the group's icon. Sits straight on the scene, so it carries the halo. */
+#rail .group-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 6px;
+  padding: 0 2px;
+  color: var(--sm-ink);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-shadow: var(--sm-halo);
+}
+#rail .ms-head {
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+  /* Glyphs are not text, so text-shadow does not reach them in every engine; the filter does. */
+  filter: drop-shadow(0 0 1px rgb(0 0 0 / 0.95)) drop-shadow(0 0 2px rgb(0 0 0 / 0.9))
+    drop-shadow(0 1px 3px rgb(0 0 0 / 0.8));
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 500,
+    'GRAD' 0,
+    'opsz' 20;
+}
+#rail .key-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  /* Room for the key's drop shadow and the focus ring so neither is clipped by the rail's scroll box. */
+  padding: 2px 4px 6px 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #rail {
+    animation: none;
+  }
+}
+
+/*
+ * Phone: the rail becomes a row along the bottom edge that scrolls sideways. Same keys; headers turn into chips.
+ * (Width breakpoint matches the annotation panel's bottom-sheet switch at 720 px.)
+ */
+@media (max-width: 719px) {
+  #rail {
+    --rail-key-w: 12.5em;
+    --rail-inset: 8px;
+    top: auto;
+    right: calc(var(--rail-inset) + env(safe-area-inset-right, 0px));
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 12px;
+    width: auto;
+    max-width: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+    pointer-events: none;
+    /* The filters mount after the view group; without this the browser keeps the view group in place and scrolls the row away from Activity. */
+    overflow-anchor: none;
+    padding-bottom: 2px;
+  }
+  #rail > #filters,
+  #rail > #views {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 12px;
+    flex: 0 0 auto;
+  }
+  #rail .console-group,
+  #rail #filters .console-foot,
+  #rail .sm-views {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex: 0 0 auto;
+    gap: 8px;
+  }
+  #rail .key-row {
+    flex-direction: row;
+    gap: 8px;
+    padding: 2px 3px 6px;
+  }
+  #rail .group-head {
+    margin: 0;
+    padding: 4px 10px 4px 6px;
+    border: 1px solid rgb(255 255 255 / 0.55);
+    border-radius: 999px;
+    white-space: nowrap;
+    background: rgb(0 0 0 / 0.35);
+  }
+}

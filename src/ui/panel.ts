@@ -1,4 +1,5 @@
 import { createClickKey } from './clicky-key';
+import { iconFor } from './icons';
 import { NOT_RECORDED, type PanelModel } from './panel-model';
 
 /**
@@ -42,7 +43,10 @@ export function createPanel(root: HTMLElement, onClose: () => void): AnnotationP
   const doc = root.ownerDocument;
   const heading = el(doc, 'h2', '', 'panel-title');
   heading.id = 'annotation-panel-title';
-  const closeKey = createClickKey('Close', { buttonClass: 'panel-close' });
+  const closeKey = createClickKey(iconFor('close-panel').label, {
+    buttonClass: 'panel-close',
+    icon: iconFor('close-panel').symbol,
+  });
   const closeButton = closeKey.button;
   const header = el(doc, 'header', undefined, 'panel-header');
   header.append(heading, closeKey.root);
