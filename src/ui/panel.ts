@@ -1,3 +1,4 @@
+import { createClickKey } from './clicky-key';
 import { NOT_RECORDED, type PanelModel } from './panel-model';
 
 /**
@@ -41,10 +42,10 @@ export function createPanel(root: HTMLElement, onClose: () => void): AnnotationP
   const doc = root.ownerDocument;
   const heading = el(doc, 'h2', '', 'panel-title');
   heading.id = 'annotation-panel-title';
-  const closeButton = el(doc, 'button', 'Close', 'panel-close');
-  closeButton.type = 'button';
+  const closeKey = createClickKey('Close', { buttonClass: 'panel-close' });
+  const closeButton = closeKey.button;
   const header = el(doc, 'header', undefined, 'panel-header');
-  header.append(heading, closeButton);
+  header.append(heading, closeKey.root);
   const body = el(doc, 'div', undefined, 'panel-body');
   const footer = el(doc, 'footer', '', 'panel-footer');
   root.append(header, body, footer);

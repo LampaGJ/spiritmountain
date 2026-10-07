@@ -1,41 +1,95 @@
 #filters {
   position: fixed;
-  top: 8px;
-  left: 8px;
-  /* leave room for the 360px annotation panel on the right; never narrower than 320px */
-  max-width: max(320px, calc(100vw - 392px));
+  top: 12px;
+  left: 12px;
   z-index: 5;
-  padding: 8px;
-  background: rgba(255, 255, 255, 0.92);
-  color: #111;
-  font:
-    13px/1.4 system-ui,
-    sans-serif;
-  border: 1px solid #555;
+  width: max-content;
+  max-width: min(46rem, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  padding: 10px 12px 12px;
+  animation: sm-rise 260ms var(--sm-ease) both;
 }
-#filters fieldset {
-  margin: 0 0 6px;
+
+/* While the annotation panel is open on a wide screen, leave its column free. */
+@media (min-width: 720px) {
+  body:has(#annotation-panel:not([hidden])) #filters {
+    max-width: min(46rem, calc(100vw - 24px - 384px));
+  }
+}
+
+#filters .console-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+#filters .console-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+#filters .filter-count {
+  margin: 0 auto 0 0;
+  color: var(--sm-ink-dim);
+  font-variant-numeric: tabular-nums;
+}
+#filters .console-group {
+  min-width: 0;
+  margin: 0 0 8px;
   padding: 0;
   border: 0;
 }
-#filters legend {
+#filters .console-group legend {
+  padding: 0;
+  margin-bottom: 5px;
+  color: var(--sm-ink-dim);
+  font-size: 11px;
   font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
-#filters button {
-  margin: 2px 4px 2px 0;
-  padding: 2px 8px;
-  border: 1px solid #333;
-  background: #fff;
-  color: #111;
-  font: inherit;
-  cursor: pointer;
+#filters .console-group[hidden] {
+  display: none;
 }
-#filters button[aria-pressed='true'] {
-  background: #111;
-  color: #fff;
-  font-weight: 600;
+#filters .key-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px 8px;
+  /* Room for the key's drop shadow and the focus ring so neither is clipped by the scroll box. */
+  padding: 2px 3px 6px;
 }
-#filters .filter-count,
 #filters .filter-notice {
-  margin: 4px 0 0;
+  margin: 2px 0 0;
+  color: var(--sm-ink);
+}
+#filters .filter-notice:empty {
+  display: none;
+}
+
+/* Phone: the console spans the width and its keys wrap in rows; the activity list scrolls rather than eating the scene. */
+@media (max-width: 719px) {
+  #filters {
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    width: auto;
+    max-width: none;
+    max-height: 50dvh;
+    /* Smaller keys than the 44px touch default, so a wrapped row set does not eat the scene (still above the 24 px WCAG 2.2 SC 2.5.8 minimum). */
+    --cl-font: 13px;
+    --cl-h: 2.7em;
+    padding: 8px 10px 8px;
+  }
+  #filters .console-title {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #filters {
+    animation: none;
+  }
 }

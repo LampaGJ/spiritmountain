@@ -7,12 +7,18 @@ import {
   toFilter,
   type HashFilter,
 } from './filter-hash';
-import type { Filter } from './filter-predicate';
+import { createClickKey, createToggleKey, type ClickyKey } from './clicky-key';
+import type { FacetCounts, Filter } from './filter-predicate';
 
 export interface StripCounts {
   visibleCount: number;
   total: number;
+  /** Per-option match counts. When present the strip shows a badge on every key and disables zero-match options. */
+  facets?: FacetCounts;
 }
+
+/** Title on an option that has no matching areas. */
+export const NO_MATCH_TITLE = 'no areas annotated for this yet';
 
 export interface FilterStripDeps {
   readonly host: HTMLElement;
@@ -44,42 +50,63 @@ type Key = 'activity' | 'season';
 function el<K extends keyof HTMLElementTagNameMap>(
   tag: K,
   text?: string,
+  className?: string,
 ): HTMLElementTagNameMap[K] {
   const node = document.createElement(tag);
   if (text !== undefined) node.textContent = text;
+  if (className !== undefined) node.className = className;
   return node;
 }
 
 export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
-  const buttons: { key: Key; value: string; button: HTMLButtonElement }[] = [];
+  const buttons: { key: Key; value: string; handle: ClickyKey }[] = [];
   let state: HashFilter = { activity: [], season: [] };
   let imageryButton: HTMLButtonElement | undefined;
   let imageryApplied: boolean | undefined;
 
-  const count = el('p');
-  count.className = 'filter-count';
+  const count = el('p', undefined, 'filter-count');
   count.setAttribute('role', 'status');
-  const notice = el('p');
-  notice.className = 'filter-notice';
+  const notice = el('p', undefined, 'filter-notice');
   notice.setAttribute('role', 'status');
 
   const render = (): void => {
+    const counts = deps.apply(toFilter(state));
+    const { facets } = counts;
     for (const b of buttons) {
       const pressed = (state[b.key] as string[]).includes(b.value);
-      b.button.setAttribute('aria-pressed', String(pressed));
-      b.button.textContent = (pressed ? '✓ ' : '') + b.value;
+      // The pressed look (sunk key, accent face, check mark) is generated CSS keyed on aria-pressed.
+      b.handle.button.setAttribute('aria-pressed', String(pressed));
+      if (facets === undefined) continue;
+      const lookup: ReadonlyMap<string, number> =
+        b.key === 'activity' ? facets.activities : facets.seasons;
+      const n = lookup.get(b.value) ?? 0;
+      b.handle.setCount(n);
+      // A latched option stays operable so it can always be switched off.
+      const empty = n === 0 && !pressed;
+      b.handle.root.classList.toggle('is-zero', empty);
+      if (empty) {
+        b.handle.button.setAttribute('aria-disabled', 'true');
+        b.handle.button.title = NO_MATCH_TITLE;
+      } else {
+        b.handle.button.removeAttribute('aria-disabled');
+        b.handle.button.removeAttribute('title');
+      }
+    }
+    if (facets === undefined) {
+      count.textContent = `${counts.visibleCount} of ${counts.total} areas`;
+    } else if (state.activity.length > 0 || state.season.length > 0) {
+      count.textContent = `${facets.matching} of ${facets.candidates} areas match · ${facets.lifts} lifts always shown`;
+    } else {
+      count.textContent = `${facets.candidates} areas · ${facets.lifts} lifts`;
     }
     if (imageryButton) {
       const on = state.imagery !== false;
       imageryButton.setAttribute('aria-pressed', String(on));
-      imageryButton.textContent = (on ? '✓ ' : '') + 'Imagery';
       if (imageryApplied !== on) {
         imageryApplied = on;
         deps.setImagery?.(on);
       }
     }
-    const { visibleCount, total } = deps.apply(toFilter(state));
-    count.textContent = `${visibleCount} of ${total} areas`;
   };
 
   const writeIfChanged = (): void => {
@@ -88,6 +115,9 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
   };
 
   const toggle = (key: Key, value: string): void => {
+    // aria-disabled keys stay focusable but do nothing; a latched key is never disabled, so it can always be switched off.
+    const entry = buttons.find((b) => b.key === key && b.value === value);
+    if (entry?.handle.button.getAttribute('aria-disabled') === 'true') return;
     const values = new Set<string>(state[key]);
     if (values.has(value)) values.delete(value);
     else values.add(value);
@@ -121,40 +151,43 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
   };
 
   const group = (label: string, key: Key, options: readonly string[]): HTMLFieldSetElement => {
-    const fieldset = el('fieldset');
+    const fieldset = el('fieldset', undefined, 'console-group');
     fieldset.appendChild(el('legend', label));
+    const row = el('div', undefined, 'key-row');
     for (const value of options) {
-      const button = el('button', value);
-      button.type = 'button';
-      button.setAttribute('aria-pressed', 'false');
-      button.addEventListener('click', () => toggle(key, value));
-      fieldset.appendChild(button);
-      buttons.push({ key, value, button });
+      const handle = createToggleKey(value);
+      handle.button.addEventListener('click', () => toggle(key, value));
+      row.appendChild(handle.root);
+      buttons.push({ key, value, handle });
     }
+    fieldset.appendChild(row);
     return fieldset;
   };
 
-  let layers: HTMLFieldSetElement | undefined;
+  const clearKey = createClickKey('Clear');
+  clearKey.button.addEventListener('click', clear);
+
+  const head = el('div', undefined, 'console-head');
+  head.append(el('h2', 'Filter areas', 'console-title'), count, clearKey.root);
+
+  // The Imagery fieldset is mounted only when the host supplies setImagery.
+  const imagerySlot = el('fieldset', undefined, 'console-group console-slot');
+  imagerySlot.dataset.slot = 'imagery';
+  const imageryRow = el('div', undefined, 'key-row');
+  imagerySlot.append(el('legend', 'Imagery'), imageryRow);
   if (deps.setImagery) {
-    layers = el('fieldset');
-    layers.appendChild(el('legend', 'Layers'));
-    imageryButton = el('button', 'Imagery');
-    imageryButton.type = 'button';
-    imageryButton.setAttribute('aria-pressed', 'true');
-    imageryButton.addEventListener('click', toggleImagery);
-    layers.appendChild(imageryButton);
+    const imageryKey = createToggleKey('Imagery');
+    imageryKey.button.setAttribute('aria-pressed', 'true');
+    imageryKey.button.addEventListener('click', toggleImagery);
+    imageryButton = imageryKey.button;
+    imageryRow.appendChild(imageryKey.root);
   }
 
-  const clearButton = el('button', 'Clear');
-  clearButton.type = 'button';
-  clearButton.addEventListener('click', clear);
-
   deps.host.replaceChildren(
+    head,
     group('Activity', 'activity', TOGGLE_ACTIVITIES),
     group('Season', 'season', SeasonSchema.options),
-    ...(layers ? [layers] : []),
-    clearButton,
-    count,
+    ...(deps.setImagery ? [imagerySlot] : []),
     notice,
   );
   window.addEventListener('hashchange', sync);
