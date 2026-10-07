@@ -1,5 +1,6 @@
 import './filters.css';
 import type { AreaEntry } from '../scene/areas';
+import type { BillboardLayer } from '../scene/billboards';
 import { applyFilter } from '../scene/filter-apply';
 import type { AnnotationsHandle } from '../wire-annotations';
 import { SeasonSchema, type Annotation } from '../schema/annotation';
@@ -29,6 +30,8 @@ export interface MountFiltersDeps {
     annotations: ReadonlyMap<string, Annotation>,
     selected: ReadonlySet<Activity>,
   ) => void;
+  /** Sport billboards (#43): re-routed, re-clustered and toggled after every filter change. Absent means no signs follow the filter. */
+  readonly billboards?: BillboardLayer;
 }
 
 /** Shown instead of the strip when the annotations load failed (#13 Decision 5). */
@@ -44,6 +47,7 @@ export function mountFilters(deps: MountFiltersDeps): FilterStrip {
     setTrees,
     setExaggeration,
     routeSport,
+    billboards,
   } = deps;
   const host = document.createElement('div');
   host.id = 'filters';
@@ -74,6 +78,7 @@ export function mountFilters(deps: MountFiltersDeps): FilterStrip {
     apply: (filter) => {
       const result = applyFilter(registry, annotations, filter);
       routeSport?.(annotations, filter.activities);
+      billboards?.applyFilter(annotations, filter.activities, result.visibleIds);
       handle.onFilterApplied(result.visibleIds);
       return {
         ...result,
