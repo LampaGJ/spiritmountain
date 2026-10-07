@@ -48,6 +48,42 @@ items:
     title: Seam manifest and artifact registry for the data flow
     tier: polish
     needs: [seed-annotations, terrain-transform, draped-area-lines]
+  - id: imagery-layer
+    title: NAIP orthoimagery draped on the terrain with an Imagery toggle
+    tier: feature
+    needs: [terrain-mesh]
+  - id: context-ring
+    title: Twelve context tiles around the square with a radial alpha fade
+    tier: feature
+    needs: [imagery-layer]
+  - id: buildings-layer
+    title: OSM building footprints extruded by a type-height table
+    tier: feature
+    needs: [draped-area-lines]
+  - id: surface-layer
+    title: First-return LiDAR surface from the public 2021 point cloud
+    tier: feature
+    needs: [context-ring]
+  - id: sky-ground
+    title: Imagery-mean ground plane and a Poly Haven HDR sky
+    tier: feature
+    needs: [context-ring]
+  - id: exaggeration-slider
+    title: Terrain exaggeration slider with camera remap
+    tier: feature
+    needs: [surface-layer]
+  - id: horizon-blend
+    title: True-horizon blend of ground-side materials into the sky
+    tier: feature
+    needs: [sky-ground]
+  - id: rail-ui
+    title: Tactile left rail, view strip and eye-level default view
+    tier: polish
+    needs: [layer-filters]
+  - id: pages-hosting
+    title: Static GitHub Pages hosting with an attribution footer
+    tier: polish
+    needs: [rail-ui]
 constraints:
   - Every fetched input is pinned under data/raw/ with a sha256 and committed; every transform is deterministic and carries a replay record of inputHash, codeCommit and outputHash (user CLAUDE.md, data doctrine item 4). The outputHash lives in the replay sidecar, not in the annotations file's generatedFrom (D-05).
   - Hand-edited data is illegal. Seed annotations are produced by a committed transform, and later human edits to data/annotations.json are treated as a primary-source input parsed at the boundary, not as a manipulation.
@@ -66,7 +102,11 @@ tracker: github
 This is a feasibility spike. It proves that public GIS data for the Spirit
 Mountain Recreation Area (Duluth, Minnesota) can be rendered in three.js and
 annotated through a schema, with a committed data file as the source of
-truth. An in-scene editor is a later wave, see Non-goals.
+truth. The spike has shipped and is hosted at
+https://lampagj.github.io/spiritmountain/. The MVP items come first below;
+the items from imagery-layer onward record what landed after the MVP, so this
+spec describes the system as built. An in-scene editor is a later wave, see
+Non-goals.
 
 Verified inputs as of 2026-10-06:
 
@@ -452,6 +492,184 @@ wave starts from a measured map instead of memory.
 
 **Open gaps**: none
 
+## imagery-layer — NAIP orthoimagery draped on the terrain with an Imagery toggle
+
+**Goal**: Drape public-domain aerial imagery on the terrain mesh so the scene
+reads as the real mountain, not a grey surface. This is the as-built result of
+#21.
+
+**Acceptance**:
+- The imagery is USGS NAIPPlus, 4000x3879 pixels at 1.74 m per pixel, public
+  domain, pinned under `data/raw/` with a manifest entry (#21).
+- An Imagery toggle shows and hides the drape, and the URL hash key
+  `imagery=off` restores the grey slope-shaded terrain (#21).
+- The imagery loads through `src/data/load-imagery.ts` with a Zod boundary
+  parse of its manifest (#21).
+
+**Touches**: `scripts/ingest/imagery.ts`,
+`scripts/ingest/imagery-manifest-schema.ts`, `src/data/load-imagery.ts`,
+`src/scene/terrain.ts`, `src/ui/filter-hash.ts`
+
+**Open gaps**: none
+
+## context-ring — Twelve context tiles around the square with a radial alpha fade
+
+**Goal**: Extend the scene beyond the 5 m terrain square with coarser terrain
+and imagery so the mountain sits in its landscape. This is the as-built result
+of #22.
+
+**Acceptance**:
+- 12 context tiles surround the square, with 3DEP terrain at 30 m and NAIP
+  imagery at 10 m, committed under `data/context/` with a replay record
+  (#22).
+- A radial alpha fade runs from 4 km to 10.1 km, centred on the resort focus
+  box (#22).
+
+**Touches**: `scripts/ingest/context.ts`, `scripts/ingest/context-tiles.ts`,
+`scripts/ingest/context-terrain.ts`,
+`scripts/ingest/context-manifest-schema.ts`, `src/data/load-context.ts`,
+`src/scene/context.ts`, `src/scene/fade.ts`, `data/context/`
+
+**Open gaps**: none
+
+## buildings-layer — OSM building footprints extruded by a type-height table
+
+**Goal**: Show the buildings on and around the mountain as extruded
+footprints, which fills the building gap the first draft listed as not found.
+This is the as-built result of #23.
+
+**Acceptance**:
+- `data/buildings.geojson` holds 2,723 OSM building footprints, produced by a
+  committed transform with a replay record (#23).
+- Each footprint is extruded to a height from a type-height table in
+  `scripts/ingest/building-heights.ts` (#23).
+- A Buildings toggle shows and hides the layer (#23).
+
+**Touches**: `scripts/ingest/fetch-buildings.ts`,
+`scripts/ingest/buildings.ts`, `scripts/ingest/buildings.ql`,
+`scripts/ingest/building-heights.ts`, `src/schema/building.ts`,
+`src/data/load-buildings.ts`, `src/scene/buildings.ts`,
+`data/buildings.geojson`
+
+**Open gaps**: none
+
+## surface-layer — First-return LiDAR surface from the public 2021 point cloud
+
+**Goal**: Replace the bare-earth terrain with a first-return surface, canopy
+included, built from the public 2021 point cloud. This is the as-built result
+of #24.
+
+**Acceptance**:
+- The source is the USGS Entwine point cloud MN_LakeSuperior_1_2021 and
+  MN_LakeSuperior_2_2021, read through PDAL (#24).
+- The square is gridded at 4 m from both datasets, and the seam between them
+  is tested for stripes. A 2 m core inset sits inside the square (#24).
+- The square mesh is capped at 700 segments and the core at 1024 (#24).
+- The surface is lazily installed and requires `brew install pdal` (#24).
+- Area lines re-drape onto the canopy when the surface is on (#24).
+- A Surface toggle defaults to off, and the hash key `surface=on` turns it on
+  (#24).
+
+**Touches**: `scripts/ingest/surface.ts`, `scripts/ingest/surface-window.ts`,
+`scripts/ingest/surface-terrain.ts`,
+`scripts/ingest/surface-manifest-schema.ts`,
+`scripts/ingest/surface-pipeline.json`,
+`scripts/ingest/surface-pipeline-square.json`, `src/data/load-surface.ts`,
+`src/scene/surface.ts`, `src/scene/elevated.ts`, `data/surface/`
+
+**Open gaps**: a faint seam shows at the far-plane cap in the Overview view
+(from #27), and the east dataset boundary remains visible.
+
+## sky-ground — Imagery-mean ground plane and a Poly Haven HDR sky
+
+**Goal**: Fill the view beyond the fade with a ground plane and a sky, so the
+scene has a horizon instead of a void. This is the as-built result of #25.
+
+**Acceptance**:
+- A 300 km ground plane beyond the fade uses the imagery's mean colour,
+  computed at ingest and written to `data/imagery-stats.json` (#25).
+- A CC0 Poly Haven HDR sky at 1k is the background and the environment map
+  (#25).
+- Sun intensity is 0.5x and `environmentIntensity` is 0.55 (#25).
+
+**Touches**: `scripts/ingest/imagery-stats.ts`, `scripts/ingest/sky.ts`,
+`scripts/ingest/sky-manifest-schema.ts`, `src/schema/imagery-stats.ts`,
+`src/data/load-imagery-stats.ts`, `src/data/load-sky.ts`,
+`src/scene/ground.ts`, `src/scene/sky.ts`, `data/imagery-stats.json`
+
+**Open gaps**: none
+
+## exaggeration-slider — Terrain exaggeration slider with camera remap
+
+**Goal**: Let the user scale the relief up or down, which replaces the
+single constant that terrain-mesh fixed at 1. This is the as-built result of
+#26.
+
+**Acceptance**:
+- A slider ranges from 0.1x to 10x. The floor of 0.1x comes from the later fix
+  that stopped 0 from collapsing camera height (commit 370f132).
+- Exaggeration is a group scale about lake level, and the camera remaps with
+  it (#26).
+- The hash key `exag=` carries the value (#26).
+
+**Touches**: `src/ui/exaggeration-key.ts`, `src/scene/scene.ts`,
+`src/scene/terrain.ts`, `src/ui/filter-hash.ts`
+
+**Open gaps**: none
+
+## horizon-blend — True-horizon blend of ground-side materials into the sky
+
+**Goal**: Hide the edge where the ground plane ends by blending ground-side
+materials into the sky texture at the true horizon distance. This is the
+as-built result of #27.
+
+**Acceptance**:
+- Ground-side materials blend into the sky texture at sqrt(2 R h) from the
+  camera's true height h, with R the earth radius (#27).
+- The blend distance is capped at the far plane (#27).
+
+**Touches**: `src/scene/horizon.ts`, `src/scene/ground.ts`,
+`src/scene/sky.ts`, `src/scene/fade.ts`
+
+**Open gaps**: none
+
+## rail-ui — Tactile left rail, view strip and eye-level default view
+
+**Goal**: Gather the layer, filter and view controls into one tactile left
+rail with a consistent look, and open on a view a visitor recognises.
+
+**Acceptance**:
+- The rail is generated from `~/Projects/clicky-button` by
+  `scripts/ui/gen-clicky.mjs`, with Material Symbols icons from
+  `src/ui/icons.json` and title-case labels.
+- Facet count badges show on filters, and zero-state keys show when a facet
+  has no matches.
+- A view strip offers Resort, Overview and Top Down.
+- The default view is eye-level at the resort, with a 120 degree horizontal
+  FOV and a 2 m eye height.
+
+**Touches**: `scripts/ui/gen-clicky.mjs`, `scripts/ui/clicky.config.json`,
+`src/ui/rail.ts`, `src/ui/rail.css`, `src/ui/clicky-key.ts`,
+`src/ui/clicky.css`, `src/ui/icons.json`, `src/ui/icons.ts`,
+`src/ui/views-strip.ts`, `src/ui/views.css`, `src/scene/views.ts`
+
+**Open gaps**: none
+
+## pages-hosting — Static GitHub Pages hosting with an attribution footer
+
+**Goal**: Publish the spike as a static site so a stakeholder can open it
+from a link.
+
+**Acceptance**:
+- The repo is public, and `.github/workflows/pages.yml` deploys to
+  https://lampagj.github.io/spiritmountain/.
+- An attribution footer credits OSM (ODbL), USGS (public domain) and Poly
+  Haven (CC0).
+
+**Touches**: `.github/workflows/pages.yml`, `vite.config.ts`, `index.html`
+
+**Open gaps**: the bundle is 780 kB, over Vite's 500 kB chunk warning.
+
 ## Deviations log
 
 - D-01: 3DEP request uses imageSR 26915 at 5 m per pixel, the size Open gap is resolved, and the terrain Goal changes from a few hundred kilobytes to about 7.5 MB (7,494,880 bytes); decided by #7 and #9, 2026-10-06.
@@ -471,6 +689,15 @@ wave starts from a measured map instead of memory.
 - D-15: Ways partly outside the bbox are kept whole, not clipped; decided by #8, 2026-10-06.
 - D-16: Lift cable display offsets are unsurveyed display constants, four measured plus a default of 8 m; decided by #12, 2026-10-06.
 - D-17: The fetch retry ladder, scheduler and --refetch archive are hand-written and ratification is pending; decided by #7, 2026-10-06.
+- D-18: imagery-layer added: USGS NAIPPlus orthoimagery (4000x3879 at 1.74 m/px, public domain) draped on the terrain with an Imagery toggle and hash imagery=off, which retires the no-imagery Non-goal; decided by #21, 2026-10-06.
+- D-19: context-ring added: 12 context tiles (3DEP 30 m, NAIP 10 m) with a radial alpha fade from 4 km to 10.1 km; decided by #22, 2026-10-06.
+- D-20: buildings-layer added: 2,723 OSM building footprints extruded by a type-height table with a Buildings toggle, which overturns the first draft's building-footprints gap; decided by #23, 2026-10-06.
+- D-21: surface-layer added: first-return LiDAR surface from the 2021 Entwine point cloud via PDAL (4 m square, 2 m core, caps 700 and 1024 segments, default off, hash surface=on, requires brew install pdal); decided by #24, 2026-10-06.
+- D-22: sky-ground added: 300 km ground plane in the imagery mean colour (data/imagery-stats.json) and a CC0 Poly Haven 1k HDR sky, sun 0.5x, environmentIntensity 0.55; decided by #25, 2026-10-06.
+- D-23: exaggeration-slider added: 0.1x to 10x group scale about lake level with camera remap and hash exag=, which supersedes the terrain-mesh constant fixed at 1; decided by #26, 2026-10-06.
+- D-24: horizon-blend added: ground-side materials blend into the sky at sqrt(2 R h) from the camera's true height, capped at the far plane; decided by #27, 2026-10-06.
+- D-25: rail-ui added: tactile left rail generated from clicky-button, Material Symbols icons, facet badges, a view strip and a 120 degree FOV eye-level default view; no issue number was supplied, 2026-10-06.
+- D-26: pages-hosting added: public repo and GitHub Pages via pages.yml with an attribution footer, which replaces the no-hosting Non-goal; no issue number was supplied, 2026-10-06.
 
 ## Non-goals
 
@@ -478,12 +705,13 @@ wave starts from a measured map instead of memory.
   are edited in `data/annotations.json` outside the app. The editor is a
   second spec once the scene proves out, and it will treat the file as the
   source of truth.
-- No recreation-area boundary polygon, building footprints or parcel data;
-  none was found in a public machine-readable source. These remain flagged
+- No recreation-area boundary polygon or parcel data; none was found in a
+  public machine-readable source. Building footprints shipped from OSM (D-20). These remain flagged
   gaps.
-- No basemap imagery or satellite texture on the terrain.
-- No authentication, hosting or deployment. The CI workflow in
+- No authentication; hosting is static GitHub Pages only. The CI workflow in
   `.github/workflows/ci.yml` is in scope for contract-seams-manifest only.
+- No seam stitching between context tiles and no point-cloud surface beyond
+  the terrain square.
 - No invention of seasons, stakeholder roles, hours or trail status. Blank
   fields stay blank until a human fills them.
 - No React or other UI framework; the panel and filters are plain HTML and
