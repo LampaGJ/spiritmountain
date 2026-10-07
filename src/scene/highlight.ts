@@ -41,7 +41,7 @@ export function highlightedIds(state: InteractionState): ReadonlySet<string> {
 /**
  * @displayName Line highlighter
  * @strategicPurpose Highlights by colour only, with linewidth identical to the base, so the swapped material does not change the line's pick region.
- * @tacticalObjective Swaps line.material between the shared per-kind material and a per-kind clone with colour HIGHLIGHT_COLOR; never mutates the shared material.
+ * @tacticalObjective Swaps line.material between the shared per-sport material and a per-sport clone with colour HIGHLIGHT_COLOR; never mutates the shared material. The base is line.userData.baseMaterial, which AreaLayer.route rewrites on every filter change.
  */
 export interface Highlighter {
   apply(state: InteractionState): void;
@@ -56,10 +56,13 @@ export function createHighlighter(
   linesByAreaId: ReadonlyMap<string, readonly Line2[]>,
 ): Highlighter {
   const highlightFor = new Map<LineMaterial, LineMaterial>();
-  const baseOf = new Map<Line2, LineMaterial>();
+  // Construction-time fallback for a line with no recorded base (userData.baseMaterial, set by AreaLayer).
+  const fallbackOf = new Map<Line2, LineMaterial>();
   for (const lines of linesByAreaId.values()) {
-    for (const line of lines) baseOf.set(line, line.material);
+    for (const line of lines) fallbackOf.set(line, line.material);
   }
+  const baseOf = (line: Line2): LineMaterial | undefined =>
+    (line.userData['baseMaterial'] as LineMaterial | undefined) ?? fallbackOf.get(line);
 
   function highlightMaterial(base: LineMaterial): LineMaterial {
     let material = highlightFor.get(base);
@@ -76,7 +79,7 @@ export function createHighlighter(
       const on = highlightedIds(state);
       for (const [areaId, lines] of linesByAreaId) {
         for (const line of lines) {
-          const base = baseOf.get(line);
+          const base = baseOf(line);
           if (base === undefined) continue;
           if (on.has(areaId)) {
             const highlight = highlightMaterial(base);

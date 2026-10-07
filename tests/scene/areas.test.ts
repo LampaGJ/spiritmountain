@@ -12,7 +12,9 @@ import {
   type SceneMapper,
 } from '../../src/scene/areas';
 import { createMeshSurface } from '../../src/scene/heightfield';
-import { AREA_KIND_COLOR } from '../../src/scene/palette';
+import { SPORT_COLOR } from '../../src/scene/palette';
+import { KIND_DEFAULT_ACTIVITY, type Activity } from '../../src/scene/sport-routing';
+import type { Annotation } from '../../src/schema/annotation';
 import type { Area } from '../../src/schema/area';
 import { makeFixtureField } from '../fixtures/make-field';
 
@@ -165,12 +167,15 @@ describe('buildAreaLayer', () => {
     expect(seen).toBe(areas.length);
   });
 
-  it('shares one material per kind, coloured from the palette, with a resolution set', () => {
+  it('shares one material per sport, first painted with the kind default, coloured from the palette, with a resolution set', () => {
     const run = layer.registry.get('way/1001')?.lines[0] as Line2;
-    expect(run.material).toBe(layer.materials['downhill-run']);
-    expect(layer.materials['downhill-run'].color.getHex()).toBe(AREA_KIND_COLOR['downhill-run']);
-    expect(layer.materials['downhill-run'].resolution.x).toBe(800);
-    expect(layer.materials.lift.resolution.y).toBe(600);
+    expect(run.material).toBe(layer.materials['alpine-ski']);
+    expect(run.userData['baseMaterial']).toBe(layer.materials['alpine-ski']);
+    expect(layer.materials['alpine-ski'].color.getHex()).toBe(SPORT_COLOR['alpine-ski']);
+    expect(layer.materials['alpine-ski'].resolution.x).toBe(800);
+    expect(layer.materials['lift-ride'].resolution.y).toBe(600);
+    const lift = layer.registry.get('way/1006')?.lines[0] as Line2;
+    expect(lift.material).toBe(layer.materials['lift-ride']);
   });
 
   it('gives a polygon with holes several Line2 objects under one areaId', () => {
@@ -259,14 +264,90 @@ describe('ghost pass (#36)', () => {
         expect(line.children).toHaveLength(1);
         const ghost = line.children[0] as Line2;
         expect(ghost.geometry).toBe(line.geometry);
-        expect(ghost.material).toBe(layer.ghostMaterials[area.kind]);
+        expect(ghost.material).toBe(layer.ghostMaterials[KIND_DEFAULT_ACTIVITY[area.kind]]);
         expect(ghost.renderOrder).toBe(GHOST_RENDER_ORDER);
         expect(ghost.raycast(null as never, [])).toBeUndefined();
       }
     }
-    const ghost = layer.ghostMaterials['downhill-run'];
+    const ghost = layer.ghostMaterials['alpine-ski'];
     expect([ghost.depthTest, ghost.depthWrite, ghost.transparent]).toEqual([false, false, true]);
     expect(ghost.opacity).toBe(GHOST_OPACITY);
-    expect(ghost.color.getHex()).toBe(AREA_KIND_COLOR['downhill-run']);
+    expect(ghost.color.getHex()).toBe(SPORT_COLOR['alpine-ski']);
+  });
+});
+
+describe('route (#40)', () => {
+  const toScene: SceneMapper = (e, n, z) => [e, z, -n];
+  const note = (areaId: string, ...activities: Activity[]): Annotation => ({
+    areaId,
+    activities: activities.map((activity) => ({ activity, seasons: [], notes: '' })),
+    stakeholders: [],
+    notes: '',
+  });
+  const annotations = new Map<string, Annotation>([
+    ['way/1001', note('way/1001', 'alpine-ski', 'snowboard')],
+    ['way/1002', note('way/1002', 'nordic-classic', 'nordic-skate')],
+    ['way/1006', note('way/1006', 'lift-ride')],
+  ]);
+  const snapshot = (layer: ReturnType<typeof buildAreaLayer>) => {
+    const lines: Line2[] = [];
+    layer.group.traverse((o) => {
+      if (o instanceof Line2) lines.push(o);
+    });
+    return lines;
+  };
+  const lineOf = (layer: ReturnType<typeof buildAreaLayer>, id: string) =>
+    layer.registry.get(id)?.lines[0] as Line2;
+
+  it('changes line colour with no rebuild: same LineGeometry instances and Line2 count', () => {
+    const layer = buildAreaLayer(areas, surface, toScene, { width: 800, height: 600 });
+    const before = snapshot(layer);
+    const geometries = before.map((l) => l.geometry);
+    layer.route(annotations, new Set<Activity>(['snowboard']));
+    const after = snapshot(layer);
+    expect(after).toHaveLength(before.length);
+    expect(after.map((l) => l.geometry)).toEqual(geometries);
+    after.forEach((l, i) => expect(l.geometry).toBe(geometries[i]));
+    expect(lineOf(layer, 'way/1001').material).toBe(layer.materials.snowboard);
+    expect(lineOf(layer, 'way/1001').material.color.getHex()).toBe(SPORT_COLOR.snowboard);
+    expect(lineOf(layer, 'way/1002').material).toBe(layer.materials['nordic-classic']);
+  });
+
+  it('the ghost child follows the colour; renderOrder and raycast are unchanged', () => {
+    const layer = buildAreaLayer(areas, surface, toScene, { width: 800, height: 600 });
+    const ghost = lineOf(layer, 'way/1001').children[0] as Line2;
+    const raycast = ghost.raycast;
+    layer.route(annotations, new Set<Activity>(['snowboard']));
+    expect(ghost.material).toBe(layer.ghostMaterials.snowboard);
+    expect(ghost.renderOrder).toBe(GHOST_RENDER_ORDER);
+    expect(ghost.raycast).toBe(raycast);
+    expect(lineOf(layer, 'way/1001').children).toEqual([ghost]);
+  });
+
+  it('is idempotent, and an empty selection restores first-annotated colours', () => {
+    const layer = buildAreaLayer(areas, surface, toScene, { width: 800, height: 600 });
+    const run = lineOf(layer, 'way/1001');
+    const skate = lineOf(layer, 'way/1002');
+    layer.route(annotations, new Set<Activity>(['snowboard', 'nordic-skate']));
+    layer.route(annotations, new Set<Activity>(['snowboard', 'nordic-skate']));
+    expect(run.material).toBe(layer.materials.snowboard);
+    expect(skate.material).toBe(layer.materials['nordic-skate']);
+    expect(run.userData['baseMaterial']).toBe(layer.materials.snowboard);
+    layer.route(annotations, new Set());
+    expect(run.material).toBe(layer.materials['alpine-ski']);
+    expect(skate.material).toBe(layer.materials['nordic-classic']);
+    expect((skate.children[0] as Line2).material).toBe(layer.ghostMaterials['nordic-classic']);
+    expect(lineOf(layer, 'way/1006').material).toBe(layer.materials['lift-ride']);
+  });
+
+  it('leaves a highlighted line on its highlight and only updates the recorded base', () => {
+    const layer = buildAreaLayer(areas, surface, toScene, { width: 800, height: 600 });
+    const run = lineOf(layer, 'way/1001');
+    const highlight = run.material.clone();
+    run.material = highlight;
+    layer.route(annotations, new Set<Activity>(['snowboard']));
+    expect(run.material).toBe(highlight);
+    expect(run.userData['baseMaterial']).toBe(layer.materials.snowboard);
+    expect((run.children[0] as Line2).material).toBe(layer.ghostMaterials.snowboard);
   });
 });

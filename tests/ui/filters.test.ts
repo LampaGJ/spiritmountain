@@ -519,6 +519,54 @@ describe('mountFilters and the #13 handle', () => {
     expect(reported.length).toBeGreaterThan(0);
     expect([...(reported[reported.length - 1] ?? [])]).toEqual([]);
   });
+
+  it('routes sport colour after applyFilter on every apply, with the annotations and the selected activities', () => {
+    history.replaceState(null, '', '/#activity=nordic-skate&season=winter');
+    const line = new Line2();
+    const calls: { visibleAtCall: boolean; selected: string[]; size: number }[] = [];
+    const map = new Map();
+    const handle: AnnotationsHandle = {
+      ...failedAnnotationsHandle(''),
+      annotations: { status: 'loaded', map },
+    };
+    strips.push(
+      mountFilters({
+        registry: registryWith(line),
+        handle,
+        routeSport: (annotations, selected) => {
+          calls.push({
+            visibleAtCall: line.visible,
+            selected: [...selected],
+            size: annotations.size,
+          });
+          expect(annotations).toBe(map);
+        },
+      }),
+    );
+    expect(calls.length).toBeGreaterThan(0);
+    // applyFilter has already hidden the unannotated trail when routeSport runs, so routing follows the filter.
+    expect(calls[calls.length - 1]).toEqual({
+      visibleAtCall: false,
+      selected: ['nordic-skate'],
+      size: 0,
+    });
+  });
+
+  it('never routes sport colour when the annotations load failed', () => {
+    history.replaceState(null, '', '/#activity=nordic-skate');
+    let routed = 0;
+    strips.push(
+      mountFilters({
+        registry: registryWith(new Line2()),
+        handle: failedAnnotationsHandle('HTTP 404'),
+        routeSport: () => {
+          routed += 1;
+        },
+      }),
+    );
+    window.dispatchEvent(new Event('hashchange'));
+    expect(routed).toBe(0);
+  });
 });
 
 describe('rail markup', () => {
