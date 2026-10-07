@@ -94,6 +94,16 @@ export const annotationsReady: Promise<AnnotationsHandle> =
 
 import type { AreaEntry } from './scene/areas';
 import { mountFilters } from './ui/mount-filters';
+import { mountViews } from './ui/views-strip';
+
+mountViews({
+  setView: (name) => handle.setView(name),
+  initial: 'error' in areaLayer ? 'overview' : 'resort',
+  onUserMove: (listener) => {
+    handle.controls.addEventListener('start', listener);
+    return () => handle.controls.removeEventListener('start', listener);
+  },
+});
 
 // annotationsReady never rejects, so this needs no catch, and the .then keeps a slow annotations load from blocking the module.
 void annotationsReady.then((handle) => {

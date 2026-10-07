@@ -2,7 +2,9 @@ import './filters.css';
 import type { AreaEntry } from '../scene/areas';
 import { applyFilter } from '../scene/filter-apply';
 import type { AnnotationsHandle } from '../wire-annotations';
-import { browserHash, mountFilterStrip, type FilterStrip } from './filters';
+import { SeasonSchema } from '../schema/annotation';
+import { browserHash, mountFilterStrip, TOGGLE_ACTIVITIES, type FilterStrip } from './filters';
+import { facetCounts } from './filter-predicate';
 
 export interface MountFiltersDeps {
   readonly registry: ReadonlyMap<string, AreaEntry>;
@@ -17,6 +19,7 @@ export function mountFilters(deps: MountFiltersDeps): FilterStrip {
   const { registry, handle } = deps;
   const host = document.createElement('div');
   host.id = 'filters';
+  host.className = 'sm-plate sm-console';
   host.setAttribute('role', 'group');
   host.setAttribute('aria-label', 'Activity and season filters');
   document.body.appendChild(host);
@@ -26,13 +29,17 @@ export function mountFilters(deps: MountFiltersDeps): FilterStrip {
     return { sync() {}, dispose() {} };
   }
   const annotations = handle.annotations.map;
+  const areas = [...registry.values()].map((entry) => entry.area);
   return mountFilterStrip({
     host,
     ...browserHash,
     apply: (filter) => {
       const result = applyFilter(registry, annotations, filter);
       handle.onFilterApplied(result.visibleIds);
-      return result;
+      return {
+        ...result,
+        facets: facetCounts(areas, annotations, filter, TOGGLE_ACTIVITIES, SeasonSchema.options),
+      };
     },
   });
 }

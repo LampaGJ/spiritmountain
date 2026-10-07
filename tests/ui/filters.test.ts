@@ -2,7 +2,13 @@
 import { Line2 } from 'three/addons/lines/Line2.js';
 import { afterEach, describe, expect, it } from 'vitest';
 import { ActivitySchema, SeasonSchema } from '../../src/schema/annotation';
-import { mountFilterStrip, type FilterStrip } from '../../src/ui/filters';
+import type { FacetCounts } from '../../src/ui/filter-predicate';
+import {
+  mountFilterStrip,
+  NO_MATCH_TITLE,
+  TOGGLE_ACTIVITIES,
+  type FilterStrip,
+} from '../../src/ui/filters';
 import { mountFilters } from '../../src/ui/mount-filters';
 import { failedAnnotationsHandle, type AnnotationsHandle } from '../../src/wire-annotations';
 import { makeArea } from './filter-fixtures';
@@ -97,6 +103,89 @@ describe('filter strip', () => {
     const before = calls();
     window.dispatchEvent(new Event('hashchange'));
     expect(calls()).toBe(before);
+  });
+});
+
+describe('facet counts and the zero state', () => {
+  // Only nordic-classic (40) and winter (12) have matches; everything else is zero.
+  const facets = (matching: number): FacetCounts => ({
+    activities: new Map(
+      TOGGLE_ACTIVITIES.map((a) => [a, a === 'nordic-classic' ? 40 : 0] as const),
+    ),
+    seasons: new Map(SeasonSchema.options.map((s) => [s, s === 'winter' ? 12 : 0] as const)),
+    matching,
+    lifts: 8,
+    candidates: 107,
+  });
+
+  const setupFacets = (initialHash: string, matching = 107) => {
+    let hash = initialHash;
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    strips.push(
+      mountFilterStrip({
+        host,
+        apply: () => ({ visibleCount: 0, total: 115, facets: facets(matching) }),
+        readHash: () => hash,
+        writeHash: (h) => {
+          hash = h;
+        },
+      }),
+    );
+    const key = (label: string): HTMLButtonElement => {
+      const found = [...host.querySelectorAll('button')].find(
+        (b) => b.querySelector('.btn-label')?.textContent === label,
+      );
+      if (found === undefined) throw new Error(`no key ${label}`);
+      return found;
+    };
+    return { host, key, getHash: () => hash };
+  };
+
+  it('puts a count badge on every toggle', () => {
+    const { key } = setupFacets('');
+    expect(key('nordic-classic').querySelector('.btn-count')?.textContent).toBe('40');
+    expect(key('winter').querySelector('.btn-count')?.textContent).toBe('12');
+    expect(key('spring').querySelector('.btn-count')?.textContent).toBe('0');
+  });
+
+  it('renders a zero-count option as aria-disabled with the explanatory title, still focusable', () => {
+    const { key } = setupFacets('');
+    for (const label of ['hike', 'tubing', 'spring']) {
+      const button = key(label);
+      expect(button.getAttribute('aria-disabled')).toBe('true');
+      expect(button.title).toBe(NO_MATCH_TITLE);
+      expect(button.disabled).toBe(false);
+      expect(button.tabIndex).toBeGreaterThanOrEqual(0);
+      expect(button.closest('.cl-key')?.classList.contains('is-zero')).toBe(true);
+    }
+    expect(key('nordic-classic').hasAttribute('aria-disabled')).toBe(false);
+    expect(key('nordic-classic').hasAttribute('title')).toBe(false);
+  });
+
+  it('ignores a click on a zero-count option and leaves the hash alone', () => {
+    const { key, getHash } = setupFacets('');
+    key('spring').click();
+    expect(key('spring').getAttribute('aria-pressed')).toBe('false');
+    expect(getHash()).toBe('');
+  });
+
+  it('keeps a latched zero-count option operable so it can be switched off', () => {
+    const { key, getHash } = setupFacets('#season=spring', 0);
+    expect(key('spring').getAttribute('aria-pressed')).toBe('true');
+    expect(key('spring').hasAttribute('aria-disabled')).toBe(false);
+    key('spring').click();
+    expect(key('spring').getAttribute('aria-pressed')).toBe('false');
+    expect(getHash()).toBe('');
+  });
+
+  it('words the status line for no filter and for an active filter', () => {
+    const idle = setupFacets('');
+    expect(idle.host.querySelector('.filter-count')?.textContent).toBe('107 areas · 8 lifts');
+    const active = setupFacets('#activity=nordic-classic', 40);
+    expect(active.host.querySelector('.filter-count')?.textContent).toBe(
+      '40 of 107 areas match · 8 lifts always shown',
+    );
   });
 });
 
