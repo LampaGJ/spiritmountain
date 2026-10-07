@@ -25,6 +25,7 @@ import areasUrl from '../data/areas.geojson?url';
 import { loadAreas } from './data/load-areas';
 import { installAreas, type AreaLayer } from './scene/areas';
 import { createMeshSurface } from './scene/heightfield';
+import { focusBoxOf } from './scene/views';
 
 /**
  * Failure channel for the areas layer. Writes the message to its own element with textContent and
@@ -54,6 +55,10 @@ try {
   );
 } catch (error) {
   areaLayerResult = reportAreasFailure(error instanceof Error ? error.message : String(error));
+}
+if (!('error' in areaLayerResult)) {
+  const focus = focusBoxOf(areaLayerResult.registry.values());
+  if (focus) handle.setView('resort', focus);
 }
 export const areaLayer: AreaLayer | { error: string } = areaLayerResult;
 
