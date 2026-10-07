@@ -149,6 +149,33 @@ describe('surface key', () => {
   });
 });
 
+describe('trees key', () => {
+  it('encodes trees=on after surface and before exag, and nothing when off or absent', () => {
+    expect(encodeHash({ activity: [], season: [], trees: true })).toBe('#trees=on');
+    expect(encodeHash({ activity: [], season: [], surface: true, trees: true, exag: 2.5 })).toBe(
+      '#surface=on&trees=on&exag=2.5',
+    );
+    expect(encodeHash({ activity: [], season: [], trees: false })).toBe('');
+  });
+
+  it('decodes on to true, off and absent to undefined, and reports bad tokens', () => {
+    expect(decodeHash('#trees=on').filter.trees).toBe(true);
+    expect(decodeHash('#trees=off').filter.trees).toBeUndefined();
+    expect(decodeHash('').filter.trees).toBeUndefined();
+    expect(decodeHash('#trees=maybe').ignored).toEqual(['trees=maybe']);
+  });
+
+  it('round trips with trees on', () => {
+    const state: HashFilter = {
+      activity: ['hike'],
+      season: ['winter'],
+      surface: true,
+      trees: true,
+    };
+    expect(decodeHash(encodeHash(state)).filter).toEqual(state);
+  });
+});
+
 describe('exag key', () => {
   it('round trips exag=2.5 and encodes it last', () => {
     expect(decodeHash('#exag=2.5').filter.exag).toBe(2.5);

@@ -30,9 +30,11 @@ function setup(
   withBuildings = false,
   withSurface = false,
   withExag = false,
+  withTrees = false,
 ) {
   const exagCalls: number[] = [];
   const surfaceCalls: boolean[] = [];
+  const treesCalls: boolean[] = [];
   let hash = initialHash;
   const imageryCalls: boolean[] = [];
   const buildingsCalls: boolean[] = [];
@@ -49,6 +51,7 @@ function setup(
     ...(withImagery ? { setImagery: (on: boolean) => void imageryCalls.push(on) } : {}),
     ...(withBuildings ? { setBuildings: (on: boolean) => void buildingsCalls.push(on) } : {}),
     ...(withSurface ? { setSurface: (on: boolean) => void surfaceCalls.push(on) } : {}),
+    ...(withTrees ? { setTrees: (on: boolean) => void treesCalls.push(on) } : {}),
     ...(withExag ? { setExaggeration: (k: number) => void exagCalls.push(k) } : {}),
     readHash: () => hash,
     writeHash: (h) => {
@@ -72,6 +75,7 @@ function setup(
     imageryCalls,
     buildingsCalls,
     surfaceCalls,
+    treesCalls,
     exagCalls,
     getHash: () => hash,
     calls: () => applyCalls,
@@ -329,6 +333,50 @@ describe('surface toggle', () => {
     button('Clear Filters').click();
     expect(getHash()).toBe('#surface=on');
     expect(surfaceCalls).toEqual([true]);
+  });
+});
+
+describe('trees toggle', () => {
+  it('has no Trees button unless setTrees is wired', () => {
+    const { host } = setup('', true, true, true);
+    expect(host.textContent).not.toContain('Trees');
+  });
+
+  it('sits after Surface in the Layers group, defaults off, and leaves the hash empty', () => {
+    const { host, button, getHash, treesCalls } = setup('', true, true, true, false, true);
+    const labels = [...host.querySelectorAll('.console-group:last-child button .btn-label')].map(
+      (b) => b.textContent,
+    );
+    expect(labels).toEqual(['Imagery', 'Buildings', 'Surface', 'Trees']);
+    expect(button('Trees').getAttribute('aria-pressed')).toBe('false');
+    expect(getHash()).toBe('');
+    expect(treesCalls).toEqual([false]);
+  });
+
+  it('toggling on writes trees=on and calls setTrees(true); toggling off clears it', () => {
+    const { button, getHash, treesCalls } = setup('', false, false, false, false, true);
+    button('Trees').click();
+    expect(button('Trees').getAttribute('aria-pressed')).toBe('true');
+    expect(getHash()).toBe('#trees=on');
+    button('Trees').click();
+    expect(getHash()).toBe('');
+    expect(treesCalls).toEqual([false, true, false]);
+  });
+
+  it('starts on from #trees=on, and Clear leaves it alone', () => {
+    const { button, getHash, treesCalls } = setup(
+      '#trees=on&activity=hike',
+      false,
+      false,
+      false,
+      false,
+      true,
+    );
+    expect(button('Trees').getAttribute('aria-pressed')).toBe('true');
+    expect(treesCalls).toEqual([true]);
+    button('Clear Filters').click();
+    expect(getHash()).toBe('#trees=on');
+    expect(treesCalls).toEqual([true]);
   });
 });
 
