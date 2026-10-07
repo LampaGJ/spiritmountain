@@ -160,8 +160,9 @@ describe('exag key', () => {
     expect(decodeHash(encodeHash(state)).filter).toEqual(state);
   });
 
-  it('accepts the 0 and 10 ends', () => {
-    expect(decodeHash('#exag=0').filter.exag).toBe(0);
+  it('accepts the 0.1 and 10 ends and drops 0', () => {
+    expect(decodeHash('#exag=0.1').filter.exag).toBe(0.1);
+    expect(decodeHash('#exag=0').filter.exag).toBeUndefined();
     expect(decodeHash('#exag=10').filter.exag).toBe(10);
   });
 

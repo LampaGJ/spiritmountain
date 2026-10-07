@@ -359,7 +359,7 @@ describe('terrain exaggeration slider', () => {
       (b) => b.querySelector('.btn-label')?.textContent === 'Surface',
     );
     expect(surface?.compareDocumentPosition(input)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
-    expect([input.min, input.max, input.step, input.value]).toEqual(['0', '10', '0.1', '1']);
+    expect([input.min, input.max, input.step, input.value]).toEqual(['0.1', '10', '0.1', '1']);
     const icon = layers?.querySelector('.exag-key .ms');
     expect(icon?.textContent).toBe(iconFor('terrain-exaggeration').symbol);
     expect(icon?.getAttribute('aria-hidden')).toBe('true');
@@ -384,10 +384,10 @@ describe('terrain exaggeration slider', () => {
     expect(valueText(host)).toBe('x2.5');
     expect(getHash()).toBe('#exag=2.5');
     expect(exagCalls).toEqual([1, 2.5]);
-    drag(slider(host), '0');
-    expect(valueText(host)).toBe('x0.0');
-    expect(getHash()).toBe('#exag=0');
-    expect(exagCalls).toEqual([1, 2.5, 0]);
+    drag(slider(host), '0.1');
+    expect(valueText(host)).toBe('x0.1');
+    expect(getHash()).toBe('#exag=0.1');
+    expect(exagCalls).toEqual([1, 2.5, 0.1]);
   });
 
   it('writes nothing for 1 and clears a previous exag', () => {

@@ -84,6 +84,8 @@ export interface SceneOptions {
 }
 
 export const MAX_EXAGGERATION = 10;
+/** Lower bound matching the slider: a scale near 0 collapses the camera height and makes picking unstable. */
+export const MIN_EXAGGERATION = 0.1;
 
 export function createScene(
   container: HTMLElement,
@@ -202,7 +204,10 @@ export function createScene(
       return exaggeration;
     },
     setExaggeration(k) {
-      const next = Math.min(Math.max(Number.isFinite(k) ? k : 1, 0), MAX_EXAGGERATION);
+      const next = Math.min(
+        Math.max(Number.isFinite(k) ? k : 1, MIN_EXAGGERATION),
+        MAX_EXAGGERATION,
+      );
       if (next === exaggeration) return;
       remapCamera(camera, controls, exaggeration, next, baseSceneY);
       exaggeration = next;
