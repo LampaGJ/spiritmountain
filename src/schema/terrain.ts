@@ -34,7 +34,12 @@ export const TerrainHeaderSchema = z
     fillMethod: z.literal('chebyshev-bfs-fixed-order'),
     nodataFilled: z.int().nonnegative(),
     frame: z.strictObject({ file: z.literal('data/frame.json'), sha256: Sha256Schema }),
-    source: z.strictObject({ path: z.literal('data/raw/3dep.tif'), sha256: Sha256Schema }),
+    source: z.strictObject({
+      path: z.string().regex(/^data\/raw\/(3dep\.tif|context\/-?\d+_-?\d+\.tif)$/, {
+        error: 'source.path must be data/raw/3dep.tif or data/raw/context/<i>_<j>.tif',
+      }),
+      sha256: Sha256Schema,
+    }),
   })
   .superRefine((header, ctx) => {
     if (header.byteLength !== header.width * header.height * 4) {

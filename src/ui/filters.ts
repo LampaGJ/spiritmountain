@@ -25,6 +25,8 @@ export interface FilterStripDeps {
   readonly apply: (filter: Filter) => StripCounts;
   readonly readHash: () => string;
   readonly writeHash: (hash: string) => void;
+  /** Called with the imagery switch on mount and whenever it changes. Absent means no Imagery button. */
+  readonly setImagery?: (on: boolean) => void;
 }
 
 export interface FilterStrip {
@@ -59,6 +61,8 @@ function el<K extends keyof HTMLElementTagNameMap>(
 export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
   const buttons: { key: Key; value: string; handle: ClickyKey }[] = [];
   let state: HashFilter = { activity: [], season: [] };
+  let imageryButton: HTMLButtonElement | undefined;
+  let imageryApplied: boolean | undefined;
 
   const count = el('p', undefined, 'filter-count');
   count.setAttribute('role', 'status');
@@ -95,6 +99,14 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
     } else {
       count.textContent = `${facets.candidates} areas · ${facets.lifts} lifts`;
     }
+    if (imageryButton) {
+      const on = state.imagery !== false;
+      imageryButton.setAttribute('aria-pressed', String(on));
+      if (imageryApplied !== on) {
+        imageryApplied = on;
+        deps.setImagery?.(on);
+      }
+    }
   };
 
   const writeIfChanged = (): void => {
@@ -115,8 +127,16 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
     render();
   };
 
+  const toggleImagery = (): void => {
+    state = HashFilterSchema.parse({ ...state, imagery: state.imagery === false });
+    notice.textContent = '';
+    writeIfChanged();
+    render();
+  };
+
+  /** Clear resets the activity and season toggles only; the imagery switch is a layer, not a filter. */
   const clear = (): void => {
-    state = { activity: [], season: [] };
+    state = { activity: [], season: [], ...(state.imagery === false ? { imagery: false } : {}) };
     notice.textContent = '';
     writeIfChanged();
     render();
@@ -150,19 +170,24 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
   const head = el('div', undefined, 'console-head');
   head.append(el('h2', 'Filter areas', 'console-title'), count, clearKey.root);
 
-  // IMAGERY SLOT: the imagery toggle (arriving from another branch) mounts here. Append a
-  // createToggleKey('Imagery') to this fieldset's .key-row and drop the `hidden` attribute.
-  // Nothing in this module reads from it.
+  // The Imagery fieldset is mounted only when the host supplies setImagery.
   const imagerySlot = el('fieldset', undefined, 'console-group console-slot');
   imagerySlot.dataset.slot = 'imagery';
-  imagerySlot.hidden = true;
-  imagerySlot.append(el('legend', 'Imagery'), el('div', undefined, 'key-row'));
+  const imageryRow = el('div', undefined, 'key-row');
+  imagerySlot.append(el('legend', 'Imagery'), imageryRow);
+  if (deps.setImagery) {
+    const imageryKey = createToggleKey('Imagery');
+    imageryKey.button.setAttribute('aria-pressed', 'true');
+    imageryKey.button.addEventListener('click', toggleImagery);
+    imageryButton = imageryKey.button;
+    imageryRow.appendChild(imageryKey.root);
+  }
 
   deps.host.replaceChildren(
     head,
     group('Activity', 'activity', TOGGLE_ACTIVITIES),
     group('Season', 'season', SeasonSchema.options),
-    imagerySlot,
+    ...(deps.setImagery ? [imagerySlot] : []),
     notice,
   );
   window.addEventListener('hashchange', sync);

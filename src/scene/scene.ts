@@ -5,12 +5,14 @@ import {
   type Mesh,
   PerspectiveCamera,
   Scene,
+  type Texture,
   WebGLRenderer,
 } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { createMeshSurface, type Heightfield, type MeshSurface } from './heightfield';
-import { createTerrainMesh } from './terrain';
-import { CAMERA_FOV_DEG, computeViews, minCameraY, type FocusBox, type ViewName } from './views';
+import { setFadeCentre } from './fade';
+import { createTerrainMesh, setTerrainImagery, terrainFade } from './terrain';
+import { computeViews, minCameraY, verticalFovDeg, type FocusBox, type ViewName } from './views';
 
 export type FrameCallback = (deltaMs: number) => void;
 
@@ -24,6 +26,15 @@ export interface SceneHandle {
   readonly surface: MeshSurface;
   /** Moves the camera to a named view. A focus box is remembered and reused by later calls without one. */
   setView(name: ViewName, focus?: FocusBox): void;
+  /** Shows the texture on the terrain, or restores slope shading with null. */
+  setImagery(texture: Texture | null): void;
+  /** Moves the radial fade centre of the centre terrain (local metres east and north). */
+  setFadeCentre(centre: { readonly east: number; readonly north: number }): void;
+  /**
+   * Makes room for geometry that reaches radiusM beyond the centre tile (the context ring): the camera far plane
+   * grows by 2 x radiusM, the same rule computeViews applies to the centre tile's own radius, and controls.maxDistance follows.
+   */
+  setContextExtent(radiusM: number): void;
   /** Registers a per-frame callback; returns an unsubscribe function. */
   onFrame(callback: FrameCallback): () => void;
   /** Stops the loop and releases geometry, material, renderer, controls and the resize observer. */
@@ -54,7 +65,7 @@ export function createScene(container: HTMLElement, field: Heightfield): SceneHa
 
   const aspectOf = () => container.clientWidth / Math.max(container.clientHeight, 1);
   const initial = computeViews(surface, aspectOf());
-  const camera = new PerspectiveCamera(CAMERA_FOV_DEG, aspectOf(), initial.near, initial.far);
+  const camera = new PerspectiveCamera(initial.fov, aspectOf(), initial.near, initial.far);
 
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
@@ -62,13 +73,17 @@ export function createScene(container: HTMLElement, field: Heightfield): SceneHa
   controls.minDistance = 50;
   controls.maxDistance = initial.far * 0.9;
 
+  let contextRadius = 0;
+  const farOf = (computed: number): number => computed + 2 * contextRadius;
   let lastFocus: FocusBox | undefined;
   const setView = (name: ViewName, focus?: FocusBox): void => {
     if (focus) lastFocus = focus;
     const set = computeViews(surface, aspectOf(), lastFocus);
     const view = set.views[name];
     camera.near = set.near;
-    camera.far = set.far;
+    camera.far = farOf(set.far);
+    controls.maxDistance = camera.far * 0.9;
+    camera.fov = set.fov;
     camera.up.copy(view.up);
     camera.position.copy(view.position);
     controls.target.copy(view.target);
@@ -81,6 +96,7 @@ export function createScene(container: HTMLElement, field: Heightfield): SceneHa
   const resize = (): void => {
     renderer.setSize(container.clientWidth, container.clientHeight);
     camera.aspect = aspectOf();
+    camera.fov = verticalFovDeg(camera.aspect);
     camera.updateProjectionMatrix();
   };
   const observer = new ResizeObserver(resize);
@@ -113,6 +129,18 @@ export function createScene(container: HTMLElement, field: Heightfield): SceneHa
     terrain,
     surface,
     setView,
+    setImagery(texture) {
+      setTerrainImagery(terrain, texture);
+    },
+    setFadeCentre(centre) {
+      setFadeCentre(terrainFade(terrain), centre);
+    },
+    setContextExtent(radiusM) {
+      contextRadius = radiusM;
+      camera.far = farOf(computeViews(surface, aspectOf(), lastFocus).far);
+      controls.maxDistance = camera.far * 0.9;
+      camera.updateProjectionMatrix();
+    },
     onFrame(callback) {
       callbacks.add(callback);
       return () => callbacks.delete(callback);

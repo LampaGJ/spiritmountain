@@ -7,3 +7,4 @@ docs
 scripts/ingest/organizations.seed.json
 tests/fixtures
 scripts/probes
+.claude
