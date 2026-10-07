@@ -21,9 +21,10 @@ afterEach(() => {
   history.replaceState(null, '', location.pathname + location.search);
 });
 
-function setup(initialHash: string, withImagery = false) {
+function setup(initialHash: string, withImagery = false, withBuildings = false) {
   let hash = initialHash;
   const imageryCalls: boolean[] = [];
+  const buildingsCalls: boolean[] = [];
   const writes: string[] = [];
   let applyCalls = 0;
   const host = document.createElement('div');
@@ -35,6 +36,7 @@ function setup(initialHash: string, withImagery = false) {
       return { visibleCount: 3, total: 5 };
     },
     ...(withImagery ? { setImagery: (on: boolean) => void imageryCalls.push(on) } : {}),
+    ...(withBuildings ? { setBuildings: (on: boolean) => void buildingsCalls.push(on) } : {}),
     readHash: () => hash,
     writeHash: (h) => {
       hash = h;
@@ -55,6 +57,7 @@ function setup(initialHash: string, withImagery = false) {
     button,
     writes,
     imageryCalls,
+    buildingsCalls,
     getHash: () => hash,
     calls: () => applyCalls,
   };
@@ -229,6 +232,44 @@ describe('imagery toggle', () => {
     [...host.querySelectorAll('button')].find((b) => b.textContent === 'Clear')?.click();
     expect(getHash()).toBe('#imagery=off');
     expect(imageryCalls).toEqual([false]);
+  });
+});
+
+describe('buildings toggle', () => {
+  it('has no Buildings button unless setBuildings is wired', () => {
+    const { host } = setup('', true);
+    expect(host.textContent).not.toContain('Buildings');
+  });
+
+  it('defaults on: pressed, the hash stays empty, and setBuildings(true) is called once', () => {
+    const { button, getHash, buildingsCalls } = setup('', false, true);
+    expect(button('Buildings').getAttribute('aria-pressed')).toBe('true');
+    expect(getHash()).toBe('');
+    expect(buildingsCalls).toEqual([true]);
+  });
+
+  it('toggling off writes buildings=off and calls setBuildings(false); toggling on clears it', () => {
+    const { button, getHash, buildingsCalls } = setup('', true, true);
+    button('Buildings').click();
+    expect(button('Buildings').getAttribute('aria-pressed')).toBe('false');
+    expect(getHash()).toBe('#buildings=off');
+    button('Buildings').click();
+    expect(getHash()).toBe('');
+    expect(buildingsCalls).toEqual([true, false, true]);
+  });
+
+  it('starts off from #buildings=off, and Clear keeps buildings off and imagery independent', () => {
+    const { host, button, getHash, buildingsCalls, imageryCalls } = setup(
+      '#buildings=off&activity=hike',
+      true,
+      true,
+    );
+    expect(button('Buildings').getAttribute('aria-pressed')).toBe('false');
+    expect(buildingsCalls).toEqual([false]);
+    expect(imageryCalls).toEqual([true]);
+    [...host.querySelectorAll('button')].find((b) => b.textContent === 'Clear')?.click();
+    expect(getHash()).toBe('#buildings=off');
+    expect(buildingsCalls).toEqual([false]);
   });
 });
 

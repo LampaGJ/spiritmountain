@@ -12,13 +12,15 @@ export interface MountFiltersDeps {
   readonly handle: AnnotationsHandle;
   /** Turns the terrain imagery on or off. Absent means no Imagery button. */
   readonly setImagery?: (on: boolean) => void;
+  /** Shows or hides the buildings layer. Absent means no Buildings button. */
+  readonly setBuildings?: (on: boolean) => void;
 }
 
 /** Shown instead of the strip when the annotations load failed (#13 Decision 5). */
 export const FILTERS_UNAVAILABLE_TEXT = 'filters unavailable: annotations failed to load';
 
 export function mountFilters(deps: MountFiltersDeps): FilterStrip {
-  const { registry, handle, setImagery } = deps;
+  const { registry, handle, setImagery, setBuildings } = deps;
   const host = document.createElement('div');
   host.id = 'filters';
   host.className = 'sm-plate sm-console';
@@ -36,6 +38,7 @@ export function mountFilters(deps: MountFiltersDeps): FilterStrip {
     host,
     ...browserHash,
     ...(setImagery ? { setImagery } : {}),
+    ...(setBuildings ? { setBuildings } : {}),
     apply: (filter) => {
       const result = applyFilter(registry, annotations, filter);
       handle.onFilterApplied(result.visibleIds);
