@@ -109,7 +109,11 @@ export function surfaceSampler(layers: {
     }
     return fallback.sample(east, north);
   };
-  return { ...fallback, sample };
+  // The composite keeps the fallback's grid for extent and UV maths, but a draped line must split at the edges of every
+  // drawn layer (#36): splitting at the 5 m bare-earth grid alone left straight runs under a 2 m canopy mesh, which
+  // rose through them and hid the trails whenever Surface was on.
+  const edgeSurfaces = [core, square, fallback].filter((s): s is MeshSurface => s !== undefined);
+  return { ...fallback, sample, edgeSurfaces };
 }
 
 /**
@@ -233,8 +237,11 @@ function prepareSurface(
       name === 'square' ? SURFACE_SQUARE_MAX_SEGMENTS : SURFACE_CORE_MAX_SEGMENTS,
     );
     const material = new MeshStandardMaterial({ vertexColors: true, roughness: 1, metalness: 0 });
+    // Units only, no slope term (#36): with factor -level the canopy's steep triangles were pulled toward the camera by
+    // a slope-scaled depth at grazing views, far more than the 1.1 m the lines and ribbon tops sit above it, so the
+    // surface drew over every trail. The layers are already 0.3 m apart in metres; a constant bias is enough.
     material.polygonOffset = true;
-    material.polygonOffsetFactor = -level;
+    material.polygonOffsetFactor = 0;
     material.polygonOffsetUnits = -level;
     const fade = applyRadialFade(material, { centre: options.fadeCentre });
     const mesh = new Mesh(buildTerrainGeometry(meshSurface) as BufferGeometry, material);

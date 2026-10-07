@@ -21,7 +21,7 @@ import {
 import type { Area } from '../schema/area';
 import type { Annotation } from '../schema/annotation';
 import type { Activity } from '../ui/filter-predicate';
-import { DRAPE_LIFT_M, densify, type Vec2 } from './drape';
+import { DRAPE_LIFT_M, densify, splitAtAllMeshEdges, type Vec2 } from './drape';
 import { applyRadialFade, type RadialFadeOptions } from './fade';
 import type { MeshSurface } from './heightfield';
 import type { SceneMapper } from './areas';
@@ -475,7 +475,10 @@ export interface RibbonLayer {
     selected: ReadonlySet<Activity>,
     visibleIds: ReadonlySet<string>,
   ): void;
-  /** Re-drapes every ribbon onto another active surface (the composite, or the bare-earth surface to restore). */
+  /**
+   * Re-lays every ribbon on another active surface (the composite, or the bare-earth surface to restore): stations are
+   * split at that surface's mesh edges, so this rebuilds the geometries. No-op for the surface already active.
+   */
   redrape(active: MeshSurface): void;
   /** Footprints that keep ribbons off roofs; re-drapes with the last active surface. */
   setFootprints(rings: readonly Ring[]): void;
@@ -555,7 +558,9 @@ export function buildRibbonLayer(
     builds = [];
   };
 
+  let lastAssignment: RibbonAssignment = new Map();
   const assign = (assignment: RibbonAssignment): void => {
+    lastAssignment = assignment;
     clear();
     areaCount = 0;
     pathCount = 0;
@@ -564,7 +569,10 @@ export function buildRibbonLayer(
       const l = lines.get(areaId);
       if (tile === null || l === undefined) continue;
       const entry = byTile.get(tile) ?? { paths: [], areas: 0 };
-      for (const line of l) entry.paths.push({ areaId, line });
+      // Stations must sit on the drawn surface's own triangles (#36): a 3 m station step over a 2 m LiDAR canopy mesh
+      // left the top strip under the crowns between stations. Split each centre line at the active surface's mesh
+      // edges before the step densify, so a surface change re-lays the stations (see redrape).
+      for (const line of l) entry.paths.push({ areaId, line: splitAtAllMeshEdges(active, line) });
       entry.areas += 1;
       byTile.set(tile, entry);
       areaCount += 1;
@@ -608,8 +616,10 @@ export function buildRibbonLayer(
       assign(assignTiles(areaById.values(), annotations, selected, visibleIds));
     },
     redrape(next) {
+      if (next === active) return;
+      // The station layout depends on the surface's mesh edges, so a new surface rebuilds rather than re-samples.
       active = next;
-      for (const { build } of builds) build.redrape(active, footprints);
+      assign(lastAssignment);
     },
     setFootprints(rings) {
       footprints = new FootprintIndex(rings);

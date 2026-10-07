@@ -12,6 +12,7 @@ import {
 } from '../../src/scene/ribbon-kinds';
 import { assignTiles, buildRibbonLayer } from '../../src/scene/ribbons';
 import type { Activity } from '../../src/ui/filter-predicate';
+import { surfaceSampler } from '../../src/scene/surface';
 import { makeFixtureField } from '../fixtures/make-field';
 
 const area = (
@@ -179,15 +180,16 @@ describe('assignTiles and the ribbon layer', () => {
       { ...makeFixtureField(), data: makeFixtureField().data.map((v) => v + 50) },
       16,
     );
-    const mesh = l.group.children.find((c) => c.name === 'ribbons-mtb-trail') as unknown as {
-      geometry: {
-        boundingBox: { max: { y: number } };
-        getAttribute(n: string): { array: Float32Array };
+    const meshOf = () =>
+      l.group.children.find((c) => c.name === 'ribbons-mtb-trail') as unknown as {
+        geometry: {
+          boundingBox: { max: { y: number } };
+          getAttribute(n: string): { array: Float32Array };
+        };
       };
-    };
-    const before = mesh.geometry.boundingBox.max.y;
+    const before = meshOf().geometry.boundingBox.max.y;
     l.redrape(high);
-    expect(mesh.geometry.boundingBox.max.y).toBeGreaterThan(before + 40);
+    expect(meshOf().geometry.boundingBox.max.y).toBeGreaterThan(before + 40);
     l.setFootprints([
       [
         [-50, -50],
@@ -197,6 +199,35 @@ describe('assignTiles and the ribbon layer', () => {
         [-50, -50],
       ],
     ]);
-    expect(mesh.geometry.boundingBox.max.y).toBeLessThan(before + 5);
+    expect(meshOf().geometry.boundingBox.max.y).toBeLessThan(before + 5);
+  });
+});
+
+describe('ribbon stations on a composite surface (#36)', () => {
+  const bare = createMeshSurface(makeFixtureField(), 16);
+  const toScene = (e: number, n: number, z: number): [number, number, number] => [e, z, -n];
+  const areas = [area('way/1', 'mtb-trail')];
+  const layer = () =>
+    buildRibbonLayer(areas, bare, toScene, TILES, {}, { fadeCentre: { east: 0, north: 0 } });
+
+  it('re-lays stations at the canopy mesh edges when re-draped, and back when restored', () => {
+    const cols = 41;
+    const rows = 21;
+    const data = new Float32Array(cols * rows);
+    for (let r = 0; r < rows; r += 1)
+      for (let c = 0; c < cols; c += 1) data[r * cols + c] = 130 + ((r + c) % 2 === 0 ? 6 : 0);
+    const core = createMeshSurface(
+      { cols, rows, originEast: -10, originNorth: 20, cellSizeEast: 2, cellSizeNorth: 2, data },
+      Number.MAX_SAFE_INTEGER,
+    );
+    const composite = surfaceSampler({ core, fallback: bare });
+    const l = layer();
+    const before = l.stats().vertexCount;
+    l.redrape(composite);
+    expect(l.stats().vertexCount).toBeGreaterThan(before);
+    l.redrape(composite);
+    expect(l.stats().vertexCount).toBeGreaterThan(before);
+    l.redrape(bare);
+    expect(l.stats().vertexCount).toBe(before);
   });
 });
