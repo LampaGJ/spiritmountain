@@ -110,13 +110,14 @@ describe('installSurface placement', () => {
     expect(coreMesh.geometry.getAttribute('position').count).toBe(8 * 8);
   });
 
-  it('puts the core 0.3 m above the square, which is 0.3 m above bare earth, with a stronger polygon offset', () => {
+  it('puts the core 0.3 m above the square, which is 0.3 m above bare earth, with a stronger units-only polygon offset (#36)', () => {
     expect(squareMesh.position.y).toBeCloseTo(0.3, 9);
     expect(coreMesh.position.y - squareMesh.position.y).toBeCloseTo(0.3, 9);
     const sm = squareMesh.material as MeshStandardMaterial;
     const cm = coreMesh.material as MeshStandardMaterial;
     expect(sm.polygonOffset).toBe(true);
-    expect(cm.polygonOffsetFactor).toBeLessThan(sm.polygonOffsetFactor);
+    expect([sm.polygonOffsetFactor, cm.polygonOffsetFactor]).toEqual([0, 0]);
+    expect(cm.polygonOffsetUnits).toBeLessThan(sm.polygonOffsetUnits);
   });
 
   it('skips a failed layer without failing the other', () => {
@@ -237,7 +238,8 @@ describe('surfaceSampler and redrape', () => {
     line.visible = false;
     layer.redrape(composite);
     const after = ys();
-    expect(after).toHaveLength(before.length);
+    // The composite splits the line at the core and square mesh edges too (#36), so it gains vertices.
+    expect(after.length).toBeGreaterThan(before.length);
     const expectedDelta = (e: number, n: number): number =>
       composite.sample(e, n).height - bare.sample(e, n).height;
     expect(after[0]! - before[0]!).toBeCloseTo(expectedDelta(-30, 20), 4);

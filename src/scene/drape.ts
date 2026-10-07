@@ -3,7 +3,7 @@
  * All values are world metres BEFORE vertical exaggeration. Exaggeration is applied once,
  * by the SceneMapper passed to areas.ts, after the lift offsets below have been added.
  */
-import type { MeshSurface } from './heightfield';
+import { edgeSurfacesOf, type MeshSurface } from './heightfield';
 
 /** East, north, elevation in world metres. */
 export type Vec3 = [number, number, number];
@@ -74,7 +74,20 @@ export function densify(points: ReadonlyArray<Readonly<Vec2>>, maxStepM = MAX_ST
  * piece lies inside one triangle. A line whose vertices sit on the mesh then lies on the mesh.
  * In mesh-cell coordinates (u east, v south) the grid lines are u = k and v = k and the diagonals
  * (south-west to north-east) are u + v = k, for integer k.
+ *
+ * splitAtAllMeshEdges does this for every layer of a composite surface in turn (each pass only adds points), so a line
+ * draped on the LiDAR canopy lies on the canopy mesh's own triangles (#36).
  */
+export function splitAtAllMeshEdges(
+  surface: MeshSurface,
+  points: ReadonlyArray<Readonly<Vec2>>,
+): Vec2[] {
+  let out: Vec2[] = points.map((p) => [p[0], p[1]]);
+  for (const layer of edgeSurfacesOf(surface)) out = splitAtMeshEdges(layer, out);
+  return out;
+}
+
+/** splitAtMeshEdges against one mesh grid; use splitAtAllMeshEdges for anything that may be a composite. */
 export function splitAtMeshEdges(
   surface: MeshSurface,
   points: ReadonlyArray<Readonly<Vec2>>,
@@ -132,7 +145,7 @@ export function drapeLine(
   liftM = DRAPE_LIFT_M,
 ): Polyline3 {
   const flat = positions.map((p): Vec2 => [p[0] as number, p[1] as number]);
-  const dense = densify(splitAtMeshEdges(surface, flat), maxStepM);
+  const dense = densify(splitAtAllMeshEdges(surface, flat), maxStepM);
   let clampedCount = 0;
   const points = dense.map(([east, north]): Vec3 => {
     const s = surface.sample(east, north);

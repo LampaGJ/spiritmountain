@@ -55,6 +55,17 @@ export interface MeshSurface {
   sample(east: number, north: number): HeightSample;
   /** Fractional mesh-cell coordinates: u grows east, v grows south, both unclamped. */
   toMeshUV(east: number, north: number): { u: number; v: number };
+  /**
+   * For a composite (surfaceSampler): every drawn surface the sample may come from, finest first. A draped line
+   * splits at the mesh edges of each so it lies on the drawn triangles everywhere, not only on this surface's grid.
+   * Absent on a plain mesh surface, which stands for itself.
+   */
+  readonly edgeSurfaces?: readonly MeshSurface[];
+}
+
+/** The surfaces whose mesh edges a line draped on `surface` must split at: its composite layers, or itself. */
+export function edgeSurfacesOf(surface: MeshSurface): readonly MeshSurface[] {
+  return surface.edgeSurfaces ?? [surface];
 }
 
 function assertField(field: Heightfield): void {
