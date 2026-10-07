@@ -1,11 +1,11 @@
 {
   "inputHash": "057eb7ddf0f03d3c95e93aa70af50dc26257cf57555f5503cc993745da06b17d",
-  "codeCommit": "6c64263625d4b58fe3bd6462cc2ec76bef9d3227",
-  "outputHash": "3595f6afc4f669fcf97fd68a2a983f4ed3f19777d0eb5c45e7ffec8133be873d",
+  "codeCommit": "aabcea1271290e1029485d1cc5b42416df7a3bf7",
+  "outputHash": "c0d4fa5cc160e8e71f23f68989a03ff8b552b22d3cd98a6a9f4a424f295795d2",
   "effect": "preserves",
   "outputs": {
-    "core.f32": "61d988021fbfa854ecc74cac94fbbbe14433b022fe9ace30cae4d525a6a733b3",
-    "core.json": "277b3d2b51c3789e5e2dc0ae4d552b43ef2063fff6d4ae9dbc24035f56726dba"
+    "core.f32": "d64881f43e82fbc2cc6c501885373751d86ea52ba2e6b4e22efe9fc2ffc535dd",
+    "core.json": "a162d77d69f0e450465518a541b2ac1dfb1a8d7cfa7abf97ae9d9dda48c0530d"
   },
   "toolVersions": {
     "geotiff": "3.0.5"
@@ -14,17 +14,33 @@
   "decodeResolutionM": 2,
   "pooling": "max",
   "despike": {
+    "window": 9,
     "passes": [
       {
-        "spikesRemoved": 1480,
-        "maxDelta": 69.459991
+        "spikesRemoved": 3102,
+        "maxDelta": 71.280014
       },
       {
-        "spikesRemoved": 399,
-        "maxDelta": 66.839996
+        "spikesRemoved": 1290,
+        "maxDelta": 30.170013
+      },
+      {
+        "spikesRemoved": 588,
+        "maxDelta": 31.700012
       }
     ],
+    "cappedToCanopy": 27,
+    "maxExcessM": 12.543643,
     "maxBefore": 484.67999267578125,
-    "maxAfter": 461.17999267578125
-  }
+    "maxAfter": 429.7799987792969,
+    "constants": {
+      "spikeMinM": 3,
+      "spikeK": 3,
+      "spikeSupport": 4,
+      "spikeSupportTolM": 3,
+      "spikeSupportWide": 8,
+      "canopyCapM": 35
+    }
+  },
+  "groundSha256": "366f7d45b315839c6eaa6c034dbc5a5b80555ae9f5e82a6a3203f96eb23f29ee"
 }

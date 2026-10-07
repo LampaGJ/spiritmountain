@@ -15,6 +15,7 @@ import {
   SurfaceReplaySchema,
   maxPool2,
   TRANSFORM_SOURCES,
+  groundSampler,
   runSurfaceTerrain,
 } from '../../scripts/ingest/surface-terrain';
 import { seamEastingAtNorthing } from '../../scripts/ingest/surface-window';
@@ -77,6 +78,8 @@ describe('surface terrain on a synthetic 4x4 TIFF', () => {
     const dir = mkdtempSync(join(tmpdir(), 'surface-'));
     mkdirSync(join(dir, 'raw'), { recursive: true });
     copyFileSync('data/frame.json', join(dir, 'frame.json'));
+    copyFileSync('data/terrain.f32', join(dir, 'terrain.f32'));
+    copyFileSync('data/terrain.json', join(dir, 'terrain.json'));
     const tiff = buildFixtureTiff({
       width: size,
       height: size,
@@ -150,14 +153,20 @@ describe('surface terrain on a synthetic 4x4 TIFF', () => {
     expect(replay.decodeResolutionM).toBe(2);
     expect(SurfaceReplaySchema.safeParse(replay).success).toBe(true);
     expect(replay.effect).toBe('preserves');
-    expect(replay.despike).toEqual({
+    expect(replay.despike).toMatchObject({
+      window: 9,
       passes: [
         { spikesRemoved: 1, maxDelta: 18 },
         { spikesRemoved: 0, maxDelta: 0 },
+        { spikesRemoved: 0, maxDelta: 0 },
       ],
+      cappedToCanopy: 0,
+      maxExcessM: 0,
       maxBefore: 331,
       maxAfter: 313,
+      constants: { spikeMinM: 3, spikeSupport: 4, canopyCapM: 35 },
     });
+    expect(replay.groundSha256).toMatch(/^[0-9a-f]{64}$/);
     expect(JSON.parse(readFileSync(join(dir, 'surface', 'surface.replay.json'), 'utf8'))).toEqual(
       replay,
     );
@@ -217,6 +226,8 @@ describe('square window decode and the dataset seam', () => {
     const dir = mkdtempSync(join(tmpdir(), 'surface-sq-'));
     mkdirSync(join(dir, 'raw'), { recursive: true });
     copyFileSync('data/frame.json', join(dir, 'frame.json'));
+    copyFileSync('data/terrain.f32', join(dir, 'terrain.f32'));
+    copyFileSync('data/terrain.json', join(dir, 'terrain.json'));
     const tiff = buildFixtureTiff({
       width: SIZE,
       height: SIZE,
@@ -294,5 +305,46 @@ describe('square window decode and the dataset seam', () => {
     const { replay } = await runSurfaceTerrain(options(stage(cells)));
     expect(replay.seamValidFraction).toBeCloseTo(0.5, 1);
     expect(replay.neighbourValidFraction).toBeCloseTo(0.5, 1);
+  });
+});
+
+describe('groundSampler', () => {
+  const header = TerrainHeaderSchema.parse(JSON.parse(readFileSync('data/terrain.json', 'utf8')));
+  const raw = readFileSync('data/terrain.f32');
+  const values = new Float32Array(header.width * header.height);
+  const view = new DataView(raw.buffer, raw.byteOffset, raw.byteLength);
+  for (let i = 0; i < values.length; i += 1) values[i] = view.getFloat32(i * 4, true);
+  const ground = { header, values, sha256: 'e'.repeat(64) };
+
+  it('returns the stored value at a bare-earth cell centre and interpolates between centres', () => {
+    const sampler = groundSampler(ground, {
+      originX: header.originX,
+      originY: header.originY,
+      cellM: 5,
+    });
+    expect(sampler(10, 20)).toBeCloseTo(values[10 * header.width + 20] as number, 4);
+    const half = groundSampler(ground, {
+      originX: header.originX + 2.5,
+      originY: header.originY - 2.5,
+      cellM: 5,
+    });
+    const mid =
+      ((values[10 * header.width + 20] as number) + (values[10 * header.width + 21] as number)) / 2;
+    expect(half(10, 20)).toBeCloseTo(
+      (mid +
+        ((values[11 * header.width + 20] as number) + (values[11 * header.width + 21] as number)) /
+          2) /
+        2,
+      4,
+    );
+  });
+
+  it('returns null outside the bare-earth grid', () => {
+    const sampler = groundSampler(ground, {
+      originX: header.originX - 100000,
+      originY: header.originY,
+      cellM: 5,
+    });
+    expect(sampler(0, 0)).toBeNull();
   });
 });
