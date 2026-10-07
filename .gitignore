@@ -7,3 +7,4 @@ dist/
 reports/.progress/*
 !reports/.progress/.gitkeep
 .claude/worktrees/
+/WORK-STATE.md
