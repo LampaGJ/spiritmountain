@@ -10,7 +10,7 @@ import {
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { createMeshSurface, type Heightfield, type MeshSurface } from './heightfield';
 import { createTerrainMesh } from './terrain';
-import { CAMERA_FOV_DEG, computeViews, minCameraY, type ViewName } from './views';
+import { CAMERA_FOV_DEG, computeViews, minCameraY, type FocusBox, type ViewName } from './views';
 
 export type FrameCallback = (deltaMs: number) => void;
 
@@ -22,7 +22,8 @@ export interface SceneHandle {
   readonly controls: OrbitControls;
   readonly terrain: Mesh;
   readonly surface: MeshSurface;
-  setView(name: ViewName): void;
+  /** Moves the camera to a named view. A focus box is remembered and reused by later calls without one. */
+  setView(name: ViewName, focus?: FocusBox): void;
   /** Registers a per-frame callback; returns an unsubscribe function. */
   onFrame(callback: FrameCallback): () => void;
   /** Stops the loop and releases geometry, material, renderer, controls and the resize observer. */
@@ -61,8 +62,10 @@ export function createScene(container: HTMLElement, field: Heightfield): SceneHa
   controls.minDistance = 50;
   controls.maxDistance = initial.far * 0.9;
 
-  const setView = (name: ViewName): void => {
-    const set = computeViews(surface, aspectOf());
+  let lastFocus: FocusBox | undefined;
+  const setView = (name: ViewName, focus?: FocusBox): void => {
+    if (focus) lastFocus = focus;
+    const set = computeViews(surface, aspectOf(), lastFocus);
     const view = set.views[name];
     camera.near = set.near;
     camera.far = set.far;

@@ -1,13 +1,18 @@
 import { Frustum, Matrix4, PerspectiveCamera, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { toScene } from '../../src/scene/frame';
+import { fromScene, toScene } from '../../src/scene/frame';
 import { createMeshSurface } from '../../src/scene/heightfield';
 import {
   CAMERA_CLEARANCE_M,
   CAMERA_FOV_DEG,
   NAMED_VIEWS,
+  RESORT_FALLBACK_HALF_SIZE_M,
+  RESORT_VIEW_MAX_DISTANCE_M,
+  RESORT_VIEW_MIN_DISTANCE_M,
   computeViews,
   findSummit,
+  focusBoxOf,
+  type FocusBox,
   minCameraY,
   type ViewName,
 } from '../../src/scene/views';
@@ -41,8 +46,8 @@ function corners(box: { min: Vector3; max: Vector3 }): Vector3[] {
 }
 
 describe('named views', () => {
-  it('lists overview, topdown and summit-south', () => {
-    expect([...NAMED_VIEWS]).toEqual(['overview', 'topdown', 'summit-south']);
+  it('lists overview, topdown, summit-south and resort', () => {
+    expect([...NAMED_VIEWS]).toEqual(['overview', 'topdown', 'summit-south', 'resort']);
   });
 
   it.each([16 / 9, 4 / 3, 1, 9 / 19.5])(
@@ -118,5 +123,100 @@ describe('minCameraY', () => {
       surface.sample(60, -20).height + CAMERA_CLEARANCE_M,
       9,
     );
+  });
+});
+
+describe('resort view', () => {
+  const focus: FocusBox = { minEast: -100, maxEast: 100, minNorth: -100, maxNorth: 100 };
+  const deg = (rad: number) => (rad * 180) / Math.PI;
+  const resort = (f?: FocusBox) => computeViews(surface, 16 / 9, f).views.resort;
+
+  it('targets a point inside the focus box, on the terrain or above it', () => {
+    const { target } = resort(focus);
+    const local = fromScene(target.x, target.y, target.z);
+    expect(local.east).toBeGreaterThanOrEqual(focus.minEast);
+    expect(local.east).toBeLessThanOrEqual(focus.maxEast);
+    expect(local.north).toBeGreaterThanOrEqual(focus.minNorth);
+    expect(local.north).toBeLessThanOrEqual(focus.maxNorth);
+    expect(target.y).toBeGreaterThanOrEqual(surface.sample(local.east, local.north).height);
+  });
+
+  it('puts the camera on the base side, so the view looks uphill', () => {
+    const { position, target } = resort(focus);
+    const mids = [
+      { east: 0, north: focus.minNorth },
+      { east: 0, north: focus.maxNorth },
+      { east: focus.minEast, north: 0 },
+      { east: focus.maxEast, north: 0 },
+    ];
+    const lowest = mids.reduce((a, b) =>
+      surface.sample(b.east, b.north).height < surface.sample(a.east, a.north).height ? b : a,
+    );
+    const towardLowest = { x: lowest.east, z: -lowest.north };
+    const offset = { x: position.x - target.x, z: position.z - target.z };
+    expect(offset.x * towardLowest.x + offset.z * towardLowest.z).toBeGreaterThan(0);
+  });
+
+  it('keeps a shallow elevation angle, a bounded distance and clearance over the terrain', () => {
+    const { position, target } = resort(focus);
+    const horizontal = Math.hypot(position.x - target.x, position.z - target.z);
+    expect(horizontal).toBeGreaterThanOrEqual(RESORT_VIEW_MIN_DISTANCE_M - 1e-6);
+    expect(horizontal).toBeLessThanOrEqual(RESORT_VIEW_MAX_DISTANCE_M + 1e-6);
+    const angle = deg(Math.asin((position.y - target.y) / position.distanceTo(target)));
+    expect(angle).toBeGreaterThan(2);
+    expect(angle).toBeLessThan(20);
+    expect(position.y).toBeGreaterThanOrEqual(minCameraY(surface, position.x, position.z) - 1e-9);
+  });
+
+  it('is deterministic for the same inputs', () => {
+    expect(resort(focus).position.toArray()).toEqual(resort(focus).position.toArray());
+  });
+
+  it('without a focus, targets within the fallback half-size of the summit', () => {
+    const summit = findSummit(field);
+    const { target } = resort();
+    const local = fromScene(target.x, target.y, target.z);
+    expect(Math.abs(local.east - summit.east)).toBeLessThanOrEqual(RESORT_FALLBACK_HALF_SIZE_M);
+    expect(Math.abs(local.north - summit.north)).toBeLessThanOrEqual(RESORT_FALLBACK_HALF_SIZE_M);
+  });
+});
+
+describe('focusBoxOf', () => {
+  const entry = (kind: string, coordinates: number[][]) =>
+    ({ area: { kind, geometry: { type: 'LineString', coordinates } } }) as never;
+
+  it('bounds only downhill runs and lifts', () => {
+    const box = focusBoxOf([
+      entry('lift', [
+        [10, 20, 5],
+        [30, -40, 9],
+      ]),
+      entry('nordic-trail', [
+        [-999, -999, 0],
+        [999, 999, 0],
+      ]),
+    ]);
+    expect(box).toEqual({ minEast: 10, maxEast: 30, minNorth: -40, maxNorth: 20 });
+  });
+
+  it('reads polygon rings and returns null when nothing qualifies', () => {
+    const polygon = {
+      area: {
+        kind: 'downhill-run',
+        geometry: {
+          type: 'Polygon',
+          coordinates: [
+            [
+              [0, 0],
+              [4, 0],
+              [4, 3],
+              [0, 0],
+            ],
+          ],
+        },
+      },
+    } as never;
+    expect(focusBoxOf([polygon])).toEqual({ minEast: 0, maxEast: 4, minNorth: 0, maxNorth: 3 });
+    expect(focusBoxOf([entry('mtb-trail', [[1, 1]])])).toBeNull();
   });
 });
