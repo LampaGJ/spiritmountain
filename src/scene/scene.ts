@@ -20,14 +20,19 @@ import { createGround, groundSlopeColor } from './ground';
 import {
   applyHorizonBlend,
   createHorizonUniforms,
+  horizonDistanceM,
   setHorizonSkyTexture,
   updateHorizon,
 } from './horizon';
+
+/** The far plane reaches this factor past the true horizon, so the horizon blend completes before the clip. */
+export const FAR_HORIZON_MARGIN = 1.05;
 import { createSkyControl, SKY_FALLBACK_COLOR } from './sky';
 import { createTerrainMesh, setTerrainImagery, terrainFade } from './terrain';
 import {
   computeViews,
   minCameraY,
+  NEAR_FAR_RATIO,
   verticalFovDeg,
   type FocusBox,
   type Landmarks,
@@ -142,6 +147,21 @@ export function createScene(
 
   let contextRadius = 0;
   const farOf = (computed: number): number => computed + 2 * contextRadius;
+  /** The view's own far plane; each frame the camera gets at least this, or the true horizon with a margin. */
+  let baseFar = initial.far;
+  /**
+   * Keeps the ground drawn out to the true horizon (#35): a far plane short of it leaves a flat edge against the
+   * panorama's lower hemisphere from high cameras, and the only way to hide that edge was a wide sky band, which read
+   * as smog. The near plane stays as the view set it.
+   */
+  const fitFarToHorizon = (heightM: number): void => {
+    const wanted = Math.max(baseFar, horizonDistanceM(heightM) * FAR_HORIZON_MARGIN);
+    if (Math.abs(wanted - camera.far) / camera.far < 0.01) return;
+    camera.far = wanted;
+    // The near plane follows at the views' ratio, or 24-bit depth speckles the far tiles against the ground plane.
+    camera.near = Math.max(1, wanted / NEAR_FAR_RATIO);
+    camera.updateProjectionMatrix();
+  };
   let lastFocus: FocusBox | undefined;
   let lastLandmarks: Landmarks | undefined;
   let lastName: ViewName = 'overview';
@@ -154,7 +174,8 @@ export function createScene(
     const set = computeViews(surface, aspectOf(), lastFocus, lastLandmarks);
     const view = set.views[name];
     camera.near = set.near;
-    camera.far = farOf(set.far);
+    baseFar = farOf(set.far);
+    camera.far = baseFar;
     controls.maxDistance = camera.far * 0.9;
     camera.fov = set.fov;
     camera.up.copy(view.up);
@@ -192,12 +213,9 @@ export function createScene(
       base: baseSceneY,
     });
     if (camera.position.y < floor) camera.position.y = floor;
-    updateHorizon(
-      horizon,
-      camera.position,
-      (camera.position.y - baseSceneY) / effectiveScale(exaggeration),
-      camera.far * 0.98,
-    );
+    const heightM = (camera.position.y - baseSceneY) / effectiveScale(exaggeration);
+    fitFarToHorizon(heightM);
+    updateHorizon(horizon, camera.position, heightM, camera.far * 0.98);
     for (const callback of callbacks) callback(now - last);
     last = now;
     renderer.render(scene, camera);
@@ -270,7 +288,8 @@ export function createScene(
     },
     setContextExtent(radiusM) {
       contextRadius = radiusM;
-      camera.far = farOf(computeViews(surface, aspectOf(), lastFocus, lastLandmarks).far);
+      baseFar = farOf(computeViews(surface, aspectOf(), lastFocus, lastLandmarks).far);
+      camera.far = baseFar;
       controls.maxDistance = camera.far * 0.9;
       camera.updateProjectionMatrix();
     },
