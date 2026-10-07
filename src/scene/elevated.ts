@@ -6,7 +6,7 @@ import type { OrbitControls } from 'three/addons/controls/OrbitControls.js';
  * (NaN normals, a raycaster that cannot invert it), so k = 0 is drawn as 0.1 percent of the relief:
  * flat to the eye, still a valid transform.
  */
-export const MIN_SCALE_Y = 0.001;
+export const MIN_SCALE_Y = 0.1;
 
 /** Scale actually used for an exaggeration factor k. */
 export const effectiveScale = (k: number): number => Math.max(k, MIN_SCALE_Y);

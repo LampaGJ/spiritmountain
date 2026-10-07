@@ -17,7 +17,7 @@ export const HashFilterSchema = z.strictObject({
   /** Absent means the default (surface off); only true is ever encoded, as `surface=on`. */
   surface: z.boolean().optional(),
   /** Absent means the default (true scale, 1); any other value in 0 to 10 is encoded, as `exag=<number>`. */
-  exag: z.number().min(0).max(10).optional(),
+  exag: z.number().min(0.1).max(10).optional(),
 });
 
 /** The imagery hash token: `off` or `on`, parsed to a boolean. Anything else is dropped and reported. */
@@ -31,7 +31,7 @@ export const ExaggerationTokenSchema = z
   .string()
   .regex(/^\d+(\.\d+)?$/)
   .transform((token) => Math.round(Number(token) * 10) / 10)
-  .pipe(z.number().min(0).max(10));
+  .pipe(z.number().min(0.1).max(10));
 export type HashFilter = z.infer<typeof HashFilterSchema>;
 
 export interface DecodedHash {

@@ -15,7 +15,8 @@ export interface ExaggerationKey {
   setValue(k: number): void;
 }
 
-export const EXAGGERATION_MIN = 0;
+/** 0 would flatten the world onto the lake plane and collapse the camera height; 0.1 keeps every matrix well-conditioned. */
+export const EXAGGERATION_MIN = 0.1;
 export const EXAGGERATION_MAX = 10;
 export const EXAGGERATION_STEP = 0.1;
 export const EXAGGERATION_DEFAULT = 1;

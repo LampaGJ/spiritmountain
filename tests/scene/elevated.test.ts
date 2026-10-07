@@ -2,7 +2,7 @@
 import { Object3D, PerspectiveCamera, Vector3 } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { describe, expect, it } from 'vitest';
-import { ElevatedGroup, mapY, remapCamera } from '../../src/scene/elevated';
+import { ElevatedGroup, mapY, remapCamera, MIN_SCALE_Y } from '../../src/scene/elevated';
 
 const BASE = 183.1;
 
@@ -38,15 +38,15 @@ describe('ElevatedGroup', () => {
     const world = probe.getWorldPosition(new Vector3());
     expect(world.x).toBeCloseTo(12, 9);
     expect(world.z).toBeCloseTo(-7, 9);
-    // k = 0 is drawn at the clamped scale (MIN_SCALE_Y), so allow that sliver: 0.1 percent of 137 m of relief.
-    expect(world.y).toBeCloseTo(mapY(320.4, k, BASE), k === 0 ? 0 : 6);
+    // k below MIN_SCALE_Y is drawn at the clamped scale, so compare against the effective scale.
+    expect(world.y).toBeCloseTo(mapY(320.4, Math.max(k, MIN_SCALE_Y), BASE), 6);
   });
 
-  it('keeps scale non-singular at k = 0 so matrices stay invertible', () => {
+  it('clamps k = 0 to MIN_SCALE_Y so matrices stay invertible', () => {
     const group = new ElevatedGroup();
     group.setExaggeration(0, BASE);
-    expect(group.scale.y).toBeGreaterThan(0);
-    expect(group.scale.y).toBeLessThan(0.01);
+    expect(group.scale.y).toBe(MIN_SCALE_Y);
+    expect(MIN_SCALE_Y).toBe(0.1);
   });
 });
 
