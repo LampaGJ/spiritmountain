@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "name": "surface-square",
+  "path": "data/raw/surface-square.tif",
+  "eptUrl": "https://usgs-lidar-public.s3.amazonaws.com/MN_LakeSuperior_2_2021/ept.json",
+  "extraEptUrls": [
+    "https://usgs-lidar-public.s3.amazonaws.com/MN_LakeSuperior_1_2021/ept.json"
+  ],
+  "pdalVersion": "2.10.2",
+  "pipeline": {
+    "pipeline": [
+      {
+        "type": "readers.ept",
+        "tag": "west",
+        "filename": "https://usgs-lidar-public.s3.amazonaws.com/MN_LakeSuperior_2_2021/ept.json",
+        "bounds": "([-10270430,-10262419],[5889896,5899844])",
+        "resolution": 2
+      },
+      {
+        "type": "readers.ept",
+        "tag": "east",
+        "filename": "https://usgs-lidar-public.s3.amazonaws.com/MN_LakeSuperior_1_2021/ept.json",
+        "bounds": "([-10264000,-10260210],[5889896,5899844])",
+        "resolution": 2
+      },
+      {
+        "type": "filters.merge",
+        "inputs": [
+          "west",
+          "east"
+        ]
+      },
+      {
+        "type": "filters.stats",
+        "tag": "read",
+        "dimensions": "ReturnNumber"
+      },
+      {
+        "type": "filters.range",
+        "limits": "ReturnNumber[1:1]"
+      },
+      {
+        "type": "filters.stats",
+        "tag": "first",
+        "dimensions": "ReturnNumber"
+      },
+      {
+        "type": "filters.reprojection",
+        "out_srs": "EPSG:26915"
+      },
+      {
+        "type": "writers.gdal",
+        "filename": "data/raw/surface-square.tif",
+        "resolution": 4,
+        "output_type": "max",
+        "gdaldriver": "GTiff",
+        "nodata": -9999,
+        "data_type": "float32",
+        "gdalopts": "COMPRESS=LZW",
+        "origin_x": 556530,
+        "origin_y": 5169870,
+        "width": 1738,
+        "height": 1685
+      }
+    ]
+  },
+  "epsg": 26915,
+  "window26915": {
+    "xmin": 556530,
+    "ymin": 5169870,
+    "xmax": 563480,
+    "ymax": 5176610
+  },
+  "window3857": {
+    "xmin": -10270430,
+    "ymin": 5889896,
+    "xmax": -10260210,
+    "ymax": 5899844
+  },
+  "resolutionM": 4,
+  "width": 1738,
+  "height": 1685,
+  "pointsRead": 214801498,
+  "firstReturnsKept": 170742069,
+  "byteLength": 7435738,
+  "sha256": "277f670d879922503d9fb9794ad6c0c16c201e3c187e08421a03e42779d9fa73",
+  "seconds": 168.3,
+  "fetchedAt": "2026-10-07T02:23:52.885Z",
+  "firstAttemptBytes": 27903220
+}

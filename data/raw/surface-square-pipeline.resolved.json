@@ -1,0 +1,57 @@
+{
+  "pipeline": [
+    {
+      "type": "readers.ept",
+      "tag": "west",
+      "filename": "https://usgs-lidar-public.s3.amazonaws.com/MN_LakeSuperior_2_2021/ept.json",
+      "bounds": "([-10270430,-10262419],[5889896,5899844])",
+      "resolution": 2
+    },
+    {
+      "type": "readers.ept",
+      "tag": "east",
+      "filename": "https://usgs-lidar-public.s3.amazonaws.com/MN_LakeSuperior_1_2021/ept.json",
+      "bounds": "([-10264000,-10260210],[5889896,5899844])",
+      "resolution": 2
+    },
+    {
+      "type": "filters.merge",
+      "inputs": [
+        "west",
+        "east"
+      ]
+    },
+    {
+      "type": "filters.stats",
+      "tag": "read",
+      "dimensions": "ReturnNumber"
+    },
+    {
+      "type": "filters.range",
+      "limits": "ReturnNumber[1:1]"
+    },
+    {
+      "type": "filters.stats",
+      "tag": "first",
+      "dimensions": "ReturnNumber"
+    },
+    {
+      "type": "filters.reprojection",
+      "out_srs": "EPSG:26915"
+    },
+    {
+      "type": "writers.gdal",
+      "filename": "data/raw/surface-square.tif",
+      "resolution": 4,
+      "output_type": "max",
+      "gdaldriver": "GTiff",
+      "nodata": -9999,
+      "data_type": "float32",
+      "gdalopts": "COMPRESS=LZW",
+      "origin_x": 556530,
+      "origin_y": 5169870,
+      "width": 1738,
+      "height": 1685
+    }
+  ]
+}

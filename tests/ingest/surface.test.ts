@@ -4,7 +4,12 @@ import {
   DATA_EAST_EDGE_LOCAL_M,
   EPT_EXTENT_3857,
   FOCUS_BOX,
+  EPT_URL,
+  EPT_URL_EAST,
+  SQUARE_TEMPLATE_FILE,
   assertInsideEptExtent,
+  computeSquareWindow,
+  planFor,
   computeSurfaceWindow,
   fromEpt3857,
   parsePointCounts,
@@ -205,5 +210,81 @@ describe('SurfaceManifestSchema', () => {
     ['empty pipeline', { pipeline: { pipeline: [] } }],
   ])('rejects %s', (_label, patch) => {
     expect(SurfaceManifestSchema.safeParse({ ...good(), ...patch }).success).toBe(false);
+  });
+});
+
+describe('square window', () => {
+  const w = computeSquareWindow();
+
+  it('is exactly the terrain square, 3475 x 3370 cells of 2 m', () => {
+    expect(w.utm).toEqual({ xmin: 556530, ymin: 5169870, xmax: 563480, ymax: 5176610 });
+    expect((w.utm.xmax - w.utm.xmin) / 2).toBe(3475);
+    expect((w.utm.ymax - w.utm.ymin) / 2).toBe(3370);
+  });
+
+  it('spans about x -10270430..-10260210 in EPSG:3857', () => {
+    expect(w.ept3857.xmin).toBe(-10270430);
+    expect(w.ept3857.xmax).toBe(-10260210);
+  });
+
+  it('splits the readers at the dataset seam: west ends at the 2_2021 extent, east starts at -10264000', () => {
+    expect(w.boundsWest.xmax).toBe(-10262419);
+    expect(w.boundsEast.xmin).toBe(-10264000);
+    expect(w.boundsWest.xmin).toBe(w.ept3857.xmin);
+    expect(w.boundsEast.xmax).toBe(w.ept3857.xmax);
+  });
+
+  it('selects files, window and cell sizes per --window', () => {
+    const core = planFor('core');
+    const square = planFor('square');
+    expect(core).toMatchObject({
+      name: 'surface-core',
+      tif: 'surface-core.tif',
+      resolutions: [1, 2],
+    });
+    expect(core.extraEptUrls).toEqual([]);
+    expect(square).toMatchObject({
+      name: 'surface-square',
+      tif: 'surface-square.tif',
+      manifest: 'surface-square-manifest.json',
+      resolutions: [2, 4],
+      extraEptUrls: [EPT_URL_EAST],
+    });
+    expect(square.utm).toEqual(w.utm);
+  });
+
+  it('resolves the two-reader pipeline: two tagged readers at resolution 2, merged, first returns, 2 m writer', () => {
+    const plan = planFor('square');
+    const template: unknown = JSON.parse(readFileSync(SQUARE_TEMPLATE_FILE, 'utf8'));
+    const resolved = resolvePipeline(template, {
+      ...plan.readerValues,
+      OUTPUT_TIF: 'data/raw/surface-square.tif',
+      RESOLUTION: 2,
+      ORIGIN_X: plan.utm.xmin,
+      ORIGIN_Y: plan.utm.ymin,
+      WIDTH: 3475,
+      HEIGHT: 3370,
+    });
+    const stages = resolved.pipeline;
+    expect(stages.map((s) => s.type)).toEqual([
+      'readers.ept',
+      'readers.ept',
+      'filters.merge',
+      'filters.stats',
+      'filters.range',
+      'filters.stats',
+      'filters.reprojection',
+      'writers.gdal',
+    ]);
+    expect(stages[0]).toMatchObject({ tag: 'west', filename: EPT_URL, resolution: 2 });
+    expect(stages[1]).toMatchObject({ tag: 'east', filename: EPT_URL_EAST, resolution: 2 });
+    expect(stages[2]).toMatchObject({ inputs: ['west', 'east'] });
+    expect(stages[7]).toMatchObject({
+      width: 3475,
+      height: 3370,
+      resolution: 2,
+      output_type: 'max',
+    });
+    expect(JSON.stringify(resolved)).not.toContain('{{');
   });
 });
