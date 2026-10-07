@@ -7,6 +7,11 @@ import { cableLine, drapeLine, liftOffsetM, minClearance, type Vec3 } from './dr
 import type { MeshSurface } from './heightfield';
 import { AREA_KIND_COLOR, LINE_WIDTH_PX } from './palette';
 
+/** Opacity of the ghost pass that shows an occluded stretch of a line through whatever hides it. */
+export const GHOST_OPACITY = 0.35;
+/** The ghost draws after every default-order object, including the fade-transparent ground meshes. */
+export const GHOST_RENDER_ORDER = 1;
+
 /**
  * Maps a local-metre position (east, north, elevation in world metres, BEFORE vertical
  * exaggeration) to three.js scene coordinates. The production mapper wraps toScene from
@@ -104,6 +109,8 @@ export interface AreaLayer {
   readonly group: Group;
   readonly registry: ReadonlyMap<string, AreaEntry>;
   readonly materials: Readonly<Record<AreaKind, LineMaterial>>;
+  /** The no-depth-test ghost pass materials, one per kind (see GHOST_OPACITY). */
+  readonly ghostMaterials: Readonly<Record<AreaKind, LineMaterial>>;
   readonly stats: AreaLayerStats;
   /**
    * Rewrites every non-lift line's positions in place from another surface (the composite from surfaceSampler, or the
@@ -125,6 +132,7 @@ export function buildAreaLayer(
   resolution: { readonly width: number; readonly height: number },
 ): AreaLayer {
   const materials = {} as Record<AreaKind, LineMaterial>;
+  const ghostMaterials = {} as Record<AreaKind, LineMaterial>;
   for (const kind of Object.keys(AREA_KIND_COLOR) as AreaKind[]) {
     const material = new LineMaterial({ color: AREA_KIND_COLOR[kind], linewidth: LINE_WIDTH_PX });
     material.resolution.set(resolution.width, resolution.height);
@@ -134,6 +142,18 @@ export function buildAreaLayer(
     material.polygonOffsetFactor = 0;
     material.polygonOffsetUnits = -4;
     materials[kind] = material;
+    // The ghost pass (#36): the same line drawn faint with no depth test, so a trail hidden behind a ridge, a LiDAR tree
+    // crown or a simulated tree still reads as a trace. The solid pass above keeps the depth cue where it is in view.
+    const ghost = new LineMaterial({
+      color: AREA_KIND_COLOR[kind],
+      linewidth: LINE_WIDTH_PX,
+      transparent: true,
+      opacity: GHOST_OPACITY,
+      depthTest: false,
+      depthWrite: false,
+    });
+    ghost.resolution.set(resolution.width, resolution.height);
+    ghostMaterials[kind] = ghost;
   }
 
   const group = new Group();
@@ -152,6 +172,13 @@ export function buildAreaLayer(
       const line = new Line2(geometry, materials[area.kind]);
       line.name = area.id;
       line.userData['areaId'] = area.id;
+      // The ghost is a child so it follows the line's visibility and shares its geometry (redrape moves both). It
+      // renders after the fade-transparent ground meshes and never intercepts a pick ray.
+      const ghost = new Line2(geometry, ghostMaterials[area.kind]);
+      ghost.name = `${area.id}:ghost`;
+      ghost.renderOrder = GHOST_RENDER_ORDER;
+      ghost.raycast = () => {};
+      line.add(ghost);
       group.add(line);
       return line;
     });
@@ -178,6 +205,7 @@ export function buildAreaLayer(
     group,
     registry,
     materials,
+    ghostMaterials,
     stats: { lineCount, clampedVertexCount, liftMinClearanceM },
     redrape,
   };
