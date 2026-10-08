@@ -55,8 +55,9 @@
 #rail > #filters {
   order: 1;
 }
-#rail > #views {
-  order: 2;
+/* The rail holds only Clear Filters and the hash notice (#58); with no filter active the filters section is hidden and so is the rail. */
+#rail:has(> #filters[hidden]) {
+  display: none;
 }
 
 #rail .cl-key {
@@ -132,6 +133,10 @@
  * (Width breakpoint matches the annotation panel's bottom-sheet switch at 720 px.)
  */
 @media (max-width: 719px) {
+  /* No bottom bar while the rail is hidden, so the footer and the annotation sheet drop to the home-bar inset. */
+  :root:has(#filters[hidden]) {
+    --sm-bar-h: env(safe-area-inset-bottom, 0px);
+  }
   :root {
     /* 36 px key + 10 px above and below; the home-bar inset is added below the keys (needs viewport-fit=cover in index.html). */
     --sm-bar-h: calc(56px + env(safe-area-inset-bottom, 0px));
@@ -168,8 +173,7 @@
       backdrop-filter: blur(8px);
     }
   }
-  #rail > #filters,
-  #rail > #views {
+  #rail > #filters {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -177,9 +181,7 @@
     flex: 0 0 auto;
     padding: 0;
   }
-  #rail .console-group,
-  #rail #filters .console-foot,
-  #rail .sm-views {
+  #rail #filters .console-foot {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -208,24 +210,5 @@
     flex: 0 0 auto;
     max-width: none;
     white-space: nowrap;
-  }
-  /* Terrain slider: icon, label and value, then the track, all on one line. */
-  #rail #filters .exag-key {
-    flex-direction: row;
-    align-items: center;
-    flex: 0 0 auto;
-    gap: 8px;
-    width: 15em;
-    padding: 0 4px 0 3px;
-  }
-  #rail #filters .exag-head {
-    flex: 0 0 auto;
-    padding: 0;
-  }
-  #rail #filters .exag-input {
-    flex: 1 1 auto;
-    width: auto;
-    min-width: 80px;
-    min-height: 36px;
   }
 }

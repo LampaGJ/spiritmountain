@@ -1,8 +1,7 @@
-import './views.css';
 import type { ViewName } from '../scene/views';
 import { createClickKey } from './clicky-key';
 import { iconFor } from './icons';
-import { getRail, groupHead, releaseRail } from './rail';
+import { createPopout, getTopBar, releaseTopBar } from './top-bar';
 
 /** The camera views offered on the strip, in display order. summit-south stays reachable through the API only. */
 export const STRIP_VIEWS: readonly {
@@ -37,16 +36,15 @@ export interface ViewsStrip {
 /**
  * @displayName Camera view strip
  * @strategicPurpose Lets a reviewer jump between the named camera views without knowing the orbit gestures.
- * @tacticalObjective Mounts a group of click keys at the bottom of the left rail that call setView(name) and mark the active view with aria-current.
+ * @tacticalObjective Mounts a View popout at the left of the top bar whose panel holds click keys that call setView(name), close the popout and mark the active view with aria-current.
  */
 export function mountViews(deps: ViewsDeps): ViewsStrip {
-  const root = document.createElement('div');
-  root.id = 'views';
-  root.className = 'sm-views';
-  root.setAttribute('role', 'group');
-  root.setAttribute('aria-label', 'Camera view');
-
-  root.append(groupHead('group-view'));
+  const popout = createPopout({
+    iconId: 'group-view',
+    panelId: 'views',
+    panelLabel: 'Camera view',
+  });
+  const root = popout.panel;
 
   const buttons = new Map<ViewName, HTMLButtonElement>();
   const mark = (current: ViewName | null): void => {
@@ -62,6 +60,7 @@ export function mountViews(deps: ViewsDeps): ViewsStrip {
     button.addEventListener('click', () => {
       deps.setView(name);
       mark(name);
+      popout.close(true);
     });
     buttons.set(name, button);
     root.append(keyRoot);
@@ -69,14 +68,14 @@ export function mountViews(deps: ViewsDeps): ViewsStrip {
   mark(deps.initial ?? null);
 
   const unsubscribe = deps.onUserMove?.(() => mark(null));
-  getRail().append(root);
+  getTopBar().keys.append(popout.root);
 
   return {
     root,
     dispose() {
       unsubscribe?.();
-      root.remove();
-      releaseRail();
+      popout.dispose();
+      releaseTopBar();
     },
   };
 }

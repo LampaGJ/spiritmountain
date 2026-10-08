@@ -31,9 +31,14 @@ export interface DebugToggle {
   readonly onChange: (value: boolean) => void;
 }
 
+/** Shows a value in a slider row without firing its onChange (used when state of record, such as the hash, drives it). */
+export interface DebugHandle {
+  setValue(value: number): void;
+}
+
 export interface DebugPanel {
   readonly element: HTMLElement;
-  register(control: DebugControl): void;
+  register(control: DebugControl): DebugHandle;
   registerToggle(toggle: DebugToggle): void;
 }
 
@@ -86,6 +91,12 @@ export function createDebugPanel(doc: Document): DebugPanel {
       });
       row.append(name, input, readout);
       body.append(row);
+      return {
+        setValue(value) {
+          input.value = String(value);
+          readout.textContent = format(value);
+        },
+      };
     },
     registerToggle(toggle) {
       claim(toggle.id);
@@ -104,7 +115,8 @@ export function createDebugPanel(doc: Document): DebugPanel {
 
 let shared: DebugPanel | null = null;
 function sharedPanel(): DebugPanel {
-  if (shared === null) {
+  // A panel whose page was torn down (tests replace document.body) is rebuilt, so ids can register again.
+  if (shared === null || !shared.element.isConnected) {
     shared = createDebugPanel(document);
     document.body.append(shared.element);
   }
@@ -112,8 +124,8 @@ function sharedPanel(): DebugPanel {
 }
 
 /** Adds a slider row to the page's one DEBUG panel, mounting it on first use. */
-export function registerDebugControl(control: DebugControl): void {
-  sharedPanel().register(control);
+export function registerDebugControl(control: DebugControl): DebugHandle {
+  return sharedPanel().register(control);
 }
 
 /** Adds a checkbox row to the page's one DEBUG panel, mounting it on first use. */

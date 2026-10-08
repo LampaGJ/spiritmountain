@@ -149,6 +149,11 @@
     "label": "View",
     "rationale": "Iconic: eye, the view convention."
   },
+  "chevron": {
+    "symbol": "expand_more",
+    "label": "More",
+    "rationale": "Symbolic: a downward chevron, the convention for a control that opens a panel below it."
+  },
   "track-start": {
     "symbol": "flag",
     "label": "Start",

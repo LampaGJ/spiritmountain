@@ -31,6 +31,7 @@ describe('icon map', () => {
       'group-season',
       'group-layers',
       'group-view',
+      'chevron',
     ];
     for (const id of ids) expect(Object.keys(iconJson), id).toContain(id);
     expect(Object.keys(ICONS)).toEqual(Object.keys(iconJson));
@@ -62,8 +63,8 @@ describe('every key carries an icon from icons.json', () => {
     const symbols = new Set(Object.values(iconJson).map((e) => e.symbol));
     const labels = new Set(Object.values(iconJson).map((e) => e.label));
     const keys = [...document.querySelectorAll<HTMLButtonElement>('button')];
-    // 4 seasons (the activity row is empty with no season selected, #56) + Imagery + Buildings + Clear Filters + 3 views.
-    expect(keys).toHaveLength(4 + 2 + 1 + 3);
+    // 4 seasons (the activity row is empty with no season selected, #56) + Imagery + Buildings + Clear Filters + 3 views + the View and Layers triggers (#58).
+    expect(keys).toHaveLength(4 + 2 + 1 + 3 + 2);
     for (const key of keys) {
       const label = key.querySelector('.btn-label')?.textContent ?? '';
       const icon = key.querySelector('.ms');
