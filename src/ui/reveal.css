@@ -62,16 +62,16 @@
   overflow: hidden;
 }
 
-/* The mark sits dead centre and grows in one bouncy pulse per settled layer (--logo-scale from reveal.ts), ending past the short axis. */
+/* The mark starts 2em tall, dead centre, and grows one bouncy, one-way pulse per settled layer (--logo-scale from reveal.ts) until it spans the long axis. */
 #reveal-logo {
   position: absolute;
   top: 50%;
   left: 50%;
-  height: 40vmin;
+  height: 2em;
   width: auto;
   --logo-scale: 1;
   transform: translate(-50%, -50%) scale(var(--logo-scale));
-  transition: transform 480ms cubic-bezier(0.34, 1.56, 0.64, 1) 120ms;
+  transition: transform 480ms cubic-bezier(0.34, 1.56, 0.64, 1);
   z-index: 0;
 }
 
