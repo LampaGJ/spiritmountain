@@ -67,6 +67,10 @@ export function buildTerrainGeometry(surface: MeshSurface): BufferGeometry {
  * Unsharp-mask strength on the photo: c = s0 + k * (s0 - blur), clamped to [0, 1].
  */
 export const SHARPEN_AMOUNT = 0.6;
+/** Distance in metres from the fade centre (the resort) at which the sharpen amount has fallen to SHARPEN_FAR_FRACTION: about the frame edge. */
+export const SHARPEN_FAR_M = 3500;
+/** Fraction of SHARPEN_AMOUNT left at SHARPEN_FAR_M and beyond, so the far field does not look crisper than its data. */
+export const SHARPEN_FAR_FRACTION = 0.5;
 /** World period in metres of the procedural detail noise. */
 export const DETAIL_METRES = 2.0;
 /** Luminance modulation of the detail noise: colour *= 1 + DETAIL_AMOUNT * (noise - 0.5). */
@@ -113,7 +117,8 @@ export function applyImagerySharpen(material: Material): void {
 {
   vec4 s0 = texture2D(map, vMapUv);
   vec3 blur = texture2D(map, vMapUv, 1.0).rgb;
-  vec3 sharp = clamp(s0.rgb + ${SHARPEN_AMOUNT.toFixed(2)} * (s0.rgb - blur), 0.0, 1.0);
+  float sharpK = ${SHARPEN_AMOUNT.toFixed(2)} * mix(1.0, ${SHARPEN_FAR_FRACTION.toFixed(2)}, smoothstep(0.0, ${SHARPEN_FAR_M.toFixed(1)}, distance(vSharpenPos, fadeCentre)));
+  vec3 sharp = clamp(s0.rgb + sharpK * (s0.rgb - blur), 0.0, 1.0);
   float detailFade = 1.0 - smoothstep(${(DETAIL_FADE_M * 0.5).toFixed(1)}, ${DETAIL_FADE_M.toFixed(1)}, distance(vSharpenPos, cameraPosition.xz));
   float detail = sharpenNoise(vSharpenPos / ${DETAIL_METRES.toFixed(1)});
   sharp *= 1.0 + ${DETAIL_AMOUNT.toFixed(2)} * (detail - 0.5) * detailFade;

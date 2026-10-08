@@ -42,7 +42,7 @@ import { loadContext, loadContextTextures } from './data/load-context';
 import { installContext, type ContextHandle } from './scene/context';
 import { headerBox, installSurfaceAsync, type SurfaceHandle } from './scene/surface';
 import { groundSlopeColor } from './scene/ground';
-import { loadImagery } from './data/load-imagery';
+import { loadImagery, loadImageryInset } from './data/load-imagery';
 import { decodeHash } from './ui/filter-hash';
 import { Color, type Material, type Texture } from 'three';
 import { loadImageryStats } from './data/load-imagery-stats';
@@ -108,6 +108,28 @@ if (!imageryManifest.success) {
   // With imagery=off the photo loads but is never applied, so the first view does not wait on it.
   if (imageryWanted) readiness.register('imagery', imageryLoad);
 }
+
+// The native-resolution inset (#51) is optional: a glob resolves to nothing when the pin is absent from the build.
+// The terrain shader shows it only while the base photo is on (the mix lives inside the map branch), so imagery=off needs no extra step.
+const insetManifestFiles = import.meta.glob('../data/raw/imagery-inset-manifest.json', {
+  eager: true,
+  import: 'default',
+});
+const insetUrlFiles = import.meta.glob<string>('../data/raw/naip-inset.jpg', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+});
+const insetLoad = loadImageryInset({
+  manifestJson: Object.values(insetManifestFiles)[0],
+  url: Object.values(insetUrlFiles)[0],
+  capabilities: handle.renderer.capabilities,
+}).then((result) => {
+  if (result.inset) return handle.setInset(result.inset);
+  if (result.absent) return console.info(`imagery: ${result.reason}`);
+  reportImageryFailure(`inset: ${result.reason}`);
+});
+if (imageryWanted) readiness.register('imagery-inset', insetLoad);
 
 import areasUrl from '../data/areas.geojson?url';
 import { loadAreas } from './data/load-areas';
