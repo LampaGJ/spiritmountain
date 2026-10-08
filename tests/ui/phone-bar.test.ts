@@ -36,15 +36,19 @@ describe('phone bottom bar (under 720 px)', () => {
     return rail;
   };
 
-  it('keeps every key inside the one #rail nav that the bar CSS targets', () => {
+  it('keeps only Clear Filters in the #rail nav and every other key in the one top bar (#58)', () => {
     const rail = mountAll();
     expect(rail.tagName).toBe('NAV');
-    // Clear + 4 layers + 3 views (#56: no activity keys in the rail).
-    expect(rail.querySelectorAll('button.clicky-btn, button.clicky-toggle').length).toBe(8);
-    expect(rail.querySelectorAll('.group-head')).toHaveLength(2);
-    expect(rail.querySelector('.filter-count')).not.toBeNull();
-    expect(rail.querySelector('.exag-key input[type="range"]')).not.toBeNull();
-    expect(rail.querySelector('.exag-key output')).not.toBeNull();
+    expect(rail.querySelectorAll('button.clicky-btn, button.clicky-toggle')).toHaveLength(1);
+    expect(rail.querySelectorAll('.group-head, .exag-key, .filter-count')).toHaveLength(0);
+    const bar = document.getElementById('season-bar');
+    if (bar === null) throw new Error('no #season-bar');
+    // View + 4 seasons + Layers triggers, 3 views, 4 layers (the activity row is empty with no season).
+    expect(bar.querySelectorAll('button.clicky-btn, button.clicky-toggle')).toHaveLength(
+      1 + 4 + 1 + 3 + 4,
+    );
+    expect(bar.querySelector(':scope > .filter-count')).not.toBeNull();
+    expect(bar.querySelectorAll('.sm-bar-keys > .sm-popout')).toHaveLength(2);
   });
 
   it('declares a fixed-height, safe-area-aware, sideways-scrolling bar', () => {
@@ -56,9 +60,14 @@ describe('phone bottom bar (under 720 px)', () => {
     expect(phone).toMatch(/#rail \{[^}]*overflow-x: auto;/);
     expect(phone).toMatch(/#rail \{[^}]*overflow-y: hidden;/);
     expect(phone).toMatch(/#rail \{[^}]*-webkit-overflow-scrolling: touch;/);
-    // The status line stays visible (a chip in the row) and the slider is one inline row.
+    // The status line is never hidden, and the rail disappears with no filter active (#58).
     expect(phone).not.toMatch(/filter-count[^}]*display: none/);
-    expect(phone).toMatch(/\.exag-key \{[^}]*flex-direction: row;/);
+    expect(read('src/ui/rail.css')).toMatch(
+      /#rail:has\(> #filters\[hidden\]\) \{[^}]*display: none;/,
+    );
+    expect(phone).toMatch(
+      /:root:has\(#filters\[hidden\]\) \{[^}]*--sm-bar-h: env\(safe-area-inset-bottom, 0px\);/,
+    );
   });
 
   it('puts the footer and the annotation sheet above the bar, and opts in to the safe area', () => {
@@ -81,11 +90,21 @@ describe('season bar CSS (#42)', () => {
     // A bare bottom property (not border-bottom) would pin the bar to the bottom bar's edge.
     expect(phone).not.toMatch(/#season-bar \{[^}]*\sbottom:/);
     expect(phone).toMatch(/\.sm-season-row \{[^}]*overflow-x: auto;/);
+    expect(phone).toMatch(/\.sm-bar-keys,[^{]*\.sm-season-row \{[^}]*overflow-x: auto;/);
+  });
+
+  it('opens the popouts as full-width sheets under the bar on a phone, anchored under their key on desktop', () => {
+    const phone = phoneBlock(css);
+    expect(phone).toMatch(/#season-bar \.sm-popout \{[^}]*position: static;/);
+    expect(phone).toMatch(/\.sm-popout-panel,[^{]*\{[^}]*left: 0;[^}]*right: 0;/);
+    const desktop = css.slice(0, css.indexOf('@media (max-width: 719px)'));
+    expect(desktop).toMatch(/#season-bar \.sm-popout \{[^}]*position: relative;/);
+    expect(desktop).toMatch(/#season-bar \.sm-popout-panel \{[^}]*top: 100%;/);
   });
 
   it('declares the bar heights the rail offsets by, and the rail reads them', () => {
-    expect(css).toMatch(/--sm-season-h: 88px;/);
-    expect(css).toMatch(/--sm-season-open-h: 136px;/);
+    expect(css).toMatch(/--sm-season-h: 108px;/);
+    expect(css).toMatch(/--sm-season-open-h: 156px;/);
     const rail = read('src/ui/rail.css');
     expect(rail).toMatch(/top: calc\([^;]*var\(--sm-season-h, 0px\)\);/);
     expect(rail).toMatch(

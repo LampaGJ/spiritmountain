@@ -6,6 +6,7 @@ import { HashFilterSchema, type HashFilter } from './filter-hash';
 import type { Activity, Season, SeasonCounts } from './filter-predicate';
 import { NO_MATCH_TITLE } from './filters';
 import { iconFor } from './icons';
+import { getTopBar, releaseTopBar } from './top-bar';
 
 /**
  * @displayName Season menu
@@ -94,10 +95,12 @@ export interface SeasonBarDeps {
 }
 
 export interface SeasonBar {
-  /** The `nav#season-bar`; the caller appends it to document.body. */
+  /** The shared `nav#season-bar` (top-bar.ts), already in document.body. */
   readonly root: HTMLElement;
   /** Shows the state: pressed season, data-open, the row's keys and their pressed state. */
   render(state: HashFilter): void;
+  /** Removes the season keys and the activity row; the bar goes too once no popout is left in it. */
+  dispose(): void;
 }
 
 /** The row's id, referenced by the active season key's aria-controls. */
@@ -111,10 +114,7 @@ const hex = (n: number): string => `#${n.toString(16).padStart(6, '0')}`;
  * row moves focus to the active season key and changes nothing else.
  */
 export function buildSeasonBar(deps: SeasonBarDeps): SeasonBar {
-  const root = document.createElement('nav');
-  root.id = 'season-bar';
-  root.className = 'sm-season-bar';
-  root.setAttribute('aria-label', 'Season');
+  const { root, keys } = getTopBar();
 
   const seasonRow = document.createElement('div');
   seasonRow.className = 'sm-season-keys';
@@ -181,7 +181,10 @@ export function buildSeasonBar(deps: SeasonBarDeps): SeasonBar {
     seasonKeys.get(rowSeason)?.button.focus();
   });
 
-  root.append(seasonRow, row);
+  // One season group per bar: a second build replaces the first.
+  root.querySelectorAll('.sm-season-keys, .sm-season-row').forEach((old) => old.remove());
+  keys.append(seasonRow);
+  root.append(row);
 
   const render = (state: HashFilter): void => {
     const active = state.season.length === 1 ? state.season[0] : undefined;
@@ -200,5 +203,12 @@ export function buildSeasonBar(deps: SeasonBarDeps): SeasonBar {
     root.toggleAttribute('data-open', active !== undefined);
   };
 
-  return { root, render };
+  const dispose = (): void => {
+    seasonRow.remove();
+    row.remove();
+    root.removeAttribute('data-open');
+    releaseTopBar();
+  };
+
+  return { root, render, dispose };
 }

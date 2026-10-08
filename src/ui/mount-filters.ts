@@ -5,6 +5,14 @@ import { applyFilter } from '../scene/filter-apply';
 import type { AnnotationsHandle } from '../wire-annotations';
 import { SeasonSchema, type Annotation } from '../schema/annotation';
 import { browserHash, mountFilterStrip, TOGGLE_ACTIVITIES, type FilterStrip } from './filters';
+import { registerDebugControl, type DebugHandle } from './debug-panel';
+import {
+  EXAGGERATION_DEFAULT,
+  EXAGGERATION_MAX,
+  EXAGGERATION_MIN,
+  EXAGGERATION_STEP,
+  formatExaggeration,
+} from './exaggeration-key';
 import { getRail } from './rail';
 import { facetCounts, seasonActivities, seasonCounts, type Activity } from './filter-predicate';
 
@@ -20,7 +28,7 @@ export interface MountFiltersDeps {
   readonly setSurface?: (on: boolean) => void;
   /** Shows or hides the simulated trees layer. Absent means no Trees button. */
   readonly setTrees?: (on: boolean) => void;
-  /** Sets the terrain exaggeration factor (0 to 10). Absent means no slider. */
+  /** Sets the terrain exaggeration factor (0.1 to 10). Absent means no DEBUG slider. */
   readonly setExaggeration?: (k: number) => void;
   /**
    * Re-colours the trail lines by sport (AreaLayer.route) after every filter change. Runs after applyFilter; never runs
@@ -58,14 +66,28 @@ export function mountFilters(deps: MountFiltersDeps): FilterStrip {
   if (handle.annotations.status === 'failed') {
     // No hash-derived filter is applied and the hash is not rewritten, so the user's link survives the failure.
     host.textContent = FILTERS_UNAVAILABLE_TEXT;
-    return { sync() {}, dispose() {} };
+    return { sync() {}, setExaggeration() {}, dispose() {} };
   }
   const annotations = handle.annotations.map;
   const areas = [...registry.values()].map((entry) => entry.area);
   // Derived once from the already-parsed annotations map; the failed path above renders no season bar.
   const seasonMap = seasonActivities(annotations);
   const seasonCountsByActivity = seasonCounts(areas, annotations);
-  return mountFilterStrip({
+  // The terrain exaggeration slider lives in the DEBUG panel (#58); the exag= hash key stays the state of record.
+  let exagSlider: DebugHandle | undefined;
+  if (setExaggeration) {
+    exagSlider = registerDebugControl({
+      id: 'terrain-exaggeration',
+      label: 'Terrain exaggeration',
+      min: EXAGGERATION_MIN,
+      max: EXAGGERATION_MAX,
+      step: EXAGGERATION_STEP,
+      value: EXAGGERATION_DEFAULT,
+      format: formatExaggeration,
+      onChange: (k) => strip.setExaggeration(k),
+    });
+  }
+  const strip: FilterStrip = mountFilterStrip({
     host,
     ...browserHash,
     seasonMap,
@@ -74,7 +96,9 @@ export function mountFilters(deps: MountFiltersDeps): FilterStrip {
     ...(setBuildings ? { setBuildings } : {}),
     ...(setSurface ? { setSurface } : {}),
     ...(setTrees ? { setTrees } : {}),
-    ...(setExaggeration ? { setExaggeration } : {}),
+    ...(setExaggeration
+      ? { setExaggeration, showExaggeration: (k: number) => exagSlider?.setValue(k) }
+      : {}),
     apply: (filter) => {
       const result = applyFilter(registry, annotations, filter);
       routeSport?.(annotations, filter.activities);
@@ -86,4 +110,5 @@ export function mountFilters(deps: MountFiltersDeps): FilterStrip {
       };
     },
   });
+  return strip;
 }
