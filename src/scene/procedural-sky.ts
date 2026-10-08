@@ -159,6 +159,15 @@ export function createProceduralSkyMesh(): Mesh {
   const u = sky.material.uniforms;
   // Same tone curve as skyRadiance (see SKY_EXPOSURE), inserted where the shader writes its colour.
   sky.material.onBeforeCompile = (shader) => {
+    // Sky.js's own `rand` shadows the one three's dithering chunk calls, so the dither is written inline: triangular
+    // noise of one 8-bit level after the colour-space step, which breaks the gradient's one-level contours into grain.
+    shader.fragmentShader = shader.fragmentShader.replace(
+      '#include <colorspace_fragment>',
+      `#include <colorspace_fragment>
+			float ditherA = fract( sin( dot( gl_FragCoord.xy, vec2( 12.9898, 78.233 ) ) ) * 43758.5453 );
+			float ditherB = fract( sin( dot( gl_FragCoord.xy, vec2( 26.6513, 41.337 ) ) ) * 24634.6345 );
+			gl_FragColor.rgb += ( ditherA + ditherB - 1.0 ) / 255.0;`,
+    );
     shader.fragmentShader = shader.fragmentShader.replace(
       'gl_FragColor = vec4( texColor, 1.0 );',
       `float skyLuma = dot( texColor, vec3( 0.2126, 0.7152, 0.0722 ) );
