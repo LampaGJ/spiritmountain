@@ -2,7 +2,7 @@
   "version": 1,
   "generatedFrom": {
     "inputHash": "7a0ee2f7ee4f13ab2e229a90bdb0278bc5e2bd5836c3b62a1fbbb685f998e89e",
-    "codeCommit": "b6e75a4bfccb0672a8e7b64fa6d8b337a2cd056c",
+    "codeCommit": "f4daca344bebcd061ccefa7b0513fd83e0c642e8",
     "effect": "expands"
   },
   "organizations": [
@@ -278,13 +278,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -293,19 +339,38 @@
         {
           "activity": "alpine-ski",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         },
         {
           "activity": "snowboard",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "national-ski-patrol",
+          "role": "advocates"
+        },
+        {
+          "orgId": "northland-adaptive",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "team-duluth-ski-club",
+          "role": "advocates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -314,19 +379,38 @@
         {
           "activity": "alpine-ski",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         },
         {
           "activity": "snowboard",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "national-ski-patrol",
+          "role": "advocates"
+        },
+        {
+          "orgId": "northland-adaptive",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "team-duluth-ski-club",
+          "role": "advocates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -335,19 +419,38 @@
         {
           "activity": "alpine-ski",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         },
         {
           "activity": "snowboard",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "national-ski-patrol",
+          "role": "advocates"
+        },
+        {
+          "orgId": "northland-adaptive",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "team-duluth-ski-club",
+          "role": "advocates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -356,19 +459,38 @@
         {
           "activity": "alpine-ski",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         },
         {
           "activity": "snowboard",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "national-ski-patrol",
+          "role": "advocates"
+        },
+        {
+          "orgId": "northland-adaptive",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "team-duluth-ski-club",
+          "role": "advocates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -377,19 +499,38 @@
         {
           "activity": "alpine-ski",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         },
         {
           "activity": "snowboard",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "national-ski-patrol",
+          "role": "advocates"
+        },
+        {
+          "orgId": "northland-adaptive",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "team-duluth-ski-club",
+          "role": "advocates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -398,19 +539,38 @@
         {
           "activity": "alpine-ski",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         },
         {
           "activity": "snowboard",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "national-ski-patrol",
+          "role": "advocates"
+        },
+        {
+          "orgId": "northland-adaptive",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "team-duluth-ski-club",
+          "role": "advocates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -419,19 +579,38 @@
         {
           "activity": "alpine-ski",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         },
         {
           "activity": "snowboard",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "national-ski-patrol",
+          "role": "advocates"
+        },
+        {
+          "orgId": "northland-adaptive",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "team-duluth-ski-club",
+          "role": "advocates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -440,19 +619,38 @@
         {
           "activity": "alpine-ski",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         },
         {
           "activity": "snowboard",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "national-ski-patrol",
+          "role": "advocates"
+        },
+        {
+          "orgId": "northland-adaptive",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "team-duluth-ski-club",
+          "role": "advocates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -461,19 +659,38 @@
         {
           "activity": "alpine-ski",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         },
         {
           "activity": "snowboard",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "national-ski-patrol",
+          "role": "advocates"
+        },
+        {
+          "orgId": "northland-adaptive",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "team-duluth-ski-club",
+          "role": "advocates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -482,19 +699,38 @@
         {
           "activity": "alpine-ski",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         },
         {
           "activity": "snowboard",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "national-ski-patrol",
+          "role": "advocates"
+        },
+        {
+          "orgId": "northland-adaptive",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "team-duluth-ski-club",
+          "role": "advocates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -503,19 +739,38 @@
         {
           "activity": "alpine-ski",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         },
         {
           "activity": "snowboard",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "national-ski-patrol",
+          "role": "advocates"
+        },
+        {
+          "orgId": "northland-adaptive",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "team-duluth-ski-club",
+          "role": "advocates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -524,19 +779,38 @@
         {
           "activity": "alpine-ski",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         },
         {
           "activity": "snowboard",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "national-ski-patrol",
+          "role": "advocates"
+        },
+        {
+          "orgId": "northland-adaptive",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "team-duluth-ski-club",
+          "role": "advocates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -545,19 +819,38 @@
         {
           "activity": "alpine-ski",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         },
         {
           "activity": "snowboard",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "national-ski-patrol",
+          "role": "advocates"
+        },
+        {
+          "orgId": "northland-adaptive",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "team-duluth-ski-club",
+          "role": "advocates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -566,19 +859,38 @@
         {
           "activity": "alpine-ski",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         },
         {
           "activity": "snowboard",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "national-ski-patrol",
+          "role": "advocates"
+        },
+        {
+          "orgId": "northland-adaptive",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "team-duluth-ski-club",
+          "role": "advocates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -587,19 +899,38 @@
         {
           "activity": "alpine-ski",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         },
         {
           "activity": "snowboard",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "national-ski-patrol",
+          "role": "advocates"
+        },
+        {
+          "orgId": "northland-adaptive",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "team-duluth-ski-club",
+          "role": "advocates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -608,19 +939,38 @@
         {
           "activity": "alpine-ski",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         },
         {
           "activity": "snowboard",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "national-ski-patrol",
+          "role": "advocates"
+        },
+        {
+          "orgId": "northland-adaptive",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "team-duluth-ski-club",
+          "role": "advocates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -629,19 +979,38 @@
         {
           "activity": "alpine-ski",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         },
         {
           "activity": "snowboard",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "national-ski-patrol",
+          "role": "advocates"
+        },
+        {
+          "orgId": "northland-adaptive",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "team-duluth-ski-club",
+          "role": "advocates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -650,19 +1019,38 @@
         {
           "activity": "alpine-ski",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         },
         {
           "activity": "snowboard",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "national-ski-patrol",
+          "role": "advocates"
+        },
+        {
+          "orgId": "northland-adaptive",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "team-duluth-ski-club",
+          "role": "advocates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -671,19 +1059,38 @@
         {
           "activity": "alpine-ski",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         },
         {
           "activity": "snowboard",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "national-ski-patrol",
+          "role": "advocates"
+        },
+        {
+          "orgId": "northland-adaptive",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "team-duluth-ski-club",
+          "role": "advocates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -692,19 +1099,38 @@
         {
           "activity": "alpine-ski",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         },
         {
           "activity": "snowboard",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "national-ski-patrol",
+          "role": "advocates"
+        },
+        {
+          "orgId": "northland-adaptive",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "team-duluth-ski-club",
+          "role": "advocates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -716,7 +1142,12 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -725,19 +1156,38 @@
         {
           "activity": "alpine-ski",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         },
         {
           "activity": "snowboard",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "national-ski-patrol",
+          "role": "advocates"
+        },
+        {
+          "orgId": "northland-adaptive",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "team-duluth-ski-club",
+          "role": "advocates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -746,19 +1196,38 @@
         {
           "activity": "alpine-ski",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         },
         {
           "activity": "snowboard",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "national-ski-patrol",
+          "role": "advocates"
+        },
+        {
+          "orgId": "northland-adaptive",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "team-duluth-ski-club",
+          "role": "advocates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -767,13 +1236,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -782,13 +1297,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -797,13 +1358,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -812,13 +1419,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -827,13 +1480,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -842,13 +1541,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -869,7 +1614,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -890,7 +1664,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -911,7 +1714,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -932,7 +1764,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -953,7 +1814,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -962,13 +1852,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -977,13 +1913,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -992,13 +1974,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1007,13 +2035,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1022,13 +2096,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1037,13 +2157,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1052,13 +2218,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1067,13 +2279,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1082,13 +2340,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1097,13 +2401,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1112,13 +2462,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1127,13 +2523,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1142,13 +2584,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1157,13 +2645,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1172,13 +2706,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1187,13 +2767,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1202,13 +2828,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1217,13 +2889,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1232,13 +2950,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1247,13 +3011,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1274,7 +3084,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1295,7 +3134,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1316,7 +3184,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1337,7 +3234,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1358,7 +3284,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1379,7 +3334,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1400,7 +3384,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1421,7 +3434,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1442,7 +3484,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1463,7 +3534,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1484,7 +3584,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1505,7 +3634,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1526,7 +3684,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1547,7 +3734,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1568,7 +3784,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1589,7 +3834,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1610,7 +3884,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1631,7 +3934,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1652,7 +3984,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1673,7 +4034,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1682,13 +4072,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1700,7 +4136,12 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1712,7 +4153,12 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1724,7 +4170,12 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1736,7 +4187,12 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1748,7 +4204,12 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1760,7 +4221,12 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1781,7 +4247,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1802,7 +4297,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1823,7 +4347,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1844,7 +4397,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1865,7 +4447,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1886,7 +4497,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1907,7 +4547,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1928,7 +4597,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1949,7 +4647,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1970,7 +4697,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -1991,7 +4747,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -2003,7 +4788,12 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -2012,19 +4802,38 @@
         {
           "activity": "alpine-ski",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         },
         {
           "activity": "snowboard",
           "seasons": [
-            "winter"
+            "winter",
+            "spring"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "national-ski-patrol",
+          "role": "advocates"
+        },
+        {
+          "orgId": "northland-adaptive",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "team-duluth-ski-club",
+          "role": "advocates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -2033,13 +4842,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -2048,13 +4903,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -2063,13 +4964,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -2078,13 +5025,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -2093,13 +5086,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -2108,13 +5147,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -2135,7 +5220,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -2156,7 +5270,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -2165,13 +5308,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -2180,13 +5369,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -2195,13 +5430,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -2210,13 +5491,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -2225,13 +5552,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -2240,13 +5613,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -2255,13 +5674,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -2282,7 +5747,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -2303,7 +5797,36 @@
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "duluth-cross-country-ski-club",
+          "role": "programs"
+        },
+        {
+          "orgId": "duluth-nordic",
+          "role": "programs"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-dnr",
+          "role": "maintains"
+        },
+        {
+          "orgId": "minnesota-youth-ski-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -2312,13 +5835,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -2327,13 +5896,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     },
     {
@@ -2342,13 +5957,59 @@
         {
           "activity": "mountain-bike",
           "seasons": [
+            "spring",
             "summer",
             "fall"
           ],
           "notes": "derived from OSM kind"
         }
       ],
-      "stakeholders": [],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "cyclists-of-gitchee-gumee-shores",
+          "role": "advocates"
+        },
+        {
+          "orgId": "duluth-devo-mountain-bike-program",
+          "role": "advocates"
+        },
+        {
+          "orgId": "earth-rider-brewery",
+          "role": "funds"
+        },
+        {
+          "orgId": "greater-minnesota-regional-parks-and-trails-commission",
+          "role": "maintains"
+        },
+        {
+          "orgId": "harbortown-rotary",
+          "role": "programs"
+        },
+        {
+          "orgId": "kraus-anderson-community-foundation",
+          "role": "advocates"
+        },
+        {
+          "orgId": "minnesota-high-school-cycling-league",
+          "role": "advocates"
+        },
+        {
+          "orgId": "national-center-for-youth-development",
+          "role": "advocates"
+        },
+        {
+          "orgId": "ski-hut",
+          "role": "funds"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
       "notes": ""
     }
   ]
