@@ -51,4 +51,16 @@ describe('createHeroSign', () => {
     hero.dispose();
     expect(document.getElementById('hero-sign')).toBeNull();
   });
+
+  it('exposes its live screen rect, null while hidden (#66)', () => {
+    const hero = createHeroSign(document.body);
+    expect(hero.rect()).toBeNull();
+    hero.element.getBoundingClientRect = () =>
+      ({ left: 400, top: 60, width: 200, height: 80 }) as DOMRect;
+    hero.render([plan()]);
+    expect(hero.rect()).toMatchObject({ x: 400, y: 60, w: 200, h: 80 });
+    hero.render([]);
+    expect(hero.rect()).toBeNull();
+    hero.dispose();
+  });
 });
