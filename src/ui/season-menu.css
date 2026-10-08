@@ -102,11 +102,6 @@
   }
 }
 
-/* Rail Activity keys hidden while a season is active and does not offer them (filters.ts render). */
-#rail .cl-key.is-off-season {
-  display: none;
-}
-
 @media (prefers-reduced-motion: reduce) {
   #season-bar {
     animation: none;
