@@ -1,7 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { TreesHeaderSchema, type TreeRecord } from '../../scripts/ingest/trees-schema';
-import { checkTrees, loadTrees } from '../../src/data/load-trees';
+import { createHash } from 'node:crypto';
+import { packTrees } from '../../scripts/ingest/trees-schema';
+import { checkTrees, loadContextTrees, loadTrees } from '../../src/data/load-trees';
 
 const files: Record<string, string> = {
   '/trees.json': 'data/trees.json',
@@ -65,5 +67,62 @@ describe('checkTrees', () => {
     expect(() => checkTrees(h, [{ ...good, height: 0 }])).toThrow(/height/);
     expect(() => checkTrees(h, [{ ...good, east: Number.NaN }])).toThrow(/finite/);
     expect(() => checkTrees(h, [])).toThrow(/header says 1/);
+  });
+});
+
+describe('loadContextTrees', () => {
+  const frameBytes = readFileSync('data/frame.json');
+  const frameSha = createHash('sha256').update(frameBytes).digest('hex');
+  const one: TreeRecord = {
+    east: 6000, north: 100, groundElev: 200, height: 12, type: 1, rotation: 0, r: 0.1, g: 0.2, b: 0.1,
+  };
+  const bin = packTrees([one, { ...one, type: 4 }]);
+  const header = {
+    version: 1,
+    count: 2,
+    recordFloats: 9,
+    byteOrder: 'LE',
+    dtype: 'float32',
+    fields: ['east', 'north', 'groundElev', 'height', 'type', 'rotation', 'r', 'g', 'b'],
+    byteLength: bin.byteLength,
+    types: { broadleaf: 1, conifer: 1 },
+    archetypes: [0, 1, 0, 0, 1, 0],
+    params: {
+      seed: 53, blockM: 30, greenMin: 0.055, greenFull: 0.11, baseDensity: 0.85, innerM: 5000, outerM: 10100,
+      jitterM: 6, heightMinM: 8, heightMaxM: 22, heightJitter: 0.1, broadleafShare: 0.75, darken: 0.85,
+    },
+    forestBlocks: 2,
+    frame: { file: 'data/frame.json', sha256: frameSha },
+    sources: [{ path: 'data/raw/naip.jpg', sha256: frameSha }],
+  };
+  const make = (head: unknown, body: Uint8Array): typeof fetch =>
+    ((url: string) => {
+      if (url === '/c.json') return Promise.resolve(new Response(JSON.stringify(head)));
+      if (url === '/c.bin') return Promise.resolve(new Response(new Uint8Array(body)));
+      if (url === '/frame.json') return Promise.resolve(new Response(new Uint8Array(frameBytes)));
+      return Promise.resolve(new Response('', { status: 404 }));
+    }) as unknown as typeof fetch;
+  const urls = { header: '/c.json', bin: '/c.bin' };
+
+  it('loads a consistent file through the gate', async () => {
+    const layer = await loadContextTrees({ frameUrl: '/frame.json', urls, fetchImpl: make(header, bin) });
+    if (!('records' in layer)) throw new Error(JSON.stringify(layer));
+    expect(layer.records.length).toBe(2);
+  });
+
+  it('reports a truncated bin and a header the schema rejects as errors', async () => {
+    const truncated = await loadContextTrees({
+      frameUrl: '/frame.json', urls, fetchImpl: make(header, bin.slice(0, 40)),
+    });
+    expect('error' in truncated).toBe(true);
+    const bad = await loadContextTrees({
+      frameUrl: '/frame.json', urls, fetchImpl: make({ ...header, count: 3 }, bin),
+    });
+    expect('error' in bad).toBe(true);
+  });
+
+  it('reports files that are not in the build as absent, not as an error', async () => {
+    const layer = await loadContextTrees({ frameUrl: '/frame.json', urls: {}, fetchImpl: make(header, bin) });
+    expect(layer).toEqual({ absent: true });
   });
 });

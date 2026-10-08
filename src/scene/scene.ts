@@ -29,6 +29,7 @@ import {
 /** The far plane reaches this factor past the true horizon, so the horizon blend completes before the clip. */
 export const FAR_HORIZON_MARGIN = 1.05;
 import { createSkyControl, SKY_FALLBACK_COLOR } from './sky';
+import { bakeSkyTexture, createProceduralSkyMesh, horizonColor } from './procedural-sky';
 import { createTerrainMesh, setTerrainImagery, terrainFade } from './terrain';
 import {
   computeViews,
@@ -60,13 +61,13 @@ export interface SceneHandle {
   setImagery(texture: Texture | null): void;
   /** Mixes a native-resolution inset over the base photo inside rect (local metres), or clears it with null. Shown only while imagery is on. */
   setInset(inset: { readonly texture: Texture; readonly rect: InsetRect } | null): void;
-  /** Photo sky as background and environment light; the sun and hemisphere are trimmed so it is not blown out. */
+  /** The photo sky as environment light only (the backdrop is the procedural sky); the sun and hemisphere are trimmed so it is not blown out. */
   setSky(texture: Texture): void;
   /** Restores the flat sky colour, no environment, and the original light intensities. */
   setSkyFallback(): void;
   /** Installs (or replaces) the opaque ground plane at base elevation minus 0.5 m, beyond the faded terrain, in a linear-light colour. */
   setGround(colorLinear: { r: number; g: number; b: number }, baseElevationM: number): void;
-  /** Points the horizon blend at the sky panorama, or at the flat fallback colour with null. Call it beside setSky and setSkyFallback. */
+  /** Kept for callers: the horizon blend always follows the procedural sky now, so the argument is ignored. */
   setHorizonSky(texture: Texture | null): void;
   /** Patches a ground-side material (after applyRadialFade, if it has one) so it blends into the sky at the true horizon. All share one set of uniforms. */
   applyHorizon(material: Material): void;
@@ -136,6 +137,13 @@ export function createScene(
   sun.position.set(-1, 0.45, 1).normalize().multiplyScalar(1000);
   scene.add(sun);
   const horizon = createHorizonUniforms(SKY_FALLBACK_COLOR);
+  // The backdrop is procedural (#52): the Sky mesh draws it, a CPU bake of the same formula feeds the horizon blend,
+  // and the aerial tint is the sky colour at the horizon. All three exist from the first frame, outside ElevatedGroup.
+  const skyMesh = createProceduralSkyMesh();
+  scene.add(skyMesh);
+  const skyBake = bakeSkyTexture();
+  setHorizonSkyTexture(horizon, skyBake);
+  horizon.uAerialTint.value.copy(horizonColor());
   applyHorizonBlend(terrain.material as Material, horizon);
   const sky = createSkyControl(scene, { sun, hemisphere });
   let ground: Mesh | null = null;
@@ -274,9 +282,13 @@ export function createScene(
       insetPatch.mesh.visible = imageryOn;
       elevated.add(insetPatch.mesh);
     },
-    setSky: sky.setSky,
+    setSky(texture) {
+      sky.setSky(texture);
+      // The photo is environment light only; the Sky mesh is the backdrop, and its panorama must not tint the horizon.
+      scene.background = new Color(SKY_FALLBACK_COLOR);
+    },
     setSkyFallback: sky.setSkyFallback,
-    setHorizonSky: (texture) => setHorizonSkyTexture(horizon, texture),
+    setHorizonSky: () => undefined,
     applyHorizon: (material) => applyHorizonBlend(material, horizon),
     setGround(colorLinear, baseElevationM) {
       if (ground) {
@@ -328,6 +340,9 @@ export function createScene(
       }
       terrain.geometry.dispose();
       (terrain.material as { dispose(): void }).dispose();
+      skyMesh.geometry.dispose();
+      (skyMesh.material as { dispose(): void }).dispose();
+      skyBake.dispose();
       renderer.dispose();
       renderer.domElement.remove();
     },
