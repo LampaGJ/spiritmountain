@@ -1,20 +1,16 @@
 /**
- * Track signs (#43, #49): a flat, camera-facing sign floats at the START and END of each track, listing every sport
- * that uses the place as a coloured glyph chip and the track name (or "N trails") below, on a 15 degree right-triangle
- * pointer down to the ground. The sign and its pointer move as one rigid group.
+ * Track signs (#43, #49, #55). Two families float above the mountain as flat, camera-facing sprites inside the
+ * ElevatedGroup. Concentration signs hover over the natural concentrations of visible trails and list every sport
+ * there as a coloured glyph chip with a track name or "N trails". Trail-sport signs sit along each named track, one per
+ * sport it carries, in that sport's colour with the glyph, the sport name and the track name.
  *
  * The first half of this file is pure (no three object is created), so track planning, contrast, sizing and the canvas
  * drawing test in node with a recording fake context. The second half builds the three layer.
  */
 import {
-  BufferAttribute,
-  BufferGeometry,
   CanvasTexture,
-  DoubleSide,
   Group,
   LinearFilter,
-  Mesh,
-  MeshBasicMaterial,
   type PerspectiveCamera,
   Sprite,
   SpriteMaterial,
@@ -24,7 +20,7 @@ import {
 import { fadeAlpha } from '../../scripts/ingest/context-tiles';
 import { ActivitySchema, type Annotation } from '../schema/annotation';
 import type { Area } from '../schema/area';
-import { iconFor, signGlyph } from '../ui/icons';
+import { signGlyph } from '../ui/icons';
 import { GHOST_RENDER_ORDER, type SceneMapper } from './areas';
 import { effectiveScale } from './elevated';
 import type { MeshSurface } from './heightfield';
@@ -41,7 +37,7 @@ export const SIGN_OFFSET_M = 25;
 export const SIGN_MAX_WIDTH_PX = 160;
 /** On narrow viewports the sign takes at most this fraction of the viewport width. */
 export const SIGN_WIDTH_FRACTION = 0.2;
-/** Panel colour: dark and neutral, so the sport-coloured chips carry the colour. */
+/** Concentration-sign panel colour: dark and neutral, so the sport-coloured chips carry the colour. */
 export const SIGN_PANEL_COLOR = 0x1b1f24;
 /** Panel alpha; the terrain shows faintly through. */
 export const SIGN_PANEL_ALPHA = 0.9;
@@ -51,11 +47,6 @@ export const LABEL_DARK = 0x111111;
 /** Canvas size of one sign texture in device pixels (aspect 4:1). */
 export const SIGN_CANVAS_WIDTH = 512;
 export const SIGN_CANVAS_HEIGHT = 128;
-/**
- * The pointer's leg 2 leaves the ground point at this angle from leg 1, which goes straight up (Graham, 2026-10-08:
- * "make one side at 90 degrees from level ... going straight UP (leg 1) ... leg 2 ... about a 15 degree angle").
- */
-export const POINTER_ANGLE_DEG = 15;
 const SYMBOL_FONT_FAMILY = '"Material Symbols Outlined"';
 const LABEL_FONT_FAMILY = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
 
@@ -221,114 +212,193 @@ export function clusterAreas(
   );
 }
 
-// ---- tracks, endpoints and signs (#49) ----
+// ---- concentrations and signs (#55, replacing the #49 start/end anchors) ----
 
-/** Two endpoints of different segments closer than this are one junction, so neither is a free end of the track. */
+/** Two tracks join one concentration when any vertex of one lies within this distance of any vertex of the other. */
+export const CONCENTRATION_RADIUS_M = 250;
+/** A concentration with more tracks than this ... */
+export const SPLIT_TRACKS = 12;
+/** ... and a plan extent (bounding-box diagonal) over this many metres splits in two with k-means. */
+export const SPLIT_EXTENT_M = 1500;
+/** Two endpoints of different segments closer than this are one junction, not a free end of the track. */
 export const FREE_ENDPOINT_TOLERANCE_M = 5;
-/** An END sign this close to its START is dropped: the track is too short to need two signs. */
-export const END_MIN_DISTANCE_M = 150;
-/** Signs closer than this (single linkage) merge into one sign carrying the union of their activities. */
-export const SIGN_MERGE_RADIUS_M = 60;
+/** Fixed Lloyd iterations of the k = 2 split. */
+export const SPLIT_ITERATIONS = 10;
 
 /** The slice of an Area the track planner reads. */
 export type TrackArea = Pick<Area, 'id' | 'kind' | 'name' | 'osmTags' | 'geometry'>;
 
-/** Bare-earth or composite surface height in metres at a local east/north position. */
-export type HeightAt = (east: number, north: number) => number;
-
-export type SignRole = 'start' | 'end';
-
-/** Where a track begins and ends. `end` is null for a loop, a one-point track, or an END dropped as too close. */
-export interface TrackEnds {
-  readonly start: PlanePoint;
-  readonly end: PlanePoint | null;
-}
-
-interface LineSegment {
-  readonly id: string;
-  readonly coords: ReadonlyArray<ReadonlyArray<number>>;
+/** A vertex of a track in local metres, with its share of the track's length as weight. */
+export interface WeightedPoint {
+  readonly east: number;
+  readonly north: number;
+  readonly weight: number;
 }
 
 const planeDistance = (a: PlanePoint, b: PlanePoint): number =>
   Math.hypot(a.east - b.east, a.north - b.north);
 
-const pointAt = (coords: ReadonlyArray<ReadonlyArray<number>>, index: number): PlanePoint => {
-  const p = coords[index];
-  if (p === undefined) throw new Error('trackEnds: empty line');
-  return { east: p[0] ?? 0, north: p[1] ?? 0 };
-};
-
 /**
- * START and END of one track. An endpoint is free when no other segment of the track has an endpoint within
- * FREE_ENDPOINT_TOLERANCE_M; a segment whose own two ends meet (a closed way) contributes none. START is the free
- * endpoint with the highest `heightAt`, END the lowest (ties broken by east, then north). A track with no free
- * endpoint (a loop) gets one START at the first vertex of its smallest-id segment. An END within END_MIN_DISTANCE_M of
- * the START is dropped. A track with no line (polygons only) gets one START at the centroid of its smallest-id polygon.
+ * Every vertex of an area as a weighted point. Each vertex carries half the length of the edges beside it, so a
+ * track's weights sum to its length (a polygon uses its outer ring): a long trail counts for its length, not for how
+ * many vertices OSM happened to give it. A zero-length geometry gets weight 1 per vertex so it still counts.
  */
-export function trackEnds(areas: readonly TrackArea[], heightAt: HeightAt): TrackEnds {
-  const sorted = areas.slice().sort((a, b) => codePointCompare(a.id, b.id));
-  const lines: LineSegment[] = [];
-  for (const area of sorted) {
-    if (area.geometry.type === 'LineString') {
-      lines.push({ id: area.id, coords: area.geometry.coordinates });
-    }
+export function areaVertices(geometry: Area['geometry']): WeightedPoint[] {
+  const ring =
+    geometry.type === 'LineString' ? geometry.coordinates : (geometry.coordinates[0] ?? []);
+  if (ring.length === 0) throw new Error('areaVertices: empty geometry');
+  const points = ring.map((c) => ({ east: c[0] ?? 0, north: c[1] ?? 0 }));
+  const weights = points.map(() => 0);
+  for (let i = 1; i < points.length; i++) {
+    const length = planeDistance(points[i - 1] as PlanePoint, points[i] as PlanePoint);
+    weights[i - 1] = (weights[i - 1] as number) + length / 2;
+    weights[i] = (weights[i] as number) + length / 2;
   }
-  if (lines.length === 0) {
-    const first = sorted[0];
-    if (first === undefined) throw new Error('trackEnds: empty track');
-    return { start: areaCentroid(first.geometry), end: null };
-  }
-  const ends: Array<{ segment: number; point: PlanePoint }> = [];
-  lines.forEach((line, segment) => {
-    const a = pointAt(line.coords, 0);
-    const b = pointAt(line.coords, line.coords.length - 1);
-    if (planeDistance(a, b) <= FREE_ENDPOINT_TOLERANCE_M) return;
-    ends.push({ segment, point: a }, { segment, point: b });
-  });
-  const free = ends.filter(
-    (e) =>
-      !ends.some(
-        (o) =>
-          o.segment !== e.segment && planeDistance(o.point, e.point) <= FREE_ENDPOINT_TOLERANCE_M,
-      ),
-  );
-  if (free.length === 0) {
-    const first = lines[0] as LineSegment;
-    return { start: pointAt(first.coords, 0), end: null };
-  }
-  const ranked = free
-    .map((e) => ({ point: e.point, height: heightAt(e.point.east, e.point.north) }))
-    .sort(
-      (a, b) => b.height - a.height || a.point.east - b.point.east || a.point.north - b.point.north,
-    );
-  const start = (ranked[0] as (typeof ranked)[number]).point;
-  const lowest = ranked[ranked.length - 1] as (typeof ranked)[number];
-  const end = lowest.point;
-  if (ranked.length < 2 || planeDistance(start, end) <= END_MIN_DISTANCE_M) {
-    return { start, end: null };
-  }
-  return { start, end };
+  const total = weights.reduce((s, w) => s + w, 0);
+  return points.map((p, i) => ({ ...p, weight: total > 0 ? (weights[i] as number) : 1 }));
 }
 
-/** One planned sign: a place, a role, the sports that use it and its label. */
+/** Weighted mean of weighted points. */
+export function weightedCentroid(points: readonly WeightedPoint[]): PlanePoint {
+  let east = 0;
+  let north = 0;
+  let weight = 0;
+  for (const p of points) {
+    east += p.east * p.weight;
+    north += p.north * p.weight;
+    weight += p.weight;
+  }
+  if (weight === 0) throw new Error('weightedCentroid: no weight');
+  return { east: east / weight, north: north / weight };
+}
+
+/** One visible track: its key and every vertex of its visible segments. */
+export interface TrackPoints {
+  readonly key: string;
+  readonly points: readonly WeightedPoint[];
+}
+
+/**
+ * Single-linkage groups of tracks: two join when any vertex of one is within `radiusM` of any vertex of the other
+ * (transitive). Returns indices into `tracks`, each group ascending, groups ordered by smallest member index.
+ */
+export function concentrateTracks(
+  tracks: readonly TrackPoints[],
+  radiusM = CONCENTRATION_RADIUS_M,
+): number[][] {
+  const parent = tracks.map((_, i) => i);
+  const find = (i: number): number => {
+    let root = i;
+    while (parent[root] !== root) root = parent[root] as number;
+    let node = i;
+    while (parent[node] !== root) {
+      const next = parent[node] as number;
+      parent[node] = root;
+      node = next;
+    }
+    return root;
+  };
+  // Grid of radius-sized cells: a vertex only needs its own and the eight neighbouring cells.
+  const cells = new Map<string, Array<{ track: number; east: number; north: number }>>();
+  const cellOf = (v: number): number => Math.floor(v / radiusM);
+  tracks.forEach((track, t) => {
+    for (const p of track.points) {
+      const id = `${cellOf(p.east)},${cellOf(p.north)}`;
+      const list = cells.get(id);
+      const entry = { track: t, east: p.east, north: p.north };
+      if (list) list.push(entry);
+      else cells.set(id, [entry]);
+    }
+  });
+  tracks.forEach((track, t) => {
+    for (const p of track.points) {
+      const cx = cellOf(p.east);
+      const cy = cellOf(p.north);
+      for (let dx = -1; dx <= 1; dx++) {
+        for (let dy = -1; dy <= 1; dy++) {
+          for (const q of cells.get(`${cx + dx},${cy + dy}`) ?? []) {
+            if (q.track === t || Math.hypot(p.east - q.east, p.north - q.north) > radiusM) continue;
+            const ra = find(t);
+            const rb = find(q.track);
+            if (ra !== rb) parent[Math.max(ra, rb)] = Math.min(ra, rb);
+          }
+        }
+      }
+    }
+  });
+  const groups = new Map<number, number[]>();
+  tracks.forEach((_, i) => {
+    const root = find(i);
+    const members = groups.get(root);
+    if (members) members.push(i);
+    else groups.set(root, [i]);
+  });
+  return [...groups.values()];
+}
+
+/** Bounding-box diagonal of a set of points, in metres. */
+export function planExtent(points: readonly PlanePoint[]): number {
+  if (points.length === 0) return 0;
+  let minE = Infinity;
+  let maxE = -Infinity;
+  let minN = Infinity;
+  let maxN = -Infinity;
+  for (const p of points) {
+    minE = Math.min(minE, p.east);
+    maxE = Math.max(maxE, p.east);
+    minN = Math.min(minN, p.north);
+    maxN = Math.max(maxN, p.north);
+  }
+  return Math.hypot(maxE - minE, maxN - minN);
+}
+
+/** A weighted vertex tagged with the index of the track it belongs to. */
+export interface OwnedPoint extends WeightedPoint {
+  readonly track: number;
+}
+
+/**
+ * Deterministic k = 2 split of weighted vertices. Seeds: `seed` (the caller passes the centroid of the track with the
+ * smallest key) and the vertex farthest from it (ties by east, then north). Then SPLIT_ITERATIONS Lloyd steps on
+ * weighted means, a vertex going to the nearer centre (ties to the first). Returns the two vertex sets.
+ */
+export function splitInTwo(
+  points: readonly OwnedPoint[],
+  seed: PlanePoint,
+): [OwnedPoint[], OwnedPoint[]] {
+  let far = points[0] as OwnedPoint;
+  for (const p of points) {
+    const d = planeDistance(p, seed) - planeDistance(far, seed);
+    if (d > 0 || (d === 0 && (p.east < far.east || (p.east === far.east && p.north < far.north)))) {
+      far = p;
+    }
+  }
+  let centres: [PlanePoint, PlanePoint] = [seed, { east: far.east, north: far.north }];
+  let sides: [OwnedPoint[], OwnedPoint[]] = [[], []];
+  for (let iteration = 0; iteration < SPLIT_ITERATIONS; iteration++) {
+    sides = [[], []];
+    for (const p of points) {
+      (planeDistance(p, centres[0]) <= planeDistance(p, centres[1]) ? sides[0] : sides[1]).push(p);
+    }
+    if (sides[0].length === 0 || sides[1].length === 0) break;
+    centres = [weightedCentroid(sides[0]), weightedCentroid(sides[1])];
+  }
+  return sides;
+}
+
+export type SignFamily = 'concentration' | 'trail';
+
+/** One planned sign: a place over a concentration of tracks, the sports that use it and its label. */
 export interface SignPlan {
   readonly east: number;
   readonly north: number;
-  readonly role: SignRole;
+  /** A concentration sign (union of sports, over a group of tracks) or a trail-sport sign (one sport, one named track). */
+  readonly family: SignFamily;
   /** In ActivitySchema.options order. */
   readonly activities: readonly Activity[];
   readonly label: string;
-  /** Distinct tracks merged into this sign. */
+  /** Distinct tracks under this sign. */
   readonly trackCount: number;
-}
-
-interface Anchor {
-  readonly east: number;
-  readonly north: number;
-  readonly role: SignRole;
-  readonly key: string;
-  readonly label: string;
-  readonly activities: readonly Activity[];
 }
 
 /**
@@ -352,99 +422,203 @@ function trackActivities(
 }
 
 /**
- * The signs for the visible areas. Areas group into tracks by trackKey; each track yields a START anchor and maybe an
- * END anchor (trackEnds); anchors within SIGN_MERGE_RADIUS_M merge (single linkage) into one sign at their mean, with
- * the union of their activities. The label is the track name for one track, else `N trails`. A merged sign is a
- * START unless every member is an END. Output order is by east, then north, so it is stable across runs.
+ * The signs for the visible areas. Areas group into tracks by trackKey; tracks group into concentrations
+ * (concentrateTracks); one sign sits at the weighted centroid of every vertex of the concentration. A concentration
+ * of more than SPLIT_TRACKS tracks and a plan extent over SPLIT_EXTENT_M splits in two (splitInTwo), each half
+ * taking the tracks that have a vertex in it, so one trail running through both halves shows on both signs. The label
+ * is the track name for one track, else `N trails`. Output order is by east, then north, so it is stable across runs.
  */
 export function planSigns(
   areas: readonly TrackArea[],
   annotations: ReadonlyMap<string, Annotation>,
   selected: ReadonlySet<Activity>,
   visibleIds: ReadonlySet<string>,
-  heightAt: HeightAt,
 ): SignPlan[] {
-  const tracks = new Map<string, TrackArea[]>();
+  const byKey = new Map<string, TrackArea[]>();
   for (const area of areas) {
     if (!visibleIds.has(area.id)) continue;
     const key = trackKey(area);
-    const members = tracks.get(key);
+    const members = byKey.get(key);
     if (members) members.push(area);
-    else tracks.set(key, [area]);
+    else byKey.set(key, [area]);
   }
-  const anchors: Anchor[] = [];
-  for (const key of [...tracks.keys()].sort(codePointCompare)) {
-    const members = tracks.get(key) as TrackArea[];
-    const activities = trackActivities(members, annotations, selected);
-    const first = members.slice().sort((a, b) => codePointCompare(a.id, b.id))[0] as TrackArea;
-    const label =
-      trackName(first) ??
-      signGlyph((activities[0] ?? KIND_DEFAULT_ACTIVITY[first.kind]) as Activity).label;
-    const ends = trackEnds(members, heightAt);
-    anchors.push({ ...ends.start, role: 'start', key, label, activities });
-    if (ends.end) anchors.push({ ...ends.end, role: 'end', key, label, activities });
-  }
-  anchors.sort(
-    (a, b) =>
-      a.east - b.east ||
-      a.north - b.north ||
-      codePointCompare(a.key, b.key) ||
-      codePointCompare(a.role, b.role),
+  const keys = [...byKey.keys()].sort(codePointCompare);
+  const members = keys.map((key) =>
+    (byKey.get(key) as TrackArea[]).slice().sort((a, b) => codePointCompare(a.id, b.id)),
   );
-  const parent = anchors.map((_, i) => i);
-  const find = (i: number): number => {
-    let root = i;
-    while (parent[root] !== root) root = parent[root] as number;
-    return root;
+  const tracks: TrackPoints[] = keys.map((key, i) => ({
+    key,
+    points: (members[i] as TrackArea[]).flatMap((a) => areaVertices(a.geometry)),
+  }));
+  const activities = members.map((m) => trackActivities(m, annotations, selected));
+  const labelOf = (indices: readonly number[]): string => {
+    if (indices.length > 1) return `${indices.length} trails`;
+    const first = (members[indices[0] as number] as TrackArea[])[0] as TrackArea;
+    const sport =
+      (activities[indices[0] as number] as Activity[])[0] ?? KIND_DEFAULT_ACTIVITY[first.kind];
+    return trackName(first) ?? signGlyph(sport as Activity).label;
   };
-  for (let i = 0; i < anchors.length; i++) {
-    for (let j = i + 1; j < anchors.length; j++) {
-      const a = anchors[i] as Anchor;
-      const b = anchors[j] as Anchor;
-      if (planeDistance(a, b) <= SIGN_MERGE_RADIUS_M) {
-        const ra = find(i);
-        const rb = find(j);
-        if (ra !== rb) parent[Math.max(ra, rb)] = Math.min(ra, rb);
+  const plans: SignPlan[] = [];
+  const emit = (indices: readonly number[], points: readonly WeightedPoint[]): void => {
+    if (indices.length === 0 || points.length === 0) return;
+    const union = new Set(indices.flatMap((i) => activities[i] as Activity[]));
+    plans.push({
+      ...weightedCentroid(points),
+      family: 'concentration',
+      activities: ActivitySchema.options.filter((a) => union.has(a)),
+      label: labelOf(indices),
+      trackCount: indices.length,
+    });
+  };
+  for (const group of concentrateTracks(tracks)) {
+    const all = group.flatMap((t) => (tracks[t] as TrackPoints).points);
+    if (group.length > SPLIT_TRACKS && planExtent(all) > SPLIT_EXTENT_M) {
+      const owned: OwnedPoint[] = group.flatMap((t) =>
+        (tracks[t] as TrackPoints).points.map((p) => ({ ...p, track: t })),
+      );
+      const seedTrack = group[0] as number;
+      const [a, b] = splitInTwo(owned, weightedCentroid((tracks[seedTrack] as TrackPoints).points));
+      if (a.length > 0 && b.length > 0) {
+        for (const half of [a, b]) {
+          emit(
+            [...new Set(half.map((p) => p.track))].sort((x, y) => x - y),
+            half,
+          );
+        }
+        continue;
       }
     }
+    emit(group, all);
   }
-  const groups = new Map<number, Anchor[]>();
-  anchors.forEach((anchor, i) => {
-    const root = find(i);
-    const members = groups.get(root);
-    if (members) members.push(anchor);
-    else groups.set(root, [anchor]);
-  });
-  const plans: SignPlan[] = [...groups.values()].map((members) => {
-    const keys = [...new Set(members.map((m) => m.key))];
-    const activities = new Set(members.flatMap((m) => m.activities));
-    const first = members[0] as Anchor;
-    return {
-      east: members.reduce((s, m) => s + m.east, 0) / members.length,
-      north: members.reduce((s, m) => s + m.north, 0) / members.length,
-      role: members.every((m) => m.role === 'end') ? 'end' : 'start',
-      activities: ActivitySchema.options.filter((a) => activities.has(a)),
-      label: keys.length === 1 ? first.label : `${keys.length} trails`,
-      trackCount: keys.length,
-    };
-  });
   return plans.sort((a, b) => a.east - b.east || a.north - b.north);
 }
 
+// ---- trail-sport signs (#55): one sign per named track and sport ----
+
+/** An ordered polyline of a track's merged segments, in local metres. */
+export type TrackPath = readonly PlanePoint[];
+
 /**
- * Local vertices of the pointer, a right triangle in the sign group's xy plane: apex at the origin (the ground point),
- * leg 1 straight up by `heightM`, leg 2 from the apex to the top edge's far end. In the ElevatedGroup the y axis is
- * scaled by `yScale` and x is not, so the x of the far end is `heightM * yScale * tan(angle)`: leg 2 then leaves leg 1
- * at `angleDeg` in the world whatever the exaggeration. Returns [x0, y0, z0, x1, y1, z1, x2, y2, z2].
+ * Chains the line segments of one track into a single path. Start: the free endpoint (no other segment's endpoint
+ * within FREE_ENDPOINT_TOLERANCE_M) lowest by east then north, else the first vertex of the smallest-id segment. Then
+ * repeatedly append the unused segment with an endpoint nearest the path tail, flipped to meet it (a gap becomes a
+ * straight connector, counted in the length). Polygons contribute their outer ring as a line.
  */
-export function pointerVertices(
-  heightM: number,
-  angleDeg: number,
-  yScale: number,
-): [number, number, number, number, number, number, number, number, number] {
-  const dx = heightM * yScale * Math.tan((angleDeg * Math.PI) / 180);
-  return [0, 0, 0, 0, heightM, 0, dx, heightM, 0];
+export function mergeTrackPath(areas: readonly TrackArea[]): TrackPath {
+  const sorted = areas.slice().sort((a, b) => codePointCompare(a.id, b.id));
+  const segments: PlanePoint[][] = sorted.map((a) =>
+    areaVertices(a.geometry).map(({ east, north }) => ({ east, north })),
+  );
+  const endsOf = (s: readonly PlanePoint[]): PlanePoint[] => [
+    s[0] as PlanePoint,
+    s[s.length - 1] as PlanePoint,
+  ];
+  const free: PlanePoint[] = [];
+  segments.forEach((s, i) => {
+    for (const e of endsOf(s)) {
+      const joined = segments.some(
+        (o, j) =>
+          j !== i && endsOf(o).some((p) => planeDistance(p, e) <= FREE_ENDPOINT_TOLERANCE_M),
+      );
+      if (!joined) free.push(e);
+    }
+  });
+  free.sort((a, b) => a.east - b.east || a.north - b.north);
+  const used = segments.map(() => false);
+  const path: PlanePoint[] = [];
+  const first = free[0];
+  let startIndex = 0;
+  let reversed = false;
+  if (first) {
+    startIndex = segments.findIndex((s) => endsOf(s).some((e) => e === first));
+    reversed = (segments[startIndex] as PlanePoint[])[0] !== first;
+  }
+  const take = (index: number, flip: boolean): void => {
+    used[index] = true;
+    const s = (segments[index] as PlanePoint[]).slice();
+    path.push(...(flip ? s.reverse() : s));
+  };
+  take(startIndex, reversed);
+  for (;;) {
+    const tail = path[path.length - 1] as PlanePoint;
+    let best = -1;
+    let bestFlip = false;
+    let bestDistance = Infinity;
+    segments.forEach((s, i) => {
+      if (used[i]) return;
+      const [a, b] = endsOf(s) as [PlanePoint, PlanePoint];
+      const da = planeDistance(tail, a);
+      const db = planeDistance(tail, b);
+      if (da < bestDistance) [best, bestFlip, bestDistance] = [i, false, da];
+      if (db < bestDistance) [best, bestFlip, bestDistance] = [i, true, db];
+    });
+    if (best < 0) break;
+    take(best, bestFlip);
+  }
+  return path;
 }
+
+/** The point at `fraction` (0 to 1) of the path's length. A zero-length path returns its first point. */
+export function pointAlong(path: TrackPath, fraction: number): PlanePoint {
+  const first = path[0];
+  if (first === undefined) throw new Error('pointAlong: empty path');
+  let total = 0;
+  for (let i = 1; i < path.length; i++) {
+    total += planeDistance(path[i - 1] as PlanePoint, path[i] as PlanePoint);
+  }
+  if (total === 0) return first;
+  let remaining = total * fraction;
+  for (let i = 1; i < path.length; i++) {
+    const a = path[i - 1] as PlanePoint;
+    const b = path[i] as PlanePoint;
+    const length = planeDistance(a, b);
+    if (length >= remaining && length > 0) {
+      const t = remaining / length;
+      return { east: a.east + t * (b.east - a.east), north: a.north + t * (b.north - a.north) };
+    }
+    remaining -= length;
+  }
+  return path[path.length - 1] as PlanePoint;
+}
+
+/**
+ * Trail-sport signs: for every named track (name or route:name) and every activity it carries after the filter, one
+ * sign. A track with k activities gets k signs at fractions (i + 0.5) / k of its merged length, activities in
+ * ActivitySchema order. Output order is by track key then activity, so it is stable across runs.
+ */
+export function planTrailSigns(
+  areas: readonly TrackArea[],
+  annotations: ReadonlyMap<string, Annotation>,
+  selected: ReadonlySet<Activity>,
+  visibleIds: ReadonlySet<string>,
+): SignPlan[] {
+  const byKey = new Map<string, TrackArea[]>();
+  for (const area of areas) {
+    if (!visibleIds.has(area.id) || trackName(area) === null) continue;
+    const key = trackKey(area);
+    const members = byKey.get(key);
+    if (members) members.push(area);
+    else byKey.set(key, [area]);
+  }
+  const plans: SignPlan[] = [];
+  for (const key of [...byKey.keys()].sort(codePointCompare)) {
+    const members = byKey.get(key) as TrackArea[];
+    const activities = trackActivities(members, annotations, selected);
+    const path = mergeTrackPath(members);
+    const name = trackName(members[0] as TrackArea) as string;
+    activities.forEach((activity, i) => {
+      plans.push({
+        ...pointAlong(path, (i + 0.5) / activities.length),
+        family: 'trail',
+        activities: [activity],
+        label: name,
+        trackCount: 1,
+      });
+    });
+  }
+  return plans;
+}
+
 /** WCAG 2 relative luminance of a 0xRRGGBB colour. */
 export function relativeLuminance(hex: number): number {
   const channel = (shift: number): number => {
@@ -480,6 +654,8 @@ export interface ScreenRect {
   readonly w: number;
   readonly h: number;
   readonly distance: number;
+  /** Lower wins a tie in distance; absent is 0. */
+  readonly priority?: number;
 }
 
 /** Gap kept between two shown signs, in CSS pixels. */
@@ -487,14 +663,15 @@ export const SIGN_GAP_PX = 4;
 
 /**
  * Screen-space declutter: nearest first, a sign is shown only when its rect (plus SIGN_GAP_PX) overlaps no sign
- * already shown. Returns one flag per input, in input order. Equal distances keep input order (the sorted clusters).
+ * already shown. Returns one flag per input, in input order. Equal distances go by priority (concentration signs first), then input order.
  */
 export function declutter(rects: readonly ScreenRect[]): boolean[] {
   const order = rects
     .map((_, i) => i)
     .sort((a, b) => {
-      const d = (rects[a] as ScreenRect).distance - (rects[b] as ScreenRect).distance;
-      return d !== 0 ? d : a - b;
+      const ra = rects[a] as ScreenRect;
+      const rb = rects[b] as ScreenRect;
+      return ra.distance - rb.distance || (ra.priority ?? 0) - (rb.priority ?? 0) || a - b;
     });
   const shown = rects.map(() => false);
   const kept: ScreenRect[] = [];
@@ -537,7 +714,7 @@ export interface SignSpec {
   /** Drawn as one chip each, in ActivitySchema.options order whatever the input order. */
   readonly activities: readonly Activity[];
   readonly label: string;
-  readonly role: SignRole;
+  readonly family: SignFamily;
   /** False until the Material Symbols font has loaded (or forever when it fails): chips and label only. */
   readonly glyph: boolean;
   readonly width: number;
@@ -546,22 +723,14 @@ export interface SignSpec {
 
 const cssHex = (hex: number): string => `#${hex.toString(16).padStart(6, '0')}`;
 
-const roleIconId = (role: SignRole): string => (role === 'start' ? 'track-start' : 'track-end');
-
 /** Cache key of a sign texture: the same activities, label and role draw the same pixels. */
-export const signTextureKey = (spec: Pick<SignSpec, 'activities' | 'label' | 'role'>): string =>
-  `${spec.activities.join(',')}|${spec.label}|${spec.role}`;
+export const signTextureKey = (spec: Pick<SignSpec, 'activities' | 'label' | 'family'>): string =>
+  `${spec.family}|${spec.activities.join(',')}|${spec.label}`;
 
-/**
- * Draws one sign: a dark neutral rounded panel at SIGN_PANEL_ALPHA. Top row: one circular chip per activity filled
- * with SPORT_COLOR, holding the sport glyph. Bottom row: the start or end glyph and the label, in white.
- */
-export function drawSign(ctx: SignContext2D, spec: SignSpec): void {
-  const { width: w, height: h } = spec;
-  ctx.clearRect(0, 0, w, h);
+function roundedPanel(ctx: SignContext2D, w: number, h: number, colour: number): void {
   const r = h * 0.22;
   ctx.globalAlpha = SIGN_PANEL_ALPHA;
-  ctx.fillStyle = cssHex(SIGN_PANEL_COLOR);
+  ctx.fillStyle = cssHex(colour);
   ctx.beginPath();
   ctx.moveTo(r, 0);
   ctx.arcTo(w, 0, w, h, r);
@@ -570,9 +739,50 @@ export function drawSign(ctx: SignContext2D, spec: SignSpec): void {
   ctx.arcTo(0, 0, w, 0, r);
   ctx.closePath();
   ctx.fill();
-
   ctx.globalAlpha = 1;
+}
+
+/** Shrinks the font until `text` fits `available`, never below 12 px. */
+function fitLabel(ctx: SignContext2D, text: string, size: number, available: number): void {
+  ctx.font = `600 ${size}px ${LABEL_FONT_FAMILY}`;
+  const measured = ctx.measureText(text).width;
+  if (measured > available && measured > 0) {
+    ctx.font = `600 ${Math.max(12, Math.floor((size * available) / measured))}px ${LABEL_FONT_FAMILY}`;
+  }
+}
+
+/**
+ * Draws one sign. A concentration sign is a dark neutral rounded panel at SIGN_PANEL_ALPHA: top row one circular chip
+ * per activity filled with SPORT_COLOR holding the sport glyph, bottom row the label in white. A trail sign is a panel
+ * in the sport's own SPORT_COLOR: the sport glyph and sport label on the first row, the track name smaller below.
+ */
+export function drawSign(ctx: SignContext2D, spec: SignSpec): void {
+  const { width: w, height: h } = spec;
+  ctx.clearRect(0, 0, w, h);
   const pad = h * 0.12;
+  if (spec.family === 'trail') {
+    const activity = spec.activities[0] as Activity;
+    const colour = SPORT_COLOR[activity];
+    roundedPanel(ctx, w, h, colour);
+    ctx.fillStyle = cssHex(labelColorFor(colour));
+    ctx.textBaseline = 'middle';
+    const topY = h * 0.32;
+    const glyphSize = Math.round(h * 0.4);
+    let textLeft = pad;
+    if (spec.glyph) {
+      ctx.font = `${glyphSize}px ${SYMBOL_FONT_FAMILY}`;
+      ctx.textAlign = 'left';
+      ctx.fillText(signGlyph(activity).symbol, pad, topY);
+      textLeft = pad + glyphSize + pad * 0.6;
+    }
+    ctx.textAlign = 'left';
+    fitLabel(ctx, signGlyph(activity).label, Math.round(h * 0.36), w - textLeft - pad);
+    ctx.fillText(signGlyph(activity).label, textLeft, topY);
+    fitLabel(ctx, spec.label, Math.round(h * 0.26), w - 2 * pad);
+    ctx.fillText(spec.label, pad, h * 0.76);
+    return;
+  }
+  roundedPanel(ctx, w, h, SIGN_PANEL_COLOR);
   const activities = ActivitySchema.options.filter((a) => spec.activities.includes(a));
   const topY = h * 0.28;
   const gap = h * 0.06;
@@ -595,28 +805,11 @@ export function drawSign(ctx: SignContext2D, spec: SignSpec): void {
       ctx.fillText(signGlyph(activity).symbol, cx, topY);
     }
   });
-
-  const bottomY = h * 0.76;
   ctx.fillStyle = cssHex(LABEL_LIGHT);
   ctx.textBaseline = 'middle';
-  const glyphSize = Math.round(h * 0.34);
-  let textLeft = pad;
-  if (spec.glyph) {
-    ctx.font = `${glyphSize}px ${SYMBOL_FONT_FAMILY}`;
-    ctx.textAlign = 'left';
-    ctx.fillText(iconFor(roleIconId(spec.role)).symbol, pad, bottomY);
-    textLeft = pad + glyphSize + pad * 0.6;
-  }
-  const available = w - textLeft - pad;
-  let labelSize = Math.round(h * 0.32);
-  ctx.font = `600 ${labelSize}px ${LABEL_FONT_FAMILY}`;
-  const measured = ctx.measureText(spec.label).width;
-  if (measured > available && measured > 0) {
-    labelSize = Math.max(12, Math.floor((labelSize * available) / measured));
-    ctx.font = `600 ${labelSize}px ${LABEL_FONT_FAMILY}`;
-  }
-  ctx.textAlign = spec.glyph ? 'left' : 'center';
-  ctx.fillText(spec.label, spec.glyph ? textLeft : w / 2, bottomY);
+  fitLabel(ctx, spec.label, Math.round(h * 0.32), w - 2 * pad);
+  ctx.textAlign = 'center';
+  ctx.fillText(spec.label, w / 2, h * 0.76);
 }
 
 /** The slice of FontFaceSet the loader uses. */
@@ -686,8 +879,12 @@ export interface BillboardDeps {
 }
 
 export interface BillboardStats {
-  /** Signs (one per merged track start or end) after the last applyFilter or redrape. */
+  /** Signs of both families after the last applyFilter or redrape. */
   readonly clusterCount: number;
+  /** Concentration signs after the last applyFilter or redrape. */
+  readonly concentrationCount: number;
+  /** Trail-sport signs after the last applyFilter or redrape. */
+  readonly trailCount: number;
   /** Signs carrying each activity chip after the last applyFilter or redrape. */
   readonly perSport: Readonly<Partial<Record<Activity, number>>>;
   /** Signs allocated over the layer's life (pooled). */
@@ -698,13 +895,13 @@ export interface BillboardStats {
 
 export interface BillboardLayer {
   readonly group: Group;
-  /** Groups the visible areas into tracks and shows one sign per merged track start or end. */
+  /** Groups the visible areas into tracks and concentrations and shows both sign families. */
   applyFilter(
     annotations: ReadonlyMap<string, Annotation>,
     selected: ReadonlySet<Activity>,
     visibleIds: ReadonlySet<string>,
   ): void;
-  /** Re-heights every sign and pointer and re-picks each track's START and END from another surface. */
+  /** Re-heights every sign from another surface. */
   redrape(active: MeshSurface): void;
   setVisible(on: boolean): void;
   stats(): BillboardStats;
@@ -712,12 +909,9 @@ export interface BillboardLayer {
 }
 
 interface Sign {
-  /** One rigid shape at the ground point: the pointer and the sprite are its only children. */
-  readonly group: Group;
   readonly sprite: Sprite;
   readonly material: SpriteMaterial;
-  readonly pointer: Mesh;
-  readonly pointerMaterial: MeshBasicMaterial;
+  priority: number;
   active: boolean;
 }
 
@@ -725,9 +919,9 @@ interface Sign {
  * @displayName Track sign layer
  * @strategicPurpose Lets a viewer see where each track starts and ends, and every sport that uses the place, without
  *   hovering or reading the lines, with few enough signs that the mountain stays visible.
- * @tacticalObjective Groups visible areas into tracks, plans one merged sign per track START or END, and draws each as a
- *   pooled rigid group (a 15 degree right-triangle pointer plus a camera-facing, screen-sized sprite) inside the
- *   ElevatedGroup, compensating the group's y-scale each frame.
+ * @tacticalObjective Groups visible areas into tracks and concentrations, plans concentration signs plus one sign per
+ *   named track and sport, and draws each as a pooled camera-facing, screen-sized sprite inside the ElevatedGroup,
+ *   compensating the group's y-scale each frame.
  */
 export function buildBillboardLayer(
   areas: readonly Area[],
@@ -755,7 +949,7 @@ export function buildBillboardLayer(
   interface SignTexture {
     readonly canvas: SignCanvas;
     readonly texture: CanvasTexture;
-    readonly spec: Pick<SignSpec, 'activities' | 'label' | 'role'>;
+    readonly spec: Pick<SignSpec, 'activities' | 'label' | 'family'>;
   }
   const textures = new Map<string, SignTexture>();
   const paint = (entry: SignTexture): void => {
@@ -769,7 +963,7 @@ export function buildBillboardLayer(
     });
     entry.texture.needsUpdate = true;
   };
-  const textureFor = (spec: Pick<SignSpec, 'activities' | 'label' | 'role'>): CanvasTexture => {
+  const textureFor = (spec: Pick<SignSpec, 'activities' | 'label' | 'family'>): CanvasTexture => {
     const key = signTextureKey(spec);
     const cached = textures.get(key);
     if (cached) return cached.texture;
@@ -786,19 +980,6 @@ export function buildBillboardLayer(
     return texture;
   };
 
-  // One fixed local shape shared by every pointer; only the far end's x changes, and only with the exaggeration.
-  const pointerGeometry = new BufferGeometry();
-  pointerGeometry.setAttribute('position', new BufferAttribute(new Float32Array(9), 3));
-  let pointerScale = Number.NaN;
-  const shapePointer = (ys: number): void => {
-    if (ys === pointerScale) return;
-    pointerScale = ys;
-    const pos = pointerGeometry.getAttribute('position') as BufferAttribute;
-    pos.array.set(pointerVertices(SIGN_OFFSET_M, POINTER_ANGLE_DEG, ys));
-    pos.needsUpdate = true;
-  };
-  shapePointer(effectiveScale(host.exaggeration));
-
   const pool: Sign[] = [];
   const makeSign = (plan: SignPlan): Sign => {
     const material = new SpriteMaterial({
@@ -808,25 +989,12 @@ export function buildBillboardLayer(
       depthWrite: false,
     });
     const sprite = new Sprite(material);
-    // Anchor at the bottom-left corner: it sits on the top of leg 1 and the panel extends right and up from there.
-    sprite.center.set(0, 0);
-    sprite.position.set(0, SIGN_OFFSET_M, 0);
+    // Anchor at the bottom centre: the panel floats centred over its place and extends up from it.
+    sprite.center.set(0.5, 0);
     sprite.renderOrder = GHOST_RENDER_ORDER + 1;
     sprite.raycast = () => {};
-    const pointerMaterial = new MeshBasicMaterial({
-      color: SPORT_COLOR[plan.activities[0] as Activity],
-      transparent: true,
-      side: DoubleSide,
-    });
-    const pointer = new Mesh(pointerGeometry, pointerMaterial);
-    pointer.name = 'billboard-pointer';
-    pointer.raycast = () => {};
-    pointer.frustumCulled = false;
-    const rigid = new Group();
-    rigid.name = 'billboard-sign';
-    rigid.add(pointer, sprite);
-    group.add(rigid);
-    return { group: rigid, sprite, material, pointer, pointerMaterial, active: false };
+    group.add(sprite);
+    return { sprite, material, priority: 0, active: false };
   };
 
   let lastArgs: {
@@ -836,32 +1004,35 @@ export function buildBillboardLayer(
   } = { annotations: new Map(), selected: new Set(), visibleIds: new Set() };
   let lastPlans: SignPlan[] = [];
   let shownCount = 0;
-  const heightAt: HeightAt = (east, north) => activeSurface.sample(east, north).height;
+  const heightAt = (east: number, north: number): number =>
+    activeSurface.sample(east, north).height;
 
   const rebuild = (): void => {
     const { annotations, selected, visibleIds } = lastArgs;
-    lastPlans = planSigns(areas, annotations, selected, visibleIds, heightAt);
+    // Concentration signs first: they win declutter ties and keep their pool slots across trail-sign changes.
+    lastPlans = [
+      ...planSigns(areas, annotations, selected, visibleIds),
+      ...planTrailSigns(areas, annotations, selected, visibleIds),
+    ];
     lastPlans.forEach((plan, i) => {
       const sign = pool[i] ?? makeSign(plan);
       if (pool[i] === undefined) pool.push(sign);
       sign.active = true;
+      sign.priority = plan.family === 'concentration' ? 0 : 1;
       sign.material.map = textureFor(plan);
-      sign.pointerMaterial.color.setHex(SPORT_COLOR[plan.activities[0] as Activity]);
       sign.sprite.name = `billboard:${signTextureKey(plan)}`;
       sign.sprite.userData['activities'] = plan.activities;
-      sign.sprite.userData['role'] = plan.role;
+      sign.sprite.userData['family'] = plan.family;
       sign.sprite.userData['label'] = plan.label;
       sign.sprite.visible = true;
-      sign.pointer.visible = true;
       const ground = heightAt(plan.east, plan.north);
       const [x, y, z] = toScene(plan.east, plan.north, ground);
-      sign.group.position.set(x, y, z);
+      sign.sprite.position.set(x, y + SIGN_OFFSET_M, z);
     });
     for (let i = lastPlans.length; i < pool.length; i++) {
       const sign = pool[i] as Sign;
       sign.active = false;
       sign.sprite.visible = false;
-      sign.pointer.visible = false;
     }
   };
 
@@ -891,24 +1062,16 @@ export function buildBillboardLayer(
     const widthPx = signWidthPx(viewportW);
     const heightPx = (widthPx * SIGN_CANVAS_HEIGHT) / SIGN_CANVAS_WIDTH;
     const ys = effectiveScale(host.exaggeration);
-    shapePointer(ys);
     const candidates: Sign[] = [];
     const rects: ScreenRect[] = [];
     for (const sign of pool) {
       if (!sign.active) continue;
-      // The elevated group only scales and shifts y, so its x and z are the camera's x and z: yaw the triangle to face it.
-      sign.group.rotation.y = Math.atan2(
-        camera.position.x - sign.group.position.x,
-        camera.position.z - sign.group.position.z,
-      );
       sign.sprite.getWorldPosition(world);
       const horizontal = Math.hypot(world.x - fadeCentre.east, world.z + fadeCentre.north);
       const alpha = fadeAlpha(horizontal);
       sign.sprite.visible = false;
-      sign.pointer.visible = false;
       if (alpha <= 0) continue;
       sign.material.opacity = alpha;
-      sign.pointerMaterial.opacity = alpha;
       // View-space depth sets the pixel size of a point at any screen position; Euclidean distance overstates it off-axis.
       const d = Math.max(-view.copy(world).applyMatrix4(camera.matrixWorldInverse).z, camera.near);
       const w = widthPx * ((2 * d * tanHalf) / viewportH);
@@ -919,14 +1082,19 @@ export function buildBillboardLayer(
       const cx = ((ndc.x + 1) / 2) * viewportW;
       const baseY = ((1 - ndc.y) / 2) * viewportH;
       candidates.push(sign);
-      // The sprite's bottom-left corner is the projected point, so the rect extends right and up from it.
-      rects.push({ x: cx, y: baseY - heightPx, w: widthPx, h: heightPx, distance: d });
+      // The sprite's bottom-centre is the projected point, so the rect extends half a width each side and up.
+      rects.push({
+        x: cx - widthPx / 2,
+        y: baseY - heightPx,
+        w: widthPx,
+        h: heightPx,
+        distance: d,
+        priority: sign.priority,
+      });
     }
     const shown = declutter(rects);
     candidates.forEach((sign, i) => {
-      const on = shown[i] === true;
-      sign.sprite.visible = on;
-      sign.pointer.visible = on;
+      sign.sprite.visible = shown[i] === true;
     });
     shownCount = shown.filter(Boolean).length;
   };
@@ -938,13 +1106,7 @@ export function buildBillboardLayer(
 
   void loadSignFont(
     fonts,
-    [
-      ...new Set([
-        ...ActivitySchema.options.map((s) => signGlyph(s).symbol),
-        iconFor('track-start').symbol,
-        iconFor('track-end').symbol,
-      ]),
-    ],
+    [...new Set([...ActivitySchema.options.map((s) => signGlyph(s).symbol)])],
     warn,
   ).then((ok) => {
     if (!ok || disposed) return;
@@ -964,16 +1126,22 @@ export function buildBillboardLayer(
       for (const plan of lastPlans) {
         for (const a of plan.activities) perSport[a] = (perSport[a] ?? 0) + 1;
       }
-      return { clusterCount: lastPlans.length, perSport, pooledSigns: pool.length, shownCount };
+      const concentrationCount = lastPlans.filter((p) => p.family === 'concentration').length;
+      return {
+        clusterCount: lastPlans.length,
+        concentrationCount,
+        trailCount: lastPlans.length - concentrationCount,
+        perSport,
+        pooledSigns: pool.length,
+        shownCount,
+      };
     },
     dispose() {
       disposed = true;
       unsubscribe();
       for (const sign of pool) {
         sign.material.dispose();
-        sign.pointerMaterial.dispose();
       }
-      pointerGeometry.dispose();
       for (const { texture } of textures.values()) texture.dispose();
       pool.length = 0;
       textures.clear();

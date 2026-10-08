@@ -39,9 +39,9 @@ describe('phone bottom bar (under 720 px)', () => {
   it('keeps every key inside the one #rail nav that the bar CSS targets', () => {
     const rail = mountAll();
     expect(rail.tagName).toBe('NAV');
-    // 11 activities + Clear + 4 layers + 3 views.
-    expect(rail.querySelectorAll('button.clicky-btn, button.clicky-toggle').length).toBe(19);
-    expect(rail.querySelectorAll('.group-head')).toHaveLength(3);
+    // Clear + 4 layers + 3 views (#56: no activity keys in the rail).
+    expect(rail.querySelectorAll('button.clicky-btn, button.clicky-toggle').length).toBe(8);
+    expect(rail.querySelectorAll('.group-head')).toHaveLength(2);
     expect(rail.querySelector('.filter-count')).not.toBeNull();
     expect(rail.querySelector('.exag-key input[type="range"]')).not.toBeNull();
     expect(rail.querySelector('.exag-key output')).not.toBeNull();

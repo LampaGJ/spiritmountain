@@ -28,7 +28,7 @@ const handle = createScene(app, heightfield, { lakeLevelM: header.minElev });
 export const readiness = createReadiness({
   onFrame: (callback) => handle.onFrame(callback),
   onReady: () => overlay.open(),
-  onChange: (unsettled) => overlay.setLabel(unsettled),
+  onChange: (unsettled) => overlay.step(unsettled, readiness.state()),
   onTimeout: (unsettled) =>
     reportSceneFailure('reveal', `timed out waiting for ${unsettled.join(', ')}`),
 });
@@ -527,6 +527,40 @@ const contextLoad = loadContext({ frameUrl })
 readiness.register('context', contextLoad);
 export const areaLayer: AreaLayer | { error: string } = areaLayerResult;
 
+// DEBUG panel (#54): live tuning of the trail lines. Not state of record, so no hash key.
+import { DEFAULT_LINE_WIDTH_PX } from './scene/areas';
+import { registerDebugControl, registerDebugToggle } from './ui/debug-panel';
+if (!('error' in areaLayer)) {
+  const lines = areaLayer;
+  registerDebugControl({
+    id: 'line-width',
+    label: 'Line width (px)',
+    min: 1,
+    max: 12,
+    step: 0.5,
+    value: DEFAULT_LINE_WIDTH_PX,
+    onChange: (px) => lines.setLineWidth(px),
+  });
+  registerDebugToggle({
+    id: 'smooth-trails',
+    label: 'Smooth trails',
+    value: true,
+    onChange: (on) => lines.setSmooth(on),
+  });
+  // Only the world-space fallback has a metre spacing; screen strands are one band width apart.
+  if (lines.strandMode === 'world') {
+    registerDebugControl({
+      id: 'strand-spacing',
+      label: 'Strand spacing (m)',
+      min: 0,
+      max: 8,
+      step: 0.5,
+      value: 2.5,
+      onChange: (m) => lines.setStrandSpacing(m),
+    });
+  }
+}
+
 import annotationsUrl from '../data/annotations.json?url';
 import {
   failedAnnotationsHandle,
@@ -577,6 +611,10 @@ readiness.register(
   annotationsReady.then((handle) => {
     const registry: ReadonlyMap<string, AreaEntry> =
       'error' in areaLayer ? new Map() : areaLayer.registry;
+    // One strand per sport on a multi-sport trail, once the annotations are known (#54).
+    if (!('error' in areaLayer) && handle.annotations.status === 'loaded') {
+      areaLayer.applyStrands(handle.annotations.map);
+    }
     mountFilters({
       registry,
       handle,

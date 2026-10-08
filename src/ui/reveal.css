@@ -58,20 +58,28 @@
   }
 }
 
-/* The mark sits in the top third; the loading text fills the rest. */
-#reveal-logo {
-  position: absolute;
-  top: 4vh;
-  left: 50%;
-  transform: translateX(-50%);
-  height: 34vh;
-  width: auto;
+#reveal {
+  overflow: hidden;
 }
 
-/* The loading text fills the rest of the screen: viewport-relative size, wrapping anywhere, so the black cover reads as a title card and not a blank. */
+/* The mark sits dead centre and grows in one bouncy pulse per settled layer (--logo-scale from reveal.ts), ending past the short axis. */
+#reveal-logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  height: 40vmin;
+  width: auto;
+  --logo-scale: 1;
+  transform: translate(-50%, -50%) scale(var(--logo-scale));
+  transition: transform 480ms cubic-bezier(0.34, 1.56, 0.64, 1) 120ms;
+  z-index: 0;
+}
+
+/* The loading words overlay the mark and pop in again on every change. */
 #reveal-label {
   position: absolute;
-  inset: 40vh 0 0 0;
+  inset: 0;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -89,7 +97,27 @@
   opacity: 0.9;
 }
 
+#reveal-label.pop {
+  animation: reveal-pop 360ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes reveal-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
 #reveal-label[hidden],
 #reveal-logo[hidden] {
   display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #reveal-logo {
+    transition: none;
+  }
+  #reveal-label.pop {
+    animation: none;
+  }
 }

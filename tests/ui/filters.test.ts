@@ -4,14 +4,15 @@ import { resolve } from 'node:path';
 import { Line2 } from 'three/addons/lines/Line2.js';
 import { afterEach, describe, expect, it } from 'vitest';
 import { ActivitySchema, SeasonSchema } from '../../src/schema/annotation';
-import type { Activity, FacetCounts, Season, SeasonCounts } from '../../src/ui/filter-predicate';
+import type {
+  Activity,
+  FacetCounts,
+  Filter,
+  Season,
+  SeasonCounts,
+} from '../../src/ui/filter-predicate';
 import type { SeasonMap } from '../../src/ui/season-menu';
-import {
-  mountFilterStrip,
-  NO_MATCH_TITLE,
-  TOGGLE_ACTIVITIES,
-  type FilterStrip,
-} from '../../src/ui/filters';
+import { mountFilterStrip, TOGGLE_ACTIVITIES, type FilterStrip } from '../../src/ui/filters';
 import { iconFor } from '../../src/ui/icons';
 import { mountFilters } from '../../src/ui/mount-filters';
 import { failedAnnotationsHandle, type AnnotationsHandle } from '../../src/wire-annotations';
@@ -84,28 +85,17 @@ function setup(
 }
 
 describe('filter strip', () => {
-  it('generates toggles from the schemas, shows title-case labels, and omits lift-ride', () => {
+  it('the rail carries no activity or season key (#56): activities live only in the season menu row', () => {
     const { host } = setup('');
     const labels = [...host.querySelectorAll('button .btn-label')].map((b) => b.textContent);
-    expect(labels).not.toContain('Lift Ride');
-    expect(labels).not.toContain('lift-ride');
-    for (const id of TOGGLE_ACTIVITIES) expect(labels).toContain(iconFor(id).label);
-    // Seasons moved to the top bar (#42): the rail carries no season key.
+    expect(labels).toEqual(['Clear Filters']);
+    for (const id of ActivitySchema.options) {
+      expect(labels).not.toContain(iconFor(id).label);
+      expect(labels).not.toContain(id);
+    }
     for (const season of SeasonSchema.options) expect(labels).not.toContain(iconFor(season).label);
     expect(TOGGLE_ACTIVITIES).toHaveLength(ActivitySchema.options.length - 1);
-    // Kebab-case ids stay internal: none of them is ever a visible label.
-    for (const id of ActivitySchema.options) expect(labels).not.toContain(id);
-  });
-
-  it('flips aria-pressed, writes the canonical hash and updates the count on click', () => {
-    const { host, button, getHash } = setup('');
-    button('Nordic Classic').click();
-    expect(button('Nordic Classic').getAttribute('aria-pressed')).toBe('true');
-    expect(getHash()).toBe('#activity=nordic-classic');
-    expect(host.querySelector('.filter-count')?.textContent).toBe('3 of 5 areas');
-    button('Nordic Classic').click();
-    expect(button('Nordic Classic').getAttribute('aria-pressed')).toBe('false');
-    expect(getHash()).toBe('');
+    expect(host.querySelectorAll('.key-row')).toHaveLength(0);
   });
 
   it('shows the ignored notice for a bad hash and rewrites it canonically', () => {
@@ -116,9 +106,9 @@ describe('filter strip', () => {
 
   it('does not write when the hash is already canonical', () => {
     // Bare-season normalisation is covered in the season menu integration suite below.
-    const { writes, button } = setup('#activity=hike');
+    const { writes, getHash } = setup('#activity=hike');
     expect(writes).toHaveLength(0);
-    expect(button('Hike').getAttribute('aria-pressed')).toBe('true');
+    expect(getHash()).toBe('#activity=hike');
   });
 
   it('ignores an unknown key, shows it in the notice, and rewrites the hash without it', () => {
@@ -131,7 +121,6 @@ describe('filter strip', () => {
     const { button, getHash } = setup('#activity=hike&season=winter');
     button('Clear Filters').click();
     expect(getHash()).toBe('');
-    expect(button('Hike').getAttribute('aria-pressed')).toBe('false');
   });
 
   it('stops reacting to hashchange after dispose', () => {
@@ -143,8 +132,8 @@ describe('filter strip', () => {
   });
 });
 
-describe('facet counts and the zero state', () => {
-  // Only nordic-classic (40) and winter (12) have matches; everything else is zero.
+describe('facet counts and the status line', () => {
+  // Only nordic-classic (40) and winter (12) have matches; everything else is zero. The status line reads the totals.
   const facets = (matching: number): FacetCounts => ({
     activities: new Map(
       TOGGLE_ACTIVITIES.map((a) => [a, a === 'nordic-classic' ? 40 : 0] as const),
@@ -169,50 +158,13 @@ describe('facet counts and the zero state', () => {
         },
       }),
     );
-    const key = (label: string): HTMLButtonElement => {
-      const found = [...host.querySelectorAll('button')].find(
-        (b) => b.querySelector('.btn-label')?.textContent === label,
-      );
-      if (found === undefined) throw new Error(`no key ${label}`);
-      return found;
-    };
-    return { host, key, getHash: () => hash };
+    return { host, getHash: () => hash };
   };
 
-  it('puts a count badge on every toggle', () => {
-    const { key } = setupFacets('');
-    expect(key('Nordic Classic').querySelector('.btn-count')?.textContent).toBe('40');
-    expect(key('Hike').querySelector('.btn-count')?.textContent).toBe('0');
-  });
-
-  it('renders a zero-count option as aria-disabled with the explanatory title, still focusable', () => {
-    const { key } = setupFacets('');
-    for (const label of ['Hike', 'Tubing']) {
-      const button = key(label);
-      expect(button.getAttribute('aria-disabled')).toBe('true');
-      expect(button.title).toBe(NO_MATCH_TITLE);
-      expect(button.disabled).toBe(false);
-      expect(button.tabIndex).toBeGreaterThanOrEqual(0);
-      expect(button.closest('.cl-key')?.classList.contains('is-zero')).toBe(true);
-    }
-    expect(key('Nordic Classic').hasAttribute('aria-disabled')).toBe(false);
-    expect(key('Nordic Classic').hasAttribute('title')).toBe(false);
-  });
-
-  it('ignores a click on a zero-count option and leaves the hash alone', () => {
-    const { key, getHash } = setupFacets('');
-    key('Tubing').click();
-    expect(key('Tubing').getAttribute('aria-pressed')).toBe('false');
-    expect(getHash()).toBe('');
-  });
-
-  it('keeps a latched zero-count option operable so it can be switched off', () => {
-    const { key, getHash } = setupFacets('#activity=hike', 0);
-    expect(key('Hike').getAttribute('aria-pressed')).toBe('true');
-    expect(key('Hike').hasAttribute('aria-disabled')).toBe(false);
-    key('Hike').click();
-    expect(key('Hike').getAttribute('aria-pressed')).toBe('false');
-    expect(getHash()).toBe('');
+  it('has no activity keys in the rail, whatever the facets say', () => {
+    const { host } = setupFacets('');
+    const labels = [...host.querySelectorAll('button .btn-label')].map((b) => b.textContent);
+    expect(labels).toEqual(['Clear Filters']);
   });
 
   it('words the status line for no filter and for an active filter', () => {
@@ -268,11 +220,15 @@ describe('season menu integration (#42)', () => {
   const setupSeason = (initialHash: string) => {
     let hash = initialHash;
     const writes: string[] = [];
+    let lastFilter: Filter | undefined;
     const host = document.createElement('div');
     document.body.appendChild(host);
     const strip = mountFilterStrip({
       host,
-      apply: () => ({ visibleCount: 0, total: 115, facets }),
+      apply: (filter) => {
+        lastFilter = filter;
+        return { visibleCount: 0, total: 115, facets };
+      },
       readHash: () => hash,
       writeHash: (h) => {
         hash = h;
@@ -306,6 +262,10 @@ describe('season menu integration (#42)', () => {
       bar,
       row,
       rail: (label: string) => find(host, label),
+      applied: (): Filter => {
+        if (lastFilter === undefined) throw new Error('apply never ran');
+        return lastFilter;
+      },
       season: (label: string) => find(bar().querySelector('.sm-season-keys') ?? bar(), label),
       rowKey: (label: string) => find(row(), label),
       getHash: () => hash,
@@ -384,39 +344,51 @@ describe('season menu integration (#42)', () => {
     expect(rowKey('Mountain Bike').getAttribute('aria-pressed')).toBe('true');
   });
 
-  it('season mode: off-season rail Activity keys carry is-off-season and the rest show per-activity counts', () => {
-    const { rail } = setupSeason(WINTER_HASH);
-    const offSeason = (label: string): boolean =>
-      rail(label).closest('.cl-key')?.classList.contains('is-off-season') ?? false;
-    expect(offSeason('Hike')).toBe(true);
-    expect(offSeason('Mountain Bike')).toBe(true);
-    expect(offSeason('Alpine Ski')).toBe(false);
-    expect(rail('Alpine Ski').querySelector('.btn-count')?.textContent).toBe('23');
-    expect(rail('Snowboard').querySelector('.btn-count')?.textContent).toBe('21');
-    expect(rail('Nordic Skate').querySelector('.btn-count')?.textContent).toBe('38');
-  });
-
-  it('outside season mode all 11 activities show with facet counts and none is off-season', () => {
-    const { host, rail } = setupSeason('');
+  it('default view: no season, no activity keys anywhere, the row is hidden and empty', () => {
+    const { host, row, bar } = setupSeason('');
+    expect(row().hidden).toBe(true);
+    expect(row().querySelectorAll('button')).toHaveLength(0);
+    expect(bar().hasAttribute('data-open')).toBe(false);
+    const labels = [...document.querySelectorAll('button .btn-label')].map((l) => l.textContent);
+    for (const a of ActivitySchema.options) expect(labels).not.toContain(iconFor(a).label);
     expect(host.querySelectorAll('.cl-key.is-off-season')).toHaveLength(0);
-    const activityKeys = [...host.querySelectorAll('.console-group')][0]?.querySelectorAll(
-      '.cl-key',
-    );
-    expect(activityKeys).toHaveLength(TOGGLE_ACTIVITIES.length);
-    expect(rail('Alpine Ski').querySelector('.btn-count')?.textContent).toBe('63');
   });
 
-  it('the rail Activity keys use the same transition: unchecking to empty clears both keys', () => {
-    const { rail, rowKey, getHash, setHash, strip } = setupSeason('');
-    setHash('#activity=mountain-bike&season=summer');
-    strip.sync();
-    rail('Mountain Bike').click();
-    expect(getHash()).toBe('');
-    setHash(WINTER_HASH);
-    strip.sync();
-    rail('Snowboard').click();
-    expect(getHash()).toBe('#activity=alpine-ski,nordic-classic,nordic-skate&season=winter');
+  it('selecting Winter shows only winter activities, all on, with per-activity counts; the rail gains no keys', () => {
+    const { season, row, rowKey, host } = setupSeason('');
+    season('Winter').click();
+    const labels = [...row().querySelectorAll('.btn-label')].map((l) => l.textContent);
+    expect(labels).toEqual(WINTER.map((a) => iconFor(a).label));
+    for (const b of row().querySelectorAll('button')) {
+      expect(b.getAttribute('aria-pressed')).toBe('true');
+    }
+    expect(rowKey('Alpine Ski').querySelector('.btn-count')?.textContent).toBe('23');
+    expect(rowKey('Snowboard').querySelector('.btn-count')?.textContent).toBe('21');
+    expect(rowKey('Nordic Skate').querySelector('.btn-count')?.textContent).toBe('38');
+    expect([...host.querySelectorAll('button .btn-label')].map((l) => l.textContent)).toEqual([
+      'Clear Filters',
+    ]);
+  });
+
+  it('toggling one winter activity off passes the shrunk set to apply; deselecting the season restores the default view', () => {
+    const { season, rowKey, getHash, row, applied } = setupSeason('');
+    season('Winter').click();
+    rowKey('Snowboard').click();
+    expect([...applied().activities]).toEqual(['alpine-ski', 'nordic-classic', 'nordic-skate']);
     expect(rowKey('Snowboard').getAttribute('aria-pressed')).toBe('false');
+    season('Winter').click();
+    expect(getHash()).toBe('');
+    expect(row().hidden).toBe(true);
+    expect(row().querySelectorAll('button')).toHaveLength(0);
+    expect([...applied().activities]).toEqual([]);
+    expect([...applied().seasons]).toEqual([]);
+  });
+
+  it('Clear Filters clears the season and its activities', () => {
+    const { rail, getHash, row } = setupSeason(WINTER_HASH);
+    rail('Clear Filters').click();
+    expect(getHash()).toBe('');
+    expect(row().hidden).toBe(true);
   });
 
   it('Escape in the row focuses the active season key and leaves the hash unchanged', () => {
@@ -809,8 +781,8 @@ describe('rail markup', () => {
   it('gives every key an aria-hidden .ms icon span and keeps the badge on each key', () => {
     const host = mountReal();
     const keys = [...host.querySelectorAll('button')];
-    // Activities + Clear + Imagery and Buildings; the season keys live in the top bar, outside #filters.
-    expect(keys).toHaveLength(TOGGLE_ACTIVITIES.length + 1 + 2);
+    // Clear + Imagery and Buildings; activities live in the season menu row and the season keys in the top bar, outside #filters (#56).
+    expect(keys).toHaveLength(1 + 2);
     for (const key of keys) {
       const icon = key.querySelector(':scope > .btn-face > .ms');
       expect(icon, key.textContent ?? '').not.toBeNull();
@@ -818,14 +790,14 @@ describe('rail markup', () => {
     }
   });
 
-  it('orders the groups Activity, Clear then the status line, then Layers', () => {
+  it('orders the rail Clear then the status line, then Layers', () => {
     const host = mountReal();
     const order = [...host.children].map((c) =>
       c.classList.contains('console-foot')
         ? 'foot'
         : (c.querySelector('.group-head-text')?.textContent ?? '?'),
     );
-    expect(order).toEqual(['Activity', 'foot', 'Layers']);
+    expect(order).toEqual(['foot', 'Layers']);
     const foot = host.querySelector('.console-foot');
     const parts = [...(foot?.children ?? [])].map(
       (c) => c.querySelector('.btn-label')?.textContent ?? c.className,
@@ -850,8 +822,8 @@ describe('rail markup', () => {
     expect(phone).toMatch(/#rail \{[^}]*flex-direction: row;/);
     expect(phone).toMatch(/overflow-x: auto;/);
     expect(phone).toMatch(/#rail \.group-head \{[^}]*border-radius: 999px;/);
-    // Activity and Layers (the Season group moved to the top bar, #42).
-    expect(host.querySelectorAll('.console-group > .group-head')).toHaveLength(2);
+    // Layers only (the Season group moved to the top bar, #42; the Activity group moved to the season row, #56).
+    expect(host.querySelectorAll('.console-group > .group-head')).toHaveLength(1);
     expect(host.querySelectorAll('.console-group .key-row .cl-key').length).toBeGreaterThan(0);
   });
 });

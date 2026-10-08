@@ -62,8 +62,8 @@ describe('every key carries an icon from icons.json', () => {
     const symbols = new Set(Object.values(iconJson).map((e) => e.symbol));
     const labels = new Set(Object.values(iconJson).map((e) => e.label));
     const keys = [...document.querySelectorAll<HTMLButtonElement>('button')];
-    // 11 activities + 4 seasons + Imagery + Buildings + Clear Filters + 3 views.
-    expect(keys).toHaveLength(11 + 4 + 2 + 1 + 3);
+    // 4 seasons (the activity row is empty with no season selected, #56) + Imagery + Buildings + Clear Filters + 3 views.
+    expect(keys).toHaveLength(4 + 2 + 1 + 3);
     for (const key of keys) {
       const label = key.querySelector('.btn-label')?.textContent ?? '';
       const icon = key.querySelector('.ms');

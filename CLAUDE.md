@@ -44,14 +44,16 @@ Run as `npm run ingest:<name>`. Each needs the ones above it that it names.
 - Line colour is routed per sport by `sportForArea` (`src/scene/sport-routing.ts`); `AreaLayer.route` swaps per-activity materials on every filter change without rebuilding geometry.
 - Every ground-side material gets `applyRadialFade` (`src/scene/fade.ts:37`) and then `handle.applyHorizon` (`src/scene/horizon.ts:79`, via `src/scene/scene.ts:64`). A new ground-side layer without both shows a hard edge or a seam at the horizon.
 - Surface meshes are capped at 700 segments (square) and 1024 (core) (`src/scene/surface.ts:147`). Above that the renderer stalled over 45 s on 5.2M triangles. Do not raise the caps without a browser measurement.
-- Track signs (`src/scene/billboards.ts`) mark the START and END of each track (`src/scene/track-key.ts` is the one track key) as one rigid group per sign inside `ElevatedGroup`: a 15 degree right-triangle pointer plus a sprite; the per-frame callback divides sprite y-scale by `effectiveScale`, scales the pointer's x by it, and fades by distance itself, because the sprite shader skips `applyRadialFade`.
+- Track signs (`src/scene/billboards.ts`, #55) are two families of sprites inside `ElevatedGroup`, no pointers: concentration signs hover at the length-weighted centroid of each group of tracks whose vertices lie within 250 m (`src/scene/track-key.ts` is the one track key; a group over 12 tracks and 1500 m splits by k-means), and a trail-sport sign per named track and sport sits along the merged track at (i + 0.5) / k, lifted 25 m. Both go through one declutter (hide, never move; concentration wins ties). The per-frame callback divides sprite y-scale by `effectiveScale` and fades by distance itself, because the sprite shader skips `applyRadialFade`.
 - Layers load lazily and toggle by URL hash keys: `activity`, `season`, `imagery=off`, `buildings=off`, `surface=on`, `trees=on`, `exag=` (0.1 to 10). The codec is `src/ui/filter-hash.ts:10`.
 
 ## UI conventions
 
 - The rail is generated from `scripts/ui/clicky.config.json` with the clicky-button engine at `~/Projects/clicky-button` (override with `CLICKY_BUTTON_DIR`).
+- The rail has no Activity group (#56): it starts at Clear Filters, then the status line and Layers. Activities appear only as the season menu's second row (`src/ui/season-menu.ts`) while a season is selected; `activity` hash keys still parse and apply.
 - Icons come only from `src/ui/icons.json`, parsed at `src/ui/icons.ts:19`. Names are verified Material Symbols; never invent one. `iconFor` throws on an unknown id.
 - No `innerHTML`, `outerHTML`, `insertAdjacentHTML` or `document.write` in `src/` (`tests/lint/no-inner-html.test.ts`). Build DOM with `createElement` and `textContent`.
+- Tuning controls go through `registerDebugControl` / `registerDebugToggle` in `src/ui/debug-panel.ts` (the collapsed DEBUG panel, top right, `sm-debug-open` in localStorage). No hash key: it is not state of record. Sport strands shift on screen by the `uStrandShift` uniform patched in `src/scene/areas.ts` (`patchStrandShader`); `AreaLayer.strandMode` says whether the patch landed.
 - The hash codec lives in `src/ui/filter-hash.ts`; a new hash key goes through its Zod schema, never ad hoc parsing.
 
 ## Git and tracker

@@ -3,9 +3,11 @@ import {
   BufferGeometry,
   Color,
   Mesh,
+  type Material,
   MeshStandardMaterial,
   PlaneGeometry,
   type Texture,
+  type WebGLProgramParametersWithUniforms,
 } from 'three';
 import { applyRadialFade, type RadialFadeUniforms } from './fade';
 import { elevationToSceneY, toScene } from './frame';
@@ -61,6 +63,71 @@ export function buildTerrainGeometry(surface: MeshSurface): BufferGeometry {
   return geometry;
 }
 
+/**
+ * Unsharp-mask strength on the photo: c = s0 + k * (s0 - blur), clamped to [0, 1].
+ */
+export const SHARPEN_AMOUNT = 0.6;
+/** World period in metres of the procedural detail noise. */
+export const DETAIL_METRES = 2.0;
+/** Luminance modulation of the detail noise: colour *= 1 + DETAIL_AMOUNT * (noise - 0.5). */
+export const DETAIL_AMOUNT = 0.08;
+/** The detail noise is gone beyond this camera distance in metres, so the far field stays clean. */
+export const DETAIL_FADE_M = 1500;
+
+const SHARPEN_MARKER = 'imagerySharpen';
+const SHARPEN_KEY = 'imagery-sharpen';
+
+/**
+ * Patches the terrain material so the photo is sharpened at sample time and carries a faint procedural detail.
+ * @displayName Terrain imagery sharpen
+ * @strategicPurpose The pinned NAIP is 1.7 m/px and reads soft; a shader filter makes it look crisper with no refetch.
+ * @tacticalObjective Replaces map_fragment with an unsharp mask (the blur is the next mip level, one fetch) plus a hash value noise that fades with camera distance.
+ *
+ * Chains onBeforeCompile and customProgramCacheKey like applyHorizonBlend, so call it AFTER applyRadialFade and BEFORE
+ * applyHorizonBlend. Idempotent per material.
+ */
+export function applyImagerySharpen(material: Material): void {
+  if (material.userData[SHARPEN_MARKER]) return;
+  material.userData[SHARPEN_MARKER] = true;
+  const previous = material.onBeforeCompile;
+  const previousKey = material.customProgramCacheKey;
+  material.onBeforeCompile = (shader: WebGLProgramParametersWithUniforms, renderer) => {
+    previous.call(material, shader, renderer);
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec2 vSharpenPos;')
+      .replace(
+        '#include <begin_vertex>',
+        '#include <begin_vertex>\nvSharpenPos = (modelMatrix * vec4(transformed, 1.0)).xz;',
+      );
+    const declarations = [
+      'varying vec2 vSharpenPos;',
+      'float sharpenHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
+      'float sharpenNoise(vec2 p) {',
+      '  vec2 i = floor(p);',
+      '  vec2 f = fract(p);',
+      '  vec2 u = f * f * (3.0 - 2.0 * f);',
+      '  return mix(mix(sharpenHash(i), sharpenHash(i + vec2(1.0, 0.0)), u.x), mix(sharpenHash(i + vec2(0.0, 1.0)), sharpenHash(i + vec2(1.0, 1.0)), u.x), u.y);',
+      '}',
+    ].join('\n');
+    const mapFragment = `#ifdef USE_MAP
+{
+  vec4 s0 = texture2D(map, vMapUv);
+  vec3 blur = texture2D(map, vMapUv, 1.0).rgb;
+  vec3 sharp = clamp(s0.rgb + ${SHARPEN_AMOUNT.toFixed(2)} * (s0.rgb - blur), 0.0, 1.0);
+  float detailFade = 1.0 - smoothstep(${(DETAIL_FADE_M * 0.5).toFixed(1)}, ${DETAIL_FADE_M.toFixed(1)}, distance(vSharpenPos, cameraPosition.xz));
+  float detail = sharpenNoise(vSharpenPos / ${DETAIL_METRES.toFixed(1)});
+  sharp *= 1.0 + ${DETAIL_AMOUNT.toFixed(2)} * (detail - 0.5) * detailFade;
+  diffuseColor *= vec4(clamp(sharp, 0.0, 1.0), s0.a);
+}
+#endif`;
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', `#include <common>\n${declarations}`)
+      .replace('#include <map_fragment>', mapFragment);
+  };
+  material.customProgramCacheKey = () => `${previousKey.call(material)}+${SHARPEN_KEY}`;
+  material.needsUpdate = true;
+}
+
 /** Writes a linear-sRGB colour attribute: flat to steep by smoothstep on (1 - normal.y). */
 export function applySlopeColors(geometry: BufferGeometry): void {
   const normals = geometry.getAttribute('normal') as BufferAttribute;
@@ -100,6 +167,7 @@ export function createTerrainMesh(surface: MeshSurface, texture: Texture | null 
   const fade = applyRadialFade(material, {
     centre: { east: surface.extent.centreEast, north: surface.extent.centreNorth },
   });
+  applyImagerySharpen(material);
   const mesh = new Mesh(buildTerrainGeometry(surface), material);
   mesh.name = 'terrain';
   mesh.userData['fade'] = fade;
