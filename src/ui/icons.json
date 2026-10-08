@@ -148,5 +148,15 @@
     "symbol": "visibility",
     "label": "View",
     "rationale": "Iconic: eye, the view convention."
+  },
+  "track-start": {
+    "symbol": "flag",
+    "label": "Start",
+    "rationale": "Iconic: a flag planted at the start of a track."
+  },
+  "track-end": {
+    "symbol": "sports_score",
+    "label": "End",
+    "rationale": "Iconic: chequered finish flag, the end of a track."
   }
 }

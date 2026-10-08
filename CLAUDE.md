@@ -44,7 +44,7 @@ Run as `npm run ingest:<name>`. Each needs the ones above it that it names.
 - Line colour is routed per sport by `sportForArea` (`src/scene/sport-routing.ts`); `AreaLayer.route` swaps per-activity materials on every filter change without rebuilding geometry.
 - Every ground-side material gets `applyRadialFade` (`src/scene/fade.ts:37`) and then `handle.applyHorizon` (`src/scene/horizon.ts:79`, via `src/scene/scene.ts:64`). A new ground-side layer without both shows a hard edge or a seam at the horizon.
 - Surface meshes are capped at 700 segments (square) and 1024 (core) (`src/scene/surface.ts:147`). Above that the renderer stalled over 45 s on 5.2M triangles. Do not raise the caps without a browser measurement.
-- Sport billboards (`src/scene/billboards.ts`) are sprites inside `ElevatedGroup`; the per-frame callback divides sprite y-scale by `effectiveScale` and fades by distance itself, because the sprite shader skips `applyRadialFade`.
+- Track signs (`src/scene/billboards.ts`) mark the START and END of each track (`src/scene/track-key.ts` is the one track key) as one rigid group per sign inside `ElevatedGroup`: a 15 degree right-triangle pointer plus a sprite; the per-frame callback divides sprite y-scale by `effectiveScale`, scales the pointer's x by it, and fades by distance itself, because the sprite shader skips `applyRadialFade`.
 - Layers load lazily and toggle by URL hash keys: `activity`, `season`, `imagery=off`, `buildings=off`, `surface=on`, `trees=on`, `exag=` (0.1 to 10). The codec is `src/ui/filter-hash.ts:10`.
 
 ## UI conventions
