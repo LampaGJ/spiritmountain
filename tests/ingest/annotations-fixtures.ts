@@ -30,6 +30,7 @@ export const AREA_ROWS: { id: string; kind: string }[] = [
   { id: 'relation/5', kind: 'mtb-route' },
   { id: 'way/7', kind: 'lift' },
   { id: 'way/30', kind: 'snow-park' },
+  { id: 'way/40', kind: 'hiking-trail' },
 ];
 
 export function areasFileObject(rows = AREA_ROWS): Record<string, unknown> {

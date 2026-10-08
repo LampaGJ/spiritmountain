@@ -57,6 +57,7 @@ describe('sportForArea', () => {
     expect(sportForArea(area('nordic-trail'), undefined, none)).toBe('nordic-classic');
     expect(sportForArea(area('mtb-route'), note('b'), none)).toBe('mountain-bike');
     expect(sportForArea(area('snow-park'), undefined, none)).toBe('alpine-ski');
+    expect(sportForArea(area('hiking-trail'), undefined, none)).toBe('hike');
   });
 
   it('a lift defaults to lift-ride', () => {

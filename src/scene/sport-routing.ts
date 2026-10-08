@@ -21,6 +21,7 @@ export const KIND_DEFAULT_ACTIVITY: Record<AreaKind, Activity> = {
   'mtb-route': 'mountain-bike',
   'snow-park': 'alpine-ski',
   lift: 'lift-ride',
+  'hiking-trail': 'hike',
 };
 
 /**
