@@ -1,4 +1,5 @@
 import './reveal.css';
+import markUrl from './spirit-mark.svg';
 
 /** Length of the vignette opening, in ms; matches the 1.2s in reveal.css. */
 export const REVEAL_MS = 1200;
@@ -211,6 +212,17 @@ export function createRevealOverlay(doc: Document): RevealOverlay {
     doc.body.prepend(found);
   }
   const root = found;
+  let logo = doc.getElementById('reveal-logo');
+  if (!logo) {
+    const img = doc.createElement('img');
+    img.id = 'reveal-logo';
+    img.src = markUrl;
+    img.alt = 'Spirit Mountain';
+    img.decoding = 'async';
+    root.append(img);
+    logo = img;
+  }
+  const logoEl = logo;
   let label = doc.getElementById('reveal-label');
   if (!label) {
     label = doc.createElement('div');
@@ -244,6 +256,7 @@ export function createRevealOverlay(doc: Document): RevealOverlay {
       opened = true;
       root.style.pointerEvents = 'none';
       labelEl.hidden = true;
+      logoEl.hidden = true;
       const end = Math.hypot(window.innerWidth, window.innerHeight) / 2 + FEATHER_PX;
       root.style.setProperty('--reveal-end', `${end}px`);
       const fade = lacksRegisteredProperty() || reducedMotion();
@@ -261,6 +274,7 @@ export function createRevealOverlay(doc: Document): RevealOverlay {
       opened = false;
       root.style.pointerEvents = 'auto';
       labelEl.hidden = false;
+      logoEl.hidden = false;
       root.dataset['state'] = 'covering';
       if (!root.isConnected) doc.body.prepend(root);
     },

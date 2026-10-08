@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 470 470" role="img" aria-label="Spirit Mountain mark">
+  <!-- A circle split by an S-shaped sweep: blue upper-left, green lower-right, the gap left open so the backdrop shows through. -->
+  <path fill="#3b62a8" d="M341 83 A185 185 0 1 0 128 385 C190 350 225 190 341 83 Z"/>
+  <path fill="#4c9b5e" d="M359 98 A185 185 0 0 1 142 392 C235 345 275 205 359 98 Z"/>
+</svg>
