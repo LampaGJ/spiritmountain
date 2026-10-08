@@ -9,6 +9,10 @@ export const FADE_MS = 200;
 export const BACKSTOP_MARGIN_MS = 100;
 /** Feather width added to the end radius, in CSS pixels. */
 const FEATHER_PX = 160;
+/** Logo height at the first step, in vmin; must match `#reveal-logo` height in reveal.css. */
+export const LOGO_BASE_VMIN = 40;
+/** Minimum dwell per intro step (words pop, logo pulse). */
+export const STEP_MS = 520;
 /** A late load shorter than this never re-covers the scene. */
 const RECOVER_GRACE_MS = 300;
 /** Frames that must run after the last settle before the scene counts as rendered. */
@@ -193,6 +197,15 @@ export function createReadiness(opts: ReadinessOptions): Readiness {
 export interface RevealOverlay {
   readonly element: HTMLElement;
   setLabel(unsettled: readonly string[]): void;
+  /**
+   * Queues one intro step: the words pop in over the logo, then the logo grows one bouncy pulse toward
+   * the long axis of the viewport (settled/total of the way). Steps play no faster than STEP_MS apart,
+   * and open() waits for the last queued step, so the choreography reads the same on a fast local load.
+   */
+  step(
+    unsettled: readonly string[],
+    state: { readonly settled: number; readonly total: number },
+  ): void;
   open(): void;
   dismiss(): void;
   cover(): void;
@@ -247,12 +260,54 @@ export function createRevealOverlay(doc: Document): RevealOverlay {
   const reducedMotion = (): boolean =>
     typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  return {
+  const queue: { words: string; fraction: number }[] = [];
+  let stepTimer: ReturnType<typeof setTimeout> | undefined;
+  let openPending = false;
+  const api = {} as RevealOverlay;
+  const showStep = (entry: { words: string; fraction: number }): void => {
+    labelEl.textContent = entry.words;
+    labelEl.classList.remove('pop');
+    void labelEl.offsetWidth;
+    labelEl.classList.add('pop');
+    const short = Math.min(window.innerWidth, window.innerHeight);
+    const long = Math.max(window.innerWidth, window.innerHeight);
+    // Base size is LOGO_BASE_VMIN of the short axis; the last step covers the long axis.
+    const maxScale = long / ((LOGO_BASE_VMIN / 100) * short);
+    const scale = 1 + (maxScale - 1) * entry.fraction;
+    logoEl.style.setProperty('--logo-scale', scale.toFixed(4));
+  };
+  const pump = (): void => {
+    if (stepTimer !== undefined) return;
+    const next = queue.shift();
+    if (!next) {
+      if (openPending) {
+        openPending = false;
+        api.open();
+      }
+      return;
+    }
+    showStep(next);
+    stepTimer = setTimeout(() => {
+      stepTimer = undefined;
+      pump();
+    }, STEP_MS);
+  };
+
+  Object.assign(api, {
     element: root,
     setLabel(unsettled) {
       labelEl.textContent = unsettled.length > 0 ? `loading ${unsettled.join(', ')}` : '';
     },
+    step(unsettled, { settled, total }) {
+      const words = unsettled.length > 0 ? `loading ${unsettled.join(', ')}` : 'spirit mountain';
+      queue.push({ words, fraction: total > 0 ? Math.min(1, Math.max(0, settled / total)) : 1 });
+      pump();
+    },
     open() {
+      if (queue.length > 0 || stepTimer !== undefined) {
+        openPending = true;
+        return;
+      }
       opened = true;
       root.style.pointerEvents = 'none';
       labelEl.hidden = true;
@@ -278,5 +333,6 @@ export function createRevealOverlay(doc: Document): RevealOverlay {
       root.dataset['state'] = 'covering';
       if (!root.isConnected) doc.body.prepend(root);
     },
-  };
+  } satisfies RevealOverlay);
+  return api;
 }
