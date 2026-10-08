@@ -145,6 +145,7 @@ import { loadPlaces } from './data/load-places';
 import type { Place } from './schema/places';
 import { installAreas, type AreaLayer } from './scene/areas';
 import { buildBillboardLayer, type BillboardLayer } from './scene/billboards';
+import { createHeroSign } from './ui/hero-sign';
 import { createMeshSurface } from './scene/heightfield';
 import { deriveLandmarks } from './scene/landmarks';
 import { focusBoxOf, type FocusBox } from './scene/views';
@@ -206,6 +207,7 @@ if (!('error' in areaLayerResult)) {
       console.error('places:', error);
       return [];
     });
+    const heroSign = createHeroSign(document.body); // #63: the MAIN sign, a DOM element fed by the layer's plan
     billboardLayer = buildBillboardLayer(
       [...areaLayerResult.registry.values()].map((entry) => entry.area),
       meshSurface,
@@ -217,6 +219,7 @@ if (!('error' in areaLayerResult)) {
         host: handle,
         fadeCentre: { east: fadeCentre.east, north: fadeCentre.north },
         places,
+        onPlan: heroSign.render,
       },
     );
     handle.elevated.add(billboardLayer.group);
