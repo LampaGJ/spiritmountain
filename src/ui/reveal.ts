@@ -13,6 +13,10 @@ const FEATHER_PX = 160;
 export const LOGO_BASE_FALLBACK_PX = 32;
 /** Minimum dwell per intro step (words pop, logo pulse). */
 export const STEP_MS = 520;
+/** Once everything has loaded, the remaining steps share at most this much time in total ... */
+export const INTRO_TAIL_MS = 900;
+/** ... and never go faster than this per step, so each pulse still registers. */
+export const FAST_STEP_MS = 140;
 /** A late load shorter than this never re-covers the scene. */
 const RECOVER_GRACE_MS = 300;
 /** Frames that must run after the last settle before the scene counts as rendered. */
@@ -263,6 +267,8 @@ export function createRevealOverlay(doc: Document): RevealOverlay {
   const queue: { words: string; fraction: number }[] = [];
   let stepTimer: ReturnType<typeof setTimeout> | undefined;
   let openPending = false;
+  let lastSettled = 0;
+  let lastFraction = 0;
   const api = {} as RevealOverlay;
   let baseHeightPx = 0;
   const showStep = (entry: { words: string; fraction: number }): void => {
@@ -290,10 +296,17 @@ export function createRevealOverlay(doc: Document): RevealOverlay {
       return;
     }
     showStep(next);
+    // While layers are still loading a step holds STEP_MS; once open() has been requested the rest of the
+    // queue compresses into INTRO_TAIL_MS so a fast load is not padded to STEP_MS per layer.
+    const dwell = openPending
+      ? queue.length === 0
+        ? FAST_STEP_MS
+        : Math.max(FAST_STEP_MS, INTRO_TAIL_MS / queue.length)
+      : STEP_MS;
     stepTimer = setTimeout(() => {
       stepTimer = undefined;
       pump();
-    }, STEP_MS);
+    }, dwell);
   };
 
   Object.assign(api, {
@@ -302,13 +315,30 @@ export function createRevealOverlay(doc: Document): RevealOverlay {
       labelEl.textContent = unsettled.length > 0 ? `loading ${unsettled.join(', ')}` : '';
     },
     step(unsettled, { settled, total }) {
-      const words = unsettled.length > 0 ? `loading ${unsettled.join(', ')}` : 'spirit mountain';
-      queue.push({ words, fraction: total > 0 ? Math.min(1, Math.max(0, settled / total)) : 1 });
+      // Only a settle is a step; a registration just changes the words of the next one. The fraction never
+      // decreases even if the total grows after an early settle, so the logo grows one way.
+      if (settled <= lastSettled) return;
+      lastSettled = settled;
+      const fraction =
+        total > 0 ? Math.min(1, Math.max(lastFraction, settled / total)) : lastFraction;
+      lastFraction = fraction;
+      const words = unsettled.length > 0 ? `loading ${unsettled.join(', ')}` : 'loading';
+      queue.push({ words, fraction });
       pump();
     },
     open() {
       if (queue.length > 0 || stepTimer !== undefined) {
+        // Steps are still playing: queue the final one (the name at full size) and open after it.
+        if (!openPending) queue.push({ words: 'spirit mountain', fraction: 1 });
         openPending = true;
+        // Cut the current dwell short: the rest of the queue now runs at the compressed pace.
+        if (stepTimer !== undefined) {
+          clearTimeout(stepTimer);
+          stepTimer = setTimeout(() => {
+            stepTimer = undefined;
+            pump();
+          }, FAST_STEP_MS);
+        }
         return;
       }
       opened = true;
