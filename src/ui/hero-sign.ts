@@ -1,6 +1,6 @@
 import './hero-sign.css';
 import { ActivitySchema } from '../schema/annotation';
-import { HERO_PLACE_ID, labelColorFor, type PlacePlan } from '../scene/billboards';
+import { HERO_PLACE_ID, labelColorFor, type PlacePlan, type ScreenRect } from '../scene/billboards';
 import { SPORT_COLOR } from '../scene/palette';
 import { signGlyph } from './icons';
 
@@ -10,6 +10,8 @@ export interface HeroSign {
   readonly element: HTMLElement;
   /** Re-renders from the planned place signs; hides when the hero place is absent (no member trail after the filter). */
   render(plans: readonly PlacePlan[]): void;
+  /** The sign's current screen rect in CSS pixels (read live, so it follows resize and re-render); null when hidden (#66). */
+  rect(): ScreenRect | null;
   dispose(): void;
 }
 
@@ -64,6 +66,13 @@ export function createHeroSign(parent: HTMLElement, placeId: string = HERO_PLACE
           }),
       );
       element.hidden = false;
+    },
+    rect() {
+      if (element.hidden) return null;
+      const r = element.getBoundingClientRect();
+      return r.width > 0 && r.height > 0
+        ? { x: r.left, y: r.top, w: r.width, h: r.height, distance: 0, priority: -1 }
+        : null;
     },
     dispose() {
       element.remove();
