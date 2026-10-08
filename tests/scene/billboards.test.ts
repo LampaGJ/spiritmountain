@@ -1,5 +1,4 @@
-import { PerspectiveCamera, Sprite, Vector3 } from 'three';
-import { Line2 } from 'three/addons/lines/Line2.js';
+import { Mesh, MeshBasicMaterial, PerspectiveCamera, Sprite, Vector3 } from 'three';
 import { describe, expect, it, vi } from 'vitest';
 import { fadeAlpha } from '../../scripts/ingest/context-tiles';
 import { GHOST_RENDER_ORDER, type SceneMapper } from '../../src/scene/areas';
@@ -355,7 +354,6 @@ function build(host = makeHost()) {
     createCanvas: fakeCanvas,
     fonts: undefined,
     warn: () => {},
-    resolution: { width: 1200, height: 800 },
   });
   return { layer, host };
 }
@@ -382,18 +380,20 @@ describe('buildBillboardLayer', () => {
     expect(layer.stats().perSport['lift-ride']).toBe(1);
   });
 
-  it('draws the panel with no depth test above the ghost pass, and a depth-tested pole', () => {
+  it('draws the panel with no depth test above the ghost pass, and a depth-tested tapered pointer', () => {
     const { layer } = build();
     const sprite = visibleSprites(layer.group)[0] as Sprite;
     expect(sprite.material.depthTest).toBe(false);
     expect(sprite.material.depthWrite).toBe(false);
     expect(sprite.renderOrder).toBe(GHOST_RENDER_ORDER + 1);
-    const poles: Line2[] = [];
+    const pointers: Mesh[] = [];
     layer.group.traverse((o) => {
-      if (o instanceof Line2) poles.push(o);
+      if (o instanceof Mesh && o.name.startsWith('billboard-pointer:')) pointers.push(o);
     });
-    expect(poles.length).toBeGreaterThan(0);
-    expect(poles[0]?.material.depthTest).toBe(true);
+    expect(pointers.length).toBeGreaterThan(0);
+    const first = pointers[0] as Mesh;
+    expect((first.material as MeshBasicMaterial).depthTest).toBe(true);
+    expect(first.geometry.getAttribute('position').count).toBe(3);
   });
 
   it('yields zero visible signs for an empty visibleIds', () => {
@@ -499,7 +499,6 @@ describe('buildBillboardLayer', () => {
       createCanvas: fakeCanvas,
       fonts: undefined,
       warn: () => {},
-      resolution: { width: 1200, height: 800 },
     });
     host.callback?.(16);
     expect(visibleSprites(layer.group)).toHaveLength(0);
@@ -514,8 +513,8 @@ describe('buildBillboardLayer', () => {
         spies.push(vi.spyOn(o.material, 'dispose'));
         if (o.material.map) textures.add(o.material.map);
       }
-      if (o instanceof Line2) {
-        spies.push(vi.spyOn(o.material, 'dispose'));
+      if (o instanceof Mesh && o.name.startsWith('billboard-pointer:')) {
+        spies.push(vi.spyOn(o.material as MeshBasicMaterial, 'dispose'));
         spies.push(vi.spyOn(o.geometry, 'dispose'));
       }
     });
