@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "sources": [
+    {
+      "path": "data/trees.bin",
+      "sha256": "596b3e5fac074615931894c26427e9b9be3dab26fe957ab643f8a3d090982c29"
+    },
+    {
+      "path": "data/trees.json",
+      "sha256": "1a4e647584c8452400ee8a7ae4597f51bbe29e72fbbc214c6ff4b82b75460ed1"
+    },
+    {
+      "path": "data/context-trees.bin",
+      "sha256": "595516c83cd6d3ab2f1bf595a8421330af08af2577b1bdede329a67d731e33dc"
+    },
+    {
+      "path": "data/context-trees.json",
+      "sha256": "dcf27fcc3fee1b27ce651134913dc31e85900f32a73a90297702c3e7c099a436"
+    }
+  ],
+  "count": 202838,
+  "meanLinear": {
+    "r": 0.0691063,
+    "g": 0.11255343,
+    "b": 0.06538935
+  },
+  "meanSrgb": {
+    "r": 0.29151189,
+    "g": 0.36960516,
+    "b": 0.28362087
+  }
+}
