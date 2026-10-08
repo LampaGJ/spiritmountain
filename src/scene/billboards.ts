@@ -1,16 +1,22 @@
 /**
- * Track signs (#43, #49, #55). Two families float above the mountain as flat, camera-facing sprites inside the
+ * Track signs (#43, #49, #55, #60). Two families float above the mountain as flat, camera-facing sprites inside the
  * ElevatedGroup. Concentration signs hover over the natural concentrations of visible trails and list every sport
- * there as a coloured glyph chip with a track name or "N trails". Trail-sport signs sit along each named track, one per
- * sport it carries, in that sport's colour with the glyph, the sport name and the track name.
+ * there as a coloured glyph chip with a track name or "N trails". Trail signs sit at the length midpoint of each named
+ * track, one per track: the track name in bold on top, one sport chip per activity below, on a tapered pointer down to
+ * the trail point.
  *
  * The first half of this file is pure (no three object is created), so track planning, contrast, sizing and the canvas
  * drawing test in node with a recording fake context. The second half builds the three layer.
  */
 import {
+  BufferAttribute,
+  BufferGeometry,
   CanvasTexture,
+  DoubleSide,
   Group,
   LinearFilter,
+  Mesh,
+  MeshBasicMaterial,
   type PerspectiveCamera,
   Sprite,
   SpriteMaterial,
@@ -31,6 +37,11 @@ import { trackKey, trackName } from './track-key';
 
 /** Signs draw after every default-order object; the panel has no depth test so it stays readable. */
 export const SIGN_RENDER_ORDER = 2;
+/**
+ * A trail sign's pointer: leg 1 leaves the trail point straight up, leg 2 leaves it at this angle from leg 1 (Graham,
+ * 2026-10-08: "make one side at 90 degrees from level ... going straight UP (leg 1) ... leg 2 ... about a 15 degree angle").
+ */
+export const POINTER_ANGLE_DEG = 15;
 /** Same-sport area centroids closer than this (single linkage, transitive) share one sign. */
 export const SIGN_CLUSTER_RADIUS_M = 150;
 /** The sign base floats this far above the active surface, in world metres before exaggeration. */
@@ -390,11 +401,11 @@ export function splitInTwo(
 
 export type SignFamily = 'concentration' | 'trail';
 
-/** One planned sign: a place over a concentration of tracks, the sports that use it and its label. */
+/** One planned sign: a place over a concentration of tracks (or on a named track), the sports that use it and its label. */
 export interface SignPlan {
   readonly east: number;
   readonly north: number;
-  /** A concentration sign (union of sports, over a group of tracks) or a trail-sport sign (one sport, one named track). */
+  /** A concentration sign (union of sports, over a group of tracks) or a trail sign (one named track, all its sports). */
   readonly family: SignFamily;
   /** In ActivitySchema.options order. */
   readonly activities: readonly Activity[];
@@ -495,7 +506,7 @@ export function planSigns(
   return plans.sort((a, b) => a.east - b.east || a.north - b.north);
 }
 
-// ---- trail-sport signs (#55): one sign per named track and sport ----
+// ---- trail signs (#55, #60): one sign per named track ----
 
 /** An ordered polyline of a track's merged segments, in local metres. */
 export type TrackPath = readonly PlanePoint[];
@@ -584,9 +595,9 @@ export function pointAlong(path: TrackPath, fraction: number): PlanePoint {
 }
 
 /**
- * Trail-sport signs: for every named track (name or route:name) and every activity it carries after the filter, one
- * sign. A track with k activities gets k signs at fractions (i + 0.5) / k of its merged length, activities in
- * ActivitySchema order. Output order is by track key then activity, so it is stable across runs.
+ * Trail signs: one sign per named track (name or route:name) at the midpoint of its merged length, carrying every
+ * activity the track has after the filter in ActivitySchema order. Output order is by track key, so it is stable
+ * across runs.
  */
 export function planTrailSigns(
   areas: readonly TrackArea[],
@@ -605,17 +616,12 @@ export function planTrailSigns(
   const plans: SignPlan[] = [];
   for (const key of [...byKey.keys()].sort(codePointCompare)) {
     const members = byKey.get(key) as TrackArea[];
-    const activities = trackActivities(members, annotations, selected);
-    const path = mergeTrackPath(members);
-    const name = trackName(members[0] as TrackArea) as string;
-    activities.forEach((activity, i) => {
-      plans.push({
-        ...pointAlong(path, (i + 0.5) / activities.length),
-        family: 'trail',
-        activities: [activity],
-        label: name,
-        trackCount: 1,
-      });
+    plans.push({
+      ...pointAlong(mergeTrackPath(members), 0.5),
+      family: 'trail',
+      activities: trackActivities(members, annotations, selected),
+      label: trackName(members[0] as TrackArea) as string,
+      trackCount: 1,
     });
   }
   return plans;
@@ -642,6 +648,21 @@ export function labelColorFor(panelHex: number): number {
   return contrastRatio(LABEL_LIGHT, panelHex) >= contrastRatio(LABEL_DARK, panelHex)
     ? LABEL_LIGHT
     : LABEL_DARK;
+}
+
+/**
+ * Local vertices of a trail sign's pointer, a right triangle in the sign group's xy plane: apex at the origin (the trail
+ * point), leg 1 straight up by `heightM`, leg 2 from the apex to the top edge's far end. In the ElevatedGroup the y axis
+ * is scaled by `yScale` and x is not, so the x of the far end is `heightM * yScale * tan(angle)`: leg 2 then leaves leg 1
+ * at `angleDeg` in the world whatever the exaggeration. Returns [x0, y0, z0, x1, y1, z1, x2, y2, z2].
+ */
+export function pointerVertices(
+  heightM: number,
+  angleDeg: number,
+  yScale: number,
+): [number, number, number, number, number, number, number, number, number] {
+  const dx = heightM * yScale * Math.tan((angleDeg * Math.PI) / 180);
+  return [0, 0, 0, 0, heightM, 0, dx, heightM, 0];
 }
 
 /** Sign width in CSS pixels: 160, or a fifth of the viewport on narrow screens (78 at 390). */
@@ -745,58 +766,40 @@ function roundedPanel(ctx: SignContext2D, w: number, h: number, colour: number):
 }
 
 /** Shrinks the font until `text` fits `available`, never below 12 px. */
-function fitLabel(ctx: SignContext2D, text: string, size: number, available: number): void {
-  ctx.font = `600 ${size}px ${LABEL_FONT_FAMILY}`;
+function fitLabel(
+  ctx: SignContext2D,
+  text: string,
+  size: number,
+  available: number,
+  weight = '600',
+): void {
+  ctx.font = `${weight} ${size}px ${LABEL_FONT_FAMILY}`;
   const measured = ctx.measureText(text).width;
   if (measured > available && measured > 0) {
-    ctx.font = `600 ${Math.max(12, Math.floor((size * available) / measured))}px ${LABEL_FONT_FAMILY}`;
+    ctx.font = `${weight} ${Math.max(12, Math.floor((size * available) / measured))}px ${LABEL_FONT_FAMILY}`;
   }
 }
 
-/**
- * Draws one sign. A concentration sign is a dark neutral rounded panel at SIGN_PANEL_ALPHA: top row one circular chip
- * per activity filled with SPORT_COLOR holding the sport glyph, bottom row the label in white. A trail sign is a panel
- * in the sport's own SPORT_COLOR: the sport glyph and sport label on the first row, the track name smaller below.
- */
-export function drawSign(ctx: SignContext2D, spec: SignSpec): void {
-  const { width: w, height: h } = spec;
-  ctx.clearRect(0, 0, w, h);
-  const pad = h * 0.12;
-  if (spec.family === 'trail') {
-    const activity = spec.activities[0] as Activity;
-    const colour = SPORT_COLOR[activity];
-    roundedPanel(ctx, w, h, colour);
-    ctx.fillStyle = cssHex(labelColorFor(colour));
-    ctx.textBaseline = 'middle';
-    const topY = h * 0.32;
-    const glyphSize = Math.round(h * 0.4);
-    let textLeft = pad;
-    if (spec.glyph) {
-      ctx.font = `${glyphSize}px ${SYMBOL_FONT_FAMILY}`;
-      ctx.textAlign = 'left';
-      ctx.fillText(signGlyph(activity).symbol, pad, topY);
-      textLeft = pad + glyphSize + pad * 0.6;
-    }
-    ctx.textAlign = 'left';
-    fitLabel(ctx, signGlyph(activity).label, Math.round(h * 0.36), w - textLeft - pad);
-    ctx.fillText(signGlyph(activity).label, textLeft, topY);
-    fitLabel(ctx, spec.label, Math.round(h * 0.26), w - 2 * pad);
-    ctx.fillText(spec.label, pad, h * 0.76);
-    return;
-  }
-  roundedPanel(ctx, w, h, SIGN_PANEL_COLOR);
+/** One circular chip per activity (ActivitySchema order) from `left`, centred on `y`, each holding its sport glyph. */
+function drawChips(
+  ctx: SignContext2D,
+  spec: SignSpec,
+  left: number,
+  y: number,
+  maxRadius: number,
+  available: number,
+  gap: number,
+): void {
   const activities = ActivitySchema.options.filter((a) => spec.activities.includes(a));
-  const topY = h * 0.28;
-  const gap = h * 0.06;
   const chipR = Math.min(
-    h * 0.2,
-    (w - 2 * pad - gap * Math.max(activities.length - 1, 0)) / (2 * Math.max(activities.length, 1)),
+    maxRadius,
+    (available - gap * Math.max(activities.length - 1, 0)) / (2 * Math.max(activities.length, 1)),
   );
   activities.forEach((activity, i) => {
-    const cx = pad + chipR + i * (2 * chipR + gap);
+    const cx = left + chipR + i * (2 * chipR + gap);
     ctx.fillStyle = cssHex(SPORT_COLOR[activity]);
     ctx.beginPath();
-    ctx.arc(cx, topY, chipR, 0, Math.PI * 2);
+    ctx.arc(cx, y, chipR, 0, Math.PI * 2);
     ctx.closePath();
     ctx.fill();
     if (spec.glyph) {
@@ -804,9 +807,31 @@ export function drawSign(ctx: SignContext2D, spec: SignSpec): void {
       ctx.font = `${Math.round(chipR * 1.5)}px ${SYMBOL_FONT_FAMILY}`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(signGlyph(activity).symbol, cx, topY);
+      ctx.fillText(signGlyph(activity).symbol, cx, y);
     }
   });
+}
+
+/**
+ * Draws one sign on a dark neutral rounded panel at SIGN_PANEL_ALPHA. A concentration sign: top row one circular chip
+ * per activity filled with SPORT_COLOR holding the sport glyph, bottom row the label in white. A trail sign: the track
+ * name in bold white on top, left-aligned, one such chip per activity below it.
+ */
+export function drawSign(ctx: SignContext2D, spec: SignSpec): void {
+  const { width: w, height: h } = spec;
+  ctx.clearRect(0, 0, w, h);
+  const pad = h * 0.12;
+  roundedPanel(ctx, w, h, SIGN_PANEL_COLOR);
+  if (spec.family === 'trail') {
+    ctx.fillStyle = cssHex(LABEL_LIGHT);
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'left';
+    fitLabel(ctx, spec.label, Math.round(h * 0.34), w - 2 * pad, 'bold');
+    ctx.fillText(spec.label, pad, h * 0.3);
+    drawChips(ctx, spec, pad, h * 0.72, h * 0.19, w - 2 * pad, h * 0.06);
+    return;
+  }
+  drawChips(ctx, spec, pad, h * 0.28, h * 0.2, w - 2 * pad, h * 0.06);
   ctx.fillStyle = cssHex(LABEL_LIGHT);
   ctx.textBaseline = 'middle';
   fitLabel(ctx, spec.label, Math.round(h * 0.32), w - 2 * pad);
@@ -885,7 +910,7 @@ export interface BillboardStats {
   readonly clusterCount: number;
   /** Concentration signs after the last applyFilter or redrape. */
   readonly concentrationCount: number;
-  /** Trail-sport signs after the last applyFilter or redrape. */
+  /** Trail signs (one per named track) after the last applyFilter or redrape. */
   readonly trailCount: number;
   /** Signs carrying each activity chip after the last applyFilter or redrape. */
   readonly perSport: Readonly<Partial<Record<Activity, number>>>;
@@ -911,19 +936,24 @@ export interface BillboardLayer {
 }
 
 interface Sign {
+  /** Trail signs: the rigid group at the trail point holding the pointer and the sprite. Always in the layer group. */
+  readonly rigid: Group;
   readonly sprite: Sprite;
   readonly material: SpriteMaterial;
+  readonly pointer: Mesh;
+  readonly pointerMaterial: MeshBasicMaterial;
+  family: SignFamily;
   priority: number;
   active: boolean;
 }
 
 /**
  * @displayName Track sign layer
- * @strategicPurpose Lets a viewer see where each track starts and ends, and every sport that uses the place, without
- *   hovering or reading the lines, with few enough signs that the mountain stays visible.
+ * @strategicPurpose Lets a viewer see where each named track runs and every sport that uses it, and where sports
+ *   concentrate, without hovering or reading the lines, with few enough signs that the mountain stays visible.
  * @tacticalObjective Groups visible areas into tracks and concentrations, plans concentration signs plus one sign per
- *   named track and sport, and draws each as a pooled camera-facing, screen-sized sprite inside the ElevatedGroup,
- *   compensating the group's y-scale each frame.
+ *   named track, and draws each as a pooled camera-facing, screen-sized sprite inside the ElevatedGroup (trail signs
+ *   on a 15 degree rigid pointer to the trail point), compensating the group's y-scale each frame.
  */
 export function buildBillboardLayer(
   areas: readonly Area[],
@@ -982,6 +1012,19 @@ export function buildBillboardLayer(
     return texture;
   };
 
+  // One fixed local shape shared by every pointer; only the far end's x changes, and only with the exaggeration.
+  const pointerGeometry = new BufferGeometry();
+  pointerGeometry.setAttribute('position', new BufferAttribute(new Float32Array(9), 3));
+  let pointerScale = Number.NaN;
+  const shapePointer = (ys: number): void => {
+    if (ys === pointerScale) return;
+    pointerScale = ys;
+    const pos = pointerGeometry.getAttribute('position') as BufferAttribute;
+    pos.array.set(pointerVertices(SIGN_OFFSET_M, POINTER_ANGLE_DEG, ys));
+    pos.needsUpdate = true;
+  };
+  shapePointer(effectiveScale(host.exaggeration));
+
   const pool: Sign[] = [];
   const makeSign = (plan: SignPlan): Sign => {
     const material = new SpriteMaterial({
@@ -991,12 +1034,50 @@ export function buildBillboardLayer(
       depthWrite: false,
     });
     const sprite = new Sprite(material);
-    // Anchor at the bottom centre: the panel floats centred over its place and extends up from it.
-    sprite.center.set(0.5, 0);
     sprite.renderOrder = SIGN_RENDER_ORDER;
     sprite.raycast = () => {};
-    group.add(sprite);
-    return { sprite, material, priority: 0, active: false };
+    const pointerMaterial = new MeshBasicMaterial({
+      color: SIGN_PANEL_COLOR,
+      transparent: true,
+      opacity: SIGN_PANEL_ALPHA,
+      side: DoubleSide,
+      depthTest: false,
+      depthWrite: false,
+    });
+    const pointer = new Mesh(pointerGeometry, pointerMaterial);
+    pointer.name = 'billboard-pointer';
+    pointer.raycast = () => {};
+    pointer.frustumCulled = false;
+    pointer.renderOrder = SIGN_RENDER_ORDER;
+    const rigid = new Group();
+    rigid.name = 'billboard-sign';
+    rigid.add(pointer);
+    return {
+      rigid,
+      sprite,
+      material,
+      pointer,
+      pointerMaterial,
+      family: plan.family,
+      priority: 0,
+      active: false,
+    };
+  };
+
+  /** Concentration: sprite straight in the layer group, bottom-centre anchored. Trail: in the rigid group, bottom-left on leg 1. */
+  const arrange = (sign: Sign, family: SignFamily): void => {
+    sign.family = family;
+    if (family === 'trail') {
+      sign.sprite.center.set(0, 0);
+      sign.sprite.position.set(0, SIGN_OFFSET_M, 0);
+      sign.rigid.add(sign.sprite);
+      group.add(sign.rigid);
+    } else {
+      sign.sprite.center.set(0.5, 0);
+      sign.rigid.removeFromParent();
+      group.add(sign.sprite);
+    }
+    sign.pointer.visible = family === 'trail';
   };
 
   let lastArgs: {
@@ -1027,14 +1108,17 @@ export function buildBillboardLayer(
       sign.sprite.userData['family'] = plan.family;
       sign.sprite.userData['label'] = plan.label;
       sign.sprite.visible = true;
+      arrange(sign, plan.family);
       const ground = heightAt(plan.east, plan.north);
       const [x, y, z] = toScene(plan.east, plan.north, ground);
-      sign.sprite.position.set(x, y + SIGN_OFFSET_M, z);
+      if (plan.family === 'trail') sign.rigid.position.set(x, y, z);
+      else sign.sprite.position.set(x, y + SIGN_OFFSET_M, z);
     });
     for (let i = lastPlans.length; i < pool.length; i++) {
       const sign = pool[i] as Sign;
       sign.active = false;
       sign.sprite.visible = false;
+      sign.pointer.visible = false;
     }
   };
 
@@ -1064,16 +1148,27 @@ export function buildBillboardLayer(
     const widthPx = signWidthPx(viewportW);
     const heightPx = (widthPx * SIGN_CANVAS_HEIGHT) / SIGN_CANVAS_WIDTH;
     const ys = effectiveScale(host.exaggeration);
+    shapePointer(ys);
     const candidates: Sign[] = [];
     const rects: ScreenRect[] = [];
     for (const sign of pool) {
       if (!sign.active) continue;
+      const trail = sign.family === 'trail';
+      if (trail) {
+        // The elevated group only scales and shifts y, so its x and z are the camera's x and z: yaw the pointer to face it.
+        sign.rigid.rotation.y = Math.atan2(
+          camera.position.x - sign.rigid.position.x,
+          camera.position.z - sign.rigid.position.z,
+        );
+      }
       sign.sprite.getWorldPosition(world);
       const horizontal = Math.hypot(world.x - fadeCentre.east, world.z + fadeCentre.north);
       const alpha = fadeAlpha(horizontal);
       sign.sprite.visible = false;
+      sign.pointer.visible = false;
       if (alpha <= 0) continue;
       sign.material.opacity = alpha;
+      sign.pointerMaterial.opacity = alpha * SIGN_PANEL_ALPHA;
       // View-space depth sets the pixel size of a point at any screen position; Euclidean distance overstates it off-axis.
       const d = Math.max(-view.copy(world).applyMatrix4(camera.matrixWorldInverse).z, camera.near);
       const w = widthPx * ((2 * d * tanHalf) / viewportH);
@@ -1084,9 +1179,10 @@ export function buildBillboardLayer(
       const cx = ((ndc.x + 1) / 2) * viewportW;
       const baseY = ((1 - ndc.y) / 2) * viewportH;
       candidates.push(sign);
-      // The sprite's bottom-centre is the projected point, so the rect extends half a width each side and up.
+      // Concentration: the bottom-centre is the projected point, so the rect extends half a width each side and up.
+      // Trail: the bottom-left corner is, so it extends right and up.
       rects.push({
-        x: cx - widthPx / 2,
+        x: trail ? cx : cx - widthPx / 2,
         y: baseY - heightPx,
         w: widthPx,
         h: heightPx,
@@ -1097,6 +1193,7 @@ export function buildBillboardLayer(
     const shown = declutter(rects);
     candidates.forEach((sign, i) => {
       sign.sprite.visible = shown[i] === true;
+      sign.pointer.visible = shown[i] === true && sign.family === 'trail';
     });
     shownCount = shown.filter(Boolean).length;
   };
@@ -1143,7 +1240,9 @@ export function buildBillboardLayer(
       unsubscribe();
       for (const sign of pool) {
         sign.material.dispose();
+        sign.pointerMaterial.dispose();
       }
+      pointerGeometry.dispose();
       for (const { texture } of textures.values()) texture.dispose();
       pool.length = 0;
       textures.clear();
