@@ -81,6 +81,11 @@ export function instanceAwareFadeVertex(vertexShader: string): string {
 
 export interface InstallTreesOptions {
   readonly fadeCentre: RadialFadeOptions['centre'];
+  /** Group name; defaults to "trees". The far-field forest passes "context-trees". */
+  readonly name?: string;
+  /** Radial fade radii in metres; default to the shared fade constants. */
+  readonly fadeInnerM?: number;
+  readonly fadeOuterM?: number;
 }
 
 export interface TreesHandle {
@@ -98,18 +103,23 @@ export interface TreesHandle {
 /** Builds the six instanced archetype meshes into a hidden group under parent (the elevated group). */
 export function installTrees(
   parent: Object3D,
-  trees: LoadedTrees,
+  trees: Pick<LoadedTrees, 'records'>,
   options: InstallTreesOptions,
 ): TreesHandle {
   const group = new Group();
-  group.name = 'trees';
+  const name = options.name ?? 'trees';
+  group.name = name;
   group.visible = false;
   const material = new MeshStandardMaterial({
     vertexColors: true,
     roughness: 1,
     metalness: 0,
   });
-  applyRadialFade(material, { centre: options.fadeCentre });
+  applyRadialFade(material, {
+    centre: options.fadeCentre,
+    ...(options.fadeInnerM === undefined ? {} : { innerM: options.fadeInnerM }),
+    ...(options.fadeOuterM === undefined ? {} : { outerM: options.fadeOuterM }),
+  });
   const fadePatch = material.onBeforeCompile;
   material.onBeforeCompile = (shader: WebGLProgramParametersWithUniforms, renderer) => {
     fadePatch.call(material, shader, renderer);
@@ -122,7 +132,7 @@ export function installTrees(
   instances.forEach((inst, id) => {
     if (inst.count === 0) return;
     const mesh = new InstancedMesh(geometries[id] as BufferGeometry, material, inst.count);
-    mesh.name = `trees-archetype-${id}`;
+    mesh.name = `${name}-archetype-${id}`;
     (mesh.instanceMatrix.array as Float32Array).set(inst.matrices);
     mesh.instanceColor = new InstancedBufferAttribute(inst.colors, 3);
     mesh.instanceMatrix.needsUpdate = true;
