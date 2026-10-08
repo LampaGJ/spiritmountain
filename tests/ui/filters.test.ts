@@ -479,9 +479,9 @@ describe('surface toggle', () => {
     expect(host.textContent).not.toContain('Surface');
   });
 
-  it('sits after Buildings in the Layers group, defaults off, and leaves the hash empty', () => {
+  it('sits after Buildings in the Layers popout, defaults off, and leaves the hash empty', () => {
     const { host, button, getHash, surfaceCalls } = setup('', true, true, true);
-    const labels = [...host.querySelectorAll('.console-group:last-child button .btn-label')].map(
+    const labels = [...host.querySelectorAll('.sm-popout-panel button .btn-label')].map(
       (b) => b.textContent,
     );
     expect(labels).toEqual(['Imagery', 'Buildings', 'Surface']);
@@ -521,9 +521,9 @@ describe('trees toggle', () => {
     expect(host.textContent).not.toContain('Trees');
   });
 
-  it('sits after Surface in the Layers group, defaults off, and leaves the hash empty', () => {
+  it('sits after Surface in the Layers popout, defaults off, and leaves the hash empty', () => {
     const { host, button, getHash, treesCalls } = setup('', true, true, true, false, true);
-    const labels = [...host.querySelectorAll('.console-group:last-child button .btn-label')].map(
+    const labels = [...host.querySelectorAll('.sm-popout-panel button .btn-label')].map(
       (b) => b.textContent,
     );
     expect(labels).toEqual(['Imagery', 'Buildings', 'Surface', 'Trees']);
@@ -559,105 +559,98 @@ describe('trees toggle', () => {
   });
 });
 
-describe('terrain exaggeration slider', () => {
-  const slider = (host: HTMLElement): HTMLInputElement => {
-    const input = host.querySelector<HTMLInputElement>('input[type="range"]');
-    if (input === null) throw new Error('no slider');
-    return input;
-  };
-  const valueText = (host: HTMLElement): string =>
-    host.querySelector('.exag-value')?.textContent ?? '';
-  const drag = (input: HTMLInputElement, value: string): void => {
-    input.value = value;
-    input.dispatchEvent(new Event('input', { bubbles: true }));
+describe('terrain exaggeration (DEBUG slider, #58)', () => {
+  const setupExag = (initialHash: string) => {
+    const shown: number[] = [];
+    const applied: number[] = [];
+    let hash = initialHash;
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const strip = mountFilterStrip({
+      host,
+      apply: () => ({ visibleCount: 3, total: 5 }),
+      setExaggeration: (k) => void applied.push(k),
+      showExaggeration: (k) => void shown.push(k),
+      readHash: () => hash,
+      writeHash: (h) => {
+        hash = h;
+      },
+    });
+    strips.push(strip);
+    return { host, strip, shown, applied, getHash: () => hash };
   };
 
-  it('has no slider unless setExaggeration is wired', () => {
-    const { host } = setup('', true, true, true);
+  it('puts no slider in the rail or the Layers popout', () => {
+    const { host } = setup('', true, true, true, true);
     expect(host.querySelector('input[type="range"]')).toBeNull();
+    expect(document.querySelector('.exag-key')).toBeNull();
   });
 
-  it('sits after Surface in the Layers group with the icon, label, 0 to 10 range and x1.0 at default', () => {
-    const { host, getHash, exagCalls } = setup('', true, true, true, true);
-    const layers = host.querySelector('[data-slot="imagery"]');
-    const input = slider(host);
-    expect(layers?.contains(input)).toBe(true);
-    const surface = [...host.querySelectorAll('button')].find(
-      (b) => b.querySelector('.btn-label')?.textContent === 'Surface',
-    );
-    expect(surface?.compareDocumentPosition(input)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
-    expect([input.min, input.max, input.step, input.value]).toEqual(['0.1', '10', '0.1', '1']);
-    const icon = layers?.querySelector('.exag-key .ms');
-    expect(icon?.textContent).toBe(iconFor('terrain-exaggeration').symbol);
-    expect(icon?.getAttribute('aria-hidden')).toBe('true');
-    expect(host.querySelector('.exag-key')?.textContent).toContain('Terrain');
-    expect(iconFor('terrain-exaggeration').symbol).toBe('height');
-    expect(valueText(host)).toBe('x1.0');
-    expect(getHash()).toBe('');
-    expect(exagCalls).toEqual([1]);
-  });
-
-  it('is labelled for assistive technology and reports its value as text', () => {
-    const { host } = setup('', false, false, false, true);
-    const input = slider(host);
-    expect(input.getAttribute('aria-label')).toBe('Terrain');
-    drag(input, '2.5');
-    expect(input.getAttribute('aria-valuetext')).toBe('x2.5');
-  });
-
-  it('updates the value text live, writes exag=<n> and calls setExaggeration', () => {
-    const { host, getHash, exagCalls } = setup('', false, false, false, true);
-    drag(slider(host), '2.5');
-    expect(valueText(host)).toBe('x2.5');
-    expect(getHash()).toBe('#exag=2.5');
-    expect(exagCalls).toEqual([1, 2.5]);
-    drag(slider(host), '0.1');
-    expect(valueText(host)).toBe('x0.1');
-    expect(getHash()).toBe('#exag=0.1');
-    expect(exagCalls).toEqual([1, 2.5, 0.1]);
-  });
-
-  it('writes nothing for 1 and clears a previous exag', () => {
-    const { host, getHash } = setup('', false, false, false, true);
-    drag(slider(host), '3');
+  it('reads #exag=3 on mount: the scene setter and the slider both get 3', () => {
+    const { shown, applied, getHash } = setupExag('#exag=3');
+    expect(applied).toEqual([3]);
+    expect(shown).toEqual([3]);
     expect(getHash()).toBe('#exag=3');
-    drag(slider(host), '1');
-    expect(getHash()).toBe('');
   });
 
-  it('double-click resets to 1', () => {
-    const { host, getHash, exagCalls } = setup('#exag=4', false, false, false, true);
-    expect(slider(host).value).toBe('4');
-    expect(exagCalls).toEqual([4]);
-    slider(host).dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
-    expect(slider(host).value).toBe('1');
-    expect(valueText(host)).toBe('x1.0');
-    expect(getHash()).toBe('');
-    expect(exagCalls).toEqual([4, 1]);
-  });
-
-  it('starts from #exag=2.5, and Clear leaves it alone', () => {
-    const { host, button, getHash, exagCalls } = setup(
-      '#exag=2.5&activity=hike',
-      false,
-      false,
-      false,
-      true,
-    );
-    expect(slider(host).value).toBe('2.5');
-    expect(valueText(host)).toBe('x2.5');
-    button('Clear Filters').click();
+  it('setExaggeration writes exag=<n>, applies it, and writes nothing for 1', () => {
+    const { strip, shown, applied, getHash } = setupExag('');
+    expect(applied).toEqual([1]);
+    strip.setExaggeration(2.5);
     expect(getHash()).toBe('#exag=2.5');
-    expect(slider(host).value).toBe('2.5');
-    expect(exagCalls).toEqual([2.5]);
+    expect(applied).toEqual([1, 2.5]);
+    expect(shown.at(-1)).toBe(2.5);
+    strip.setExaggeration(0.1);
+    expect(getHash()).toBe('#exag=0.1');
+    strip.setExaggeration(1);
+    expect(getHash()).toBe('');
+    expect(applied).toEqual([1, 2.5, 0.1, 1]);
+  });
+
+  it('Clear leaves exag alone', () => {
+    const { host, getHash, applied } = setupExag('#exag=2.5&activity=hike');
+    const clear = [...host.querySelectorAll('button')].find(
+      (b) => b.querySelector('.btn-label')?.textContent === 'Clear Filters',
+    );
+    clear?.click();
+    expect(getHash()).toBe('#exag=2.5');
+    expect(applied).toEqual([2.5]);
   });
 
   it('drops exag=11 with the ignored notice and keeps the default', () => {
-    const { host, getHash, exagCalls } = setup('#exag=11', false, false, false, true);
-    expect(slider(host).value).toBe('1');
+    const { host, getHash, applied } = setupExag('#exag=11');
     expect(host.querySelector('.filter-notice')?.textContent).toBe('ignored: exag=11');
     expect(getHash()).toBe('');
-    expect(exagCalls).toEqual([1]);
+    expect(applied).toEqual([1]);
+  });
+
+  it('mountFilters registers "Terrain exaggeration" (0.1 to 10, step 0.1) in the DEBUG panel and wires it to the hash', () => {
+    const applied: number[] = [];
+    history.replaceState(null, '', location.pathname + location.search + '#exag=3');
+    strips.push(
+      mountFilters({
+        registry: new Map(),
+        handle: {
+          ...failedAnnotationsHandle(''),
+          annotations: { status: 'loaded', map: new Map() },
+        },
+        setExaggeration: (k) => void applied.push(k),
+      }),
+    );
+    const input = document.querySelector<HTMLInputElement>('#debug-panel input[type="range"]');
+    if (input === null) throw new Error('no DEBUG slider');
+    expect([input.min, input.max, input.step]).toEqual(['0.1', '10', '0.1']);
+    expect(document.querySelector('#debug-panel')?.textContent).toContain('Terrain exaggeration');
+    expect(input.value).toBe('3');
+    expect(applied).toEqual([3]);
+    input.value = '4.5';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(location.hash).toBe('#exag=4.5');
+    expect(applied).toEqual([3, 4.5]);
+    location.hash = '#exag=2';
+    window.dispatchEvent(new Event('hashchange'));
+    expect(input.value).toBe('2');
+    expect(applied).toEqual([3, 4.5, 2]);
   });
 });
 
@@ -781,8 +774,8 @@ describe('rail markup', () => {
   it('gives every key an aria-hidden .ms icon span and keeps the badge on each key', () => {
     const host = mountReal();
     const keys = [...host.querySelectorAll('button')];
-    // Clear + Imagery and Buildings; activities live in the season menu row and the season keys in the top bar, outside #filters (#56).
-    expect(keys).toHaveLength(1 + 2);
+    // Clear only: the layer switches live in the top bar's Layers popout and the season keys beside them (#58, #56).
+    expect(keys).toHaveLength(1);
     for (const key of keys) {
       const icon = key.querySelector(':scope > .btn-face > .ms');
       expect(icon, key.textContent ?? '').not.toBeNull();
@@ -790,28 +783,53 @@ describe('rail markup', () => {
     }
   });
 
-  it('orders the rail Clear then the status line, then Layers', () => {
+  it('orders the rail Clear then the notice; the status line sits in the top bar under the season keys', () => {
     const host = mountReal();
-    const order = [...host.children].map((c) =>
-      c.classList.contains('console-foot')
-        ? 'foot'
-        : (c.querySelector('.group-head-text')?.textContent ?? '?'),
-    );
-    expect(order).toEqual(['foot', 'Layers']);
+    expect([...host.children].map((c) => c.className)).toEqual(['console-foot']);
     const foot = host.querySelector('.console-foot');
     const parts = [...(foot?.children ?? [])].map(
       (c) => c.querySelector('.btn-label')?.textContent ?? c.className,
     );
-    expect(parts).toEqual(['Clear Filters', 'filter-count', 'filter-notice']);
+    expect(parts).toEqual(['Clear Filters', 'filter-notice']);
+    expect(host.querySelector('.filter-count')).toBeNull();
+    expect(document.querySelector('#season-bar > .filter-count')?.textContent).toBe(
+      '0 trails · 0 lifts',
+    );
   });
 
-  it('labels each group by its header and marks the header icon aria-hidden', () => {
+  it('hides the rail section while no filter is active and shows it for a season or a notice', () => {
     const host = mountReal();
-    for (const group of host.querySelectorAll('.console-group')) {
-      const head = group.querySelector('.group-head');
-      expect(group.getAttribute('aria-labelledby')).toBe(head?.id);
-      expect(head?.querySelector('.ms')?.getAttribute('aria-hidden')).toBe('true');
-    }
+    expect(host.hidden).toBe(true);
+    history.replaceState(null, '', location.pathname + location.search + '#activity=hike');
+    window.dispatchEvent(new Event('hashchange'));
+    expect(host.hidden).toBe(false);
+    history.replaceState(null, '', location.pathname + location.search + '#activity=foo');
+    window.dispatchEvent(new Event('hashchange'));
+    expect(host.querySelector('.filter-notice')?.textContent).toBe('ignored: foo');
+    expect(host.hidden).toBe(false);
+    history.replaceState(null, '', location.pathname + location.search);
+    window.dispatchEvent(new Event('hashchange'));
+    expect(host.hidden).toBe(true);
+  });
+
+  it('mounts the Layers popout at the right end of the top bar with its toggles in the panel', () => {
+    mountReal();
+    const popout = document.querySelector('#season-bar .sm-bar-keys > .sm-popout--end');
+    const trigger = popout?.querySelector<HTMLButtonElement>(':scope > .cl-key button');
+    expect(trigger?.querySelector('.btn-label')?.textContent).toBe('Layers');
+    expect(trigger?.getAttribute('aria-expanded')).toBe('false');
+    const panel = document.getElementById(trigger?.getAttribute('aria-controls') ?? '');
+    expect(panel?.hidden).toBe(true);
+    trigger?.click();
+    expect(panel?.hidden).toBe(false);
+    expect(trigger?.getAttribute('aria-expanded')).toBe('true');
+    const labels = [...(panel?.querySelectorAll('button .btn-label') ?? [])].map(
+      (b) => b.textContent,
+    );
+    expect(labels).toEqual(['Imagery', 'Buildings']);
+    // A layer toggle keeps the popout open.
+    panel?.querySelector<HTMLButtonElement>('button')?.click();
+    expect(panel?.hidden).toBe(false);
   });
 
   it('phone layout is structural: a scrolling row whose headers are chips, same keys', () => {
@@ -822,8 +840,7 @@ describe('rail markup', () => {
     expect(phone).toMatch(/#rail \{[^}]*flex-direction: row;/);
     expect(phone).toMatch(/overflow-x: auto;/);
     expect(phone).toMatch(/#rail \.group-head \{[^}]*border-radius: 999px;/);
-    // Layers only (the Season group moved to the top bar, #42; the Activity group moved to the season row, #56).
-    expect(host.querySelectorAll('.console-group > .group-head')).toHaveLength(1);
-    expect(host.querySelectorAll('.console-group .key-row .cl-key').length).toBeGreaterThan(0);
+    // No group headers or key rows are left in the rail: Season moved to the top bar (#42), Activity to the season row (#56), Layers and View to popouts (#58).
+    expect(host.querySelectorAll('.group-head, .key-row, .console-group')).toHaveLength(0);
   });
 });

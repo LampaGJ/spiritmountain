@@ -8,9 +8,8 @@ import {
   type HashFilter,
 } from './filter-hash';
 import { createClickKey, createToggleKey } from './clicky-key';
-import { createExaggerationKey, type ExaggerationKey } from './exaggeration-key';
 import { iconFor } from './icons';
-import { groupHead } from './rail';
+import { createPopout, getTopBar, releaseTopBar, type Popout } from './top-bar';
 import type { FacetCounts, Filter, SeasonCounts } from './filter-predicate';
 import {
   buildSeasonBar,
@@ -44,8 +43,10 @@ export interface FilterStripDeps {
   readonly setSurface?: (on: boolean) => void;
   /** Called with the trees switch on mount and whenever it changes. Absent means no Trees button. */
   readonly setTrees?: (on: boolean) => void;
-  /** Called with the terrain exaggeration factor (0 to 10, 1 = true scale) on mount and whenever it changes. Absent means no slider. */
+  /** Called with the terrain exaggeration factor (0.1 to 10, 1 = true scale) on mount and whenever it changes. */
   readonly setExaggeration?: (k: number) => void;
+  /** Called with the exaggeration the hash holds on mount and whenever it changes, so the DEBUG slider can show it (#58). */
+  readonly showExaggeration?: (k: number) => void;
   /** Activities per season (seasonActivities). With seasonCounts, mounts the top season bar and normalises the hash. */
   readonly seasonMap?: SeasonMap;
   /** Per-season and per-activity-in-season counts (seasonCounts) for the bar badges and the rail in season mode. */
@@ -54,6 +55,8 @@ export interface FilterStripDeps {
 
 export interface FilterStrip {
   sync(): void;
+  /** The DEBUG slider's setter: writes `exag=` (nothing for 1) and applies it, exactly as the rail slider did. */
+  setExaggeration(k: number): void;
   dispose(): void;
 }
 
@@ -89,7 +92,7 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
   let surfaceApplied: boolean | undefined;
   let treesButton: HTMLButtonElement | undefined;
   let treesApplied: boolean | undefined;
-  let exagKey: ExaggerationKey | undefined;
+  let layersPopout: Popout | undefined;
   let exagApplied: number | undefined;
   let seasonBar: SeasonBar | undefined;
 
@@ -141,13 +144,18 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
         deps.setTrees?.(on);
       }
     }
-    if (exagKey) {
+    if (deps.setExaggeration || deps.showExaggeration) {
       const k = state.exag ?? 1;
-      exagKey.setValue(k);
+      deps.showExaggeration?.(k);
       if (exagApplied !== k) {
         exagApplied = k;
         deps.setExaggeration?.(k);
       }
+    }
+    // With the season bar mounted the status line lives there; the rail then holds only Clear Filters and the notice, and hides when neither applies (#58).
+    if (seasonBar !== undefined) {
+      deps.host.hidden =
+        state.activity.length === 0 && state.season.length === 0 && notice.textContent === '';
     }
   };
 
@@ -233,16 +241,6 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
     render();
   };
 
-  const section = (headIconId: string, slot?: string): HTMLDivElement => {
-    const wrap = el('div', undefined, 'console-group');
-    wrap.setAttribute('role', 'group');
-    const headId = `console-head-${headIconId}`;
-    wrap.setAttribute('aria-labelledby', headId);
-    wrap.appendChild(groupHead(headIconId, headId));
-    if (slot !== undefined) wrap.dataset.slot = slot;
-    return wrap;
-  };
-
   const clearEntry = iconFor('clear-filters');
   const clearKey = createClickKey(clearEntry.label, { icon: clearEntry.symbol });
   clearKey.button.addEventListener('click', clear);
@@ -251,28 +249,27 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
   const foot = el('div', undefined, 'console-foot');
   foot.append(clearKey.root, count, notice);
 
-  // The Layers group is mounted only when the host supplies setImagery, setBuildings, setSurface or setTrees.
-  const layersSlot = section('group-layers', 'imagery');
-  const layerRow = el('div', undefined, 'key-row');
-  layersSlot.append(layerRow);
+  // The Layers popout is mounted only when the host supplies setImagery, setBuildings, setSurface or setTrees.
+  if (deps.setImagery || deps.setBuildings || deps.setSurface || deps.setTrees) {
+    layersPopout = createPopout({
+      iconId: 'group-layers',
+      panelId: 'layers',
+      panelLabel: 'Layers',
+      align: 'end',
+    });
+  }
   const layerKey = (id: string, onClick: () => void, pressed = true): HTMLButtonElement => {
     const { symbol, label } = iconFor(id);
     const key = createToggleKey(label, { icon: symbol });
     key.button.setAttribute('aria-pressed', String(pressed));
     key.button.addEventListener('click', onClick);
-    layerRow.appendChild(key.root);
+    layersPopout?.panel.appendChild(key.root);
     return key.button;
   };
   if (deps.setImagery) imageryButton = layerKey('imagery', toggleImagery);
   if (deps.setBuildings) buildingsButton = layerKey('buildings', toggleBuildings);
   if (deps.setSurface) surfaceButton = layerKey('surface', toggleSurface, false);
   if (deps.setTrees) treesButton = layerKey('trees', toggleTrees, false);
-
-  if (deps.setExaggeration) {
-    const { symbol, label } = iconFor('terrain-exaggeration');
-    exagKey = createExaggerationKey({ icon: symbol, label, onChange: setExag });
-    layersSlot.append(exagKey.root);
-  }
 
   // The season choice lives in the top bar (#42), not in the rail.
   const { seasonMap, seasonCounts } = deps;
@@ -283,27 +280,28 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
       onSeason: (season) => commit(selectSeason(state, season, seasonMap)),
       onActivity: (activity) => commit(toggleSeasonActivity(state, activity, seasonMap)),
     });
-    document.body.appendChild(seasonBar.root);
+    // The status line sits under the season keys (CSS order); the rail keeps Clear Filters and the notice.
+    seasonBar.root.appendChild(count);
+    foot.replaceChildren(clearKey.root, notice);
+    if (layersPopout) getTopBar().keys.appendChild(layersPopout.root);
+  } else if (layersPopout) {
+    // No season bar (no season data): the Layers popout stays in the host.
+    deps.host.appendChild(layersPopout.root);
   }
 
-  deps.host.replaceChildren(
-    foot,
-    ...(deps.setImagery ||
-    deps.setBuildings ||
-    deps.setSurface ||
-    deps.setTrees ||
-    deps.setExaggeration
-      ? [layersSlot]
-      : []),
-  );
+  deps.host.prepend(foot);
   window.addEventListener('hashchange', sync);
   sync();
 
   return {
     sync,
+    setExaggeration: setExag,
     dispose: () => {
       window.removeEventListener('hashchange', sync);
-      seasonBar?.root.remove();
+      layersPopout?.dispose();
+      seasonBar?.dispose();
+      count.remove();
+      releaseTopBar();
     },
   };
 }

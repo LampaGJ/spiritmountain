@@ -56,6 +56,7 @@ Run as `npm run ingest:<name>`. Each needs the ones above it that it names.
 - No `innerHTML`, `outerHTML`, `insertAdjacentHTML` or `document.write` in `src/` (`tests/lint/no-inner-html.test.ts`). Build DOM with `createElement` and `textContent`.
 - Tuning controls go through `registerDebugControl` / `registerDebugToggle` in `src/ui/debug-panel.ts` (the collapsed DEBUG panel, top right, `sm-debug-open` in localStorage). No hash key: it is not state of record. Sport strands shift on screen by the `uStrandShift` uniform patched in `src/scene/areas.ts` (`patchStrandShader`); `AreaLayer.strandMode` says whether the patch landed.
 - The hash codec lives in `src/ui/filter-hash.ts`; a new hash key goes through its Zod schema, never ad hoc parsing.
+- One top bar (`#season-bar`, `src/ui/top-bar.ts`) holds `[View ▾] [seasons] [Layers ▾]`, the status line and the activity row. View and Layers are popouts (plain buttons in a `div`, one open at a time); the rail holds only Clear Filters and hides when no filter is active. The terrain exaggeration slider lives in the DEBUG panel (`src/ui/mount-filters.ts`); `exag=` stays the state of record.
 
 ## Git and tracker
 

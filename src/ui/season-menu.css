@@ -6,15 +6,15 @@
  * The key look (faces, pressed state, hover and focus-visible lift) is generated into clicky.css.
  */
 :root:has(#season-bar) {
-  /* 72 px season key plus 8 px above and below; the open value adds the 36 px activity row. */
-  --sm-season-h: 88px;
-  --sm-season-open-h: 136px;
+  /* 72 px season key plus 8 px above and below plus the 20 px status line; the open value adds the 36 px activity row. */
+  --sm-season-h: 108px;
+  --sm-season-open-h: 156px;
 }
 @media (pointer: coarse) {
   :root:has(#season-bar) {
     /* 44 px touch keys. */
-    --sm-season-h: 60px;
-    --sm-season-open-h: 116px;
+    --sm-season-h: 80px;
+    --sm-season-open-h: 136px;
   }
 }
 
@@ -47,7 +47,7 @@
 #season-bar .cl-key {
   pointer-events: auto;
 }
-#season-bar .sm-season-keys,
+#season-bar .sm-bar-keys,
 #season-bar .sm-season-row {
   display: flex;
   flex-direction: row;
@@ -58,13 +58,46 @@
   /* Room for the key's drop shadow and the focus ring. */
   padding: 2px 4px 6px 3px;
 }
-/* Season keys at twice the rail size on desktop: 72 px tall, type and badge scaled with them. */
+/* The bar's keys (View, the four seasons, Layers) at twice the rail size on desktop: 72 px tall, type and badge scaled with them. */
+#season-bar .sm-bar-keys {
+  order: 0;
+}
+#season-bar .sm-season-keys {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 8px;
+  order: 1;
+}
 @media (min-width: 720px) {
-  #season-bar .sm-season-keys {
-    --cl-h: 72px;
-    font-size: 2em;
+  #season-bar .sm-bar-keys {
     gap: 16px;
   }
+  #season-bar .sm-season-keys,
+  #season-bar .sm-popout > .cl-key {
+    --cl-h: 72px;
+  }
+  #season-bar .sm-season-keys {
+    gap: 16px;
+  }
+}
+/* The status line (N trails · N lifts) sits under the keys, above the activity row. */
+#season-bar .filter-count {
+  order: 1;
+  margin: 0;
+  padding: 0 2px;
+  max-width: 100%;
+  color: var(--sm-ink);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  text-shadow: var(--sm-halo);
+  pointer-events: auto;
+}
+#season-bar .sm-season-row {
+  order: 2;
 }
 #season-bar .sm-season-row[hidden] {
   display: none;
@@ -76,8 +109,54 @@
   flex: 0 0 auto;
 }
 /* 11em fits "Winter" plus a two-digit badge without an ellipsis; four keys end near x 610, clear of the panel at x 828. */
-#season-bar .sm-season-keys .cl-key .btn-scale {
+#season-bar .sm-season-keys .cl-key .btn-scale,
+#season-bar .sm-popout > .cl-key .btn-scale {
   width: 11em;
+}
+#season-bar .sm-popout > .cl-key .sm-chevron {
+  margin-left: auto;
+}
+#season-bar .sm-popout > .cl-key .btn-label {
+  flex: 0 1 auto;
+}
+
+/* Popouts: View left of the seasons, Layers right. The panel opens under its key; its buttons are the rail's 36 px keys. */
+#season-bar .sm-popout {
+  position: relative;
+  display: block;
+  order: 0;
+}
+#season-bar .sm-popout--end {
+  order: 2;
+}
+#season-bar .sm-popout-panel {
+  --cl-h: 36px;
+  position: absolute;
+  z-index: 6;
+  top: 100%;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 4px 6px 3px;
+  font-size: 13px;
+  pointer-events: none;
+}
+#season-bar .sm-popout--end .sm-popout-panel {
+  left: auto;
+  right: 0;
+}
+#season-bar .sm-popout-panel[hidden] {
+  display: none;
+}
+#season-bar .sm-popout-panel .cl-key .btn-scale {
+  width: 14em;
+}
+#season-bar .sm-popout > .cl-key .btn-face .sm-chevron {
+  transition: transform 110ms var(--sm-ease);
+}
+#season-bar .sm-popout > .cl-key button[aria-expanded='true'] .sm-chevron {
+  transform: rotate(180deg);
 }
 /* Row keys keep the engine's label-length width, with room for the glyph, the swatch and the gaps of the left-aligned face. */
 #season-bar .sm-season-row .cl-key.has-icon {
@@ -122,7 +201,7 @@
   }
 }
 
-/* Phone: a full-width surface at the top; both rows scroll sideways. The rail stays the bottom bar (rail.css). */
+/* Phone: a full-width surface at the top; both rows scroll sideways and the popouts open as full-width sheets under the bar. The rail stays the bottom bar (rail.css). */
 @media (max-width: 719px) {
   #season-bar {
     box-sizing: border-box;
@@ -130,6 +209,9 @@
     left: 0;
     right: 0;
     max-width: none;
+    /* The desktop fit-content centring would size the bar to its keys and push them off screen. */
+    width: auto;
+    margin-inline: 0;
     gap: 0;
     padding: env(safe-area-inset-top, 0px) calc(4px + env(safe-area-inset-right, 0px)) 0
       calc(4px + env(safe-area-inset-left, 0px));
@@ -142,7 +224,7 @@
       backdrop-filter: blur(8px);
     }
   }
-  #season-bar .sm-season-keys,
+  #season-bar .sm-bar-keys,
   #season-bar .sm-season-row {
     overflow-x: auto;
     overflow-y: hidden;
@@ -151,9 +233,39 @@
     touch-action: pan-x;
     scrollbar-width: none;
     padding: 6px 4px 6px;
+    /* Stretch to the bar so the row scrolls instead of growing past the screen. */
+    align-self: stretch;
+    min-width: 0;
+    /* Centred, but never past the start edge: a plain centre would clip the first key out of reach of the scroll. */
+    justify-content: flex-start;
+    justify-content: safe center;
   }
-  #season-bar .sm-season-keys::-webkit-scrollbar,
+  #season-bar .sm-bar-keys::-webkit-scrollbar,
   #season-bar .sm-season-row::-webkit-scrollbar {
     display: none;
+  }
+  #season-bar .sm-bar-keys {
+    gap: 8px;
+  }
+  #season-bar .filter-count {
+    padding-bottom: 4px;
+  }
+  /* The popout is static so the panel's containing block is the fixed bar, not the scrolling row (no clipping, full bar width). */
+  #season-bar .sm-popout {
+    position: static;
+  }
+  #season-bar .sm-popout-panel,
+  #season-bar .sm-popout--end .sm-popout-panel {
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 8px 12px;
+    pointer-events: auto;
+    background: rgb(14 18 22 / 0.92);
+    border-bottom: 1px solid var(--sm-line);
   }
 }

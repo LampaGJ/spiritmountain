@@ -40,21 +40,39 @@ describe('views strip', () => {
     }
   });
 
-  it('joins the shared left rail with a View header and no plate', () => {
+  it('is a View popout at the left of the top bar, closed until the trigger is pressed', () => {
     strip = mountViews({ setView: vi.fn() });
     const root = document.getElementById('views');
-    expect(root?.parentElement?.id).toBe('rail');
-    expect(document.querySelector('.sm-plate')).toBeNull();
-    expect(root?.querySelector('.group-head')?.textContent).toBe('visibilityView');
-    expect(root?.querySelector('.group-head .ms')?.getAttribute('aria-hidden')).toBe('true');
+    const popout = root?.parentElement;
+    expect(popout?.classList.contains('sm-popout')).toBe(true);
+    expect(popout?.parentElement?.classList.contains('sm-bar-keys')).toBe(true);
+    expect(document.getElementById('rail')).toBeNull();
+    const trigger = popout?.querySelector<HTMLButtonElement>(':scope > .cl-key button');
+    expect(trigger?.querySelector('.btn-label')?.textContent).toBe('View');
+    expect(trigger?.querySelector('.ms')?.textContent).toBe(iconFor('group-view').symbol);
+    expect(trigger?.getAttribute('aria-expanded')).toBe('false');
+    expect(trigger?.getAttribute('aria-controls')).toBe('views');
+    expect(root?.hidden).toBe(true);
+    trigger?.click();
+    expect(root?.hidden).toBe(false);
+    expect(trigger?.getAttribute('aria-expanded')).toBe('true');
   });
 
-  it('removes the rail with its last section on dispose', () => {
+  it('closes the popout and returns focus to the trigger when a view is chosen', () => {
     strip = mountViews({ setView: vi.fn() });
-    expect(document.getElementById('rail')).not.toBeNull();
+    const trigger = document.querySelector<HTMLButtonElement>('.sm-popout > .cl-key button');
+    trigger?.click();
+    keyOf('overview').click();
+    expect(document.getElementById('views')?.hidden).toBe(true);
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it('removes the top bar with its last popout on dispose', () => {
+    strip = mountViews({ setView: vi.fn() });
+    expect(document.getElementById('season-bar')).not.toBeNull();
     strip.dispose();
     strip = undefined;
-    expect(document.getElementById('rail')).toBeNull();
+    expect(document.getElementById('season-bar')).toBeNull();
   });
 
   it('calls setView with the view name and marks it aria-current', () => {
