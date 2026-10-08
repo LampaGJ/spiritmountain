@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { ReplayRecordSchema } from '../../src/schema/replay';
 import { TerrainHeaderSchema, type TerrainHeader } from '../../src/schema/terrain';
 import { ContextManifestSchema } from './context-manifest-schema';
-import { CONTEXT_TILES, FADE_OUTER_M, fadeAlpha, tileKey } from './context-tiles';
+import { CONTEXT_TILES, FADE_OUTER_M, tileKey } from './context-tiles';
 import { ContextTreesHeaderSchema, type ContextTreesHeader } from './context-trees-schema';
 import { ImageryManifestSchema } from './imagery-manifest-schema';
 import {
@@ -46,18 +46,24 @@ export const LOCK_ROOTS: string[] = ['jpeg-js', 'zod'];
 
 /** Placement constants (issue #53). They are copied into context-trees.json. */
 export const TREE_SEED = 53;
-/** Side of one candidate block in metres. Raised to 40 if the instance count passes the 120k target. */
-export const BLOCK_M = 30;
+/** Side of one candidate block in metres (issue #59: 15, one candidate per 225 m2). Raise to 18 if the instance count passes 200k. */
+export const BLOCK_M = 15;
 /** Block mean of (g - max(r, b)) / 255: at or above GREEN_MIN a block is forest. Core tree blocks measure q5 0.046, median 0.089 on the 1.7 m photo. */
 export const GREEN_MIN = 0.055;
 /** At or above this greenness a tree takes the full height. */
 export const GREEN_FULL = 0.11;
-/** Keep probability inside INNER_M, before the radial thinning. */
+/** Keep probability in ring 0, the ring touching the core border. */
 export const BASE_DENSITY = 0.85;
-/** Keep probability is 1 x BASE_DENSITY inside this distance from the frame centre, falls with a smoothstep to 0 at OUTER_M. */
-export const INNER_M = 5000;
+/** Ring width as a fraction of the core window diameter: 250 m for the 2.5 km core. */
+export const RING_FRACTION = 0.1;
+/** The default ring width in metres, used when the caller does not derive one from the core window. */
+export const RING_M = 250;
+/** Each ring removes this share of what the previous ring kept: p(k) = BASE_DENSITY * (1 - REMOVAL_STEP)^k. */
+export const REMOVAL_STEP = 0.1;
+/** Blocks at or beyond this distance from the frame centre are never placed (the tiles end there). */
 export const OUTER_M = FADE_OUTER_M;
-export const JITTER_M = 6;
+/** Jitter is uniform within plus or minus this share of a block, on both axes. */
+export const JITTER_BLOCKS = 0.5;
 export const HEIGHT_MIN_M = 8;
 export const HEIGHT_MAX_M = 22;
 export const HEIGHT_JITTER = 0.1;
@@ -137,9 +143,14 @@ export function blockSeed(blockIndex: number, seed: number): number {
   return (Math.imul(blockIndex + 1, 0x9e3779b1) ^ Math.imul(seed + 1, 0x85ebca6b)) >>> 0;
 }
 
-/** Probability a forest block keeps its tree at distance r from the frame centre: BASE_DENSITY inside INNER_M, smoothstep to 0 at OUTER_M. */
-export function keepProbability(distanceM: number, baseDensity = BASE_DENSITY): number {
-  return baseDensity * fadeAlpha(distanceM, INNER_M, OUTER_M);
+/** Ring index k = floor((r - coreRadius) / ringM) for a block at distance r from the core centre; 0 at or inside the core border. */
+export function ringIndex(distanceM: number, coreRadiusM: number, ringM = RING_M): number {
+  return Math.max(0, Math.floor((distanceM - coreRadiusM) / ringM));
+}
+
+/** Probability a forest block in ring k keeps its tree: baseDensity * (1 - REMOVAL_STEP)^k. */
+export function keepProbability(ring: number, baseDensity = BASE_DENSITY): number {
+  return baseDensity * (1 - REMOVAL_STEP) ** ring;
 }
 
 export interface BlockColour {
@@ -228,11 +239,13 @@ export interface PlaceOptions {
   seed?: number;
   blockM?: number;
   baseDensity?: number;
+  /** Ring width in metres; defaults to RING_M. */
+  ringM?: number;
 }
 
 export interface PlaceResult {
   trees: TreeRecord[];
-  /** Forest blocks inside OUTER_M and outside the core window, before the radial thinning. */
+  /** Forest blocks inside OUTER_M and outside the core window, before the ring thinning. */
   forestBlocks: number;
 }
 
@@ -242,13 +255,17 @@ const inBox = (b: LocalBox, x: number, y: number): boolean =>
 /**
  * @displayName Place context trees
  * @strategicPurpose Extends the forest past the core window to the far field from the only data the surrounding tiles have (a 10 m or 1.7 m photo and a bare-earth heightfield), thinned by distance so the trees blend into the bare far ground.
- * @tacticalObjective Scans a BLOCK_M lattice anchored at the frame origin in row-major order over every photo; a block with its centre outside the core window and inside OUTER_M, whose mean greenness reaches GREEN_MIN, keeps a tree when mulberry32(blockSeed(lattice index)) passes BASE_DENSITY times the smoothstep falloff from INNER_M to OUTER_M; places it at the block centre plus up to JITTER_M of jitter, with height from the greenness (8 to 22 m, 10 percent jitter), a class (75 percent broadleaf), an archetype, a rotation, and the block colour darkened 15 percent.
+ * @tacticalObjective Scans a BLOCK_M lattice anchored at the frame origin in row-major order over every photo; a block with its centre outside the core window and inside OUTER_M, whose mean greenness reaches GREEN_MIN, sits in ring k = floor((r - core half-width) / ring width) of its distance r from the core centre and keeps a tree when mulberry32(blockSeed(lattice index)) passes BASE_DENSITY * 0.9^k (each ring removes a further 10 percent of what the ring before kept); places it at the block centre plus up to half a block of jitter on each axis, drawn before the keep test, with height from the greenness (8 to 22 m, 10 percent jitter), a class (75 percent broadleaf), an archetype, a rotation, and the block colour darkened 15 percent.
  * @manipulation reduces
  */
 export function placeContextTrees(input: PlaceInput, options: PlaceOptions = {}): PlaceResult {
   const seed = options.seed ?? TREE_SEED;
   const blockM = options.blockM ?? BLOCK_M;
   const baseDensity = options.baseDensity ?? BASE_DENSITY;
+  const ringM = options.ringM ?? RING_M;
+  const coreRadius = (input.exclude.xmax - input.exclude.xmin) / 2;
+  const coreCx = (input.exclude.xmin + input.exclude.xmax) / 2;
+  const coreCy = (input.exclude.ymin + input.exclude.ymax) / 2;
   const trees: TreeRecord[] = [];
   const seen = new Set<number>();
   let forestBlocks = 0;
@@ -280,16 +297,17 @@ export function placeContextTrees(input: PlaceInput, options: PlaceOptions = {})
         forestBlocks += 1;
         const rng = mulberry32(blockSeed(index, seed));
         // Every draw is taken before any branch, so a change of density never shifts another block's stream.
-        const keep = rng();
         const jx = rng();
         const jy = rng();
+        const keep = rng();
         const heightJitter = rng();
         const classDraw = rng();
         const pick = rng();
         const rotation = rng();
-        if (keep >= keepProbability(distance, baseDensity)) continue;
-        const x = cx + (jx * 2 - 1) * JITTER_M;
-        const y = cy + (jy * 2 - 1) * JITTER_M;
+        const ring = ringIndex(Math.hypot(cx - coreCx, cy - coreCy), coreRadius, ringM);
+        if (keep >= keepProbability(ring, baseDensity)) continue;
+        const x = cx + (jx * 2 - 1) * JITTER_BLOCKS * blockM;
+        const y = cy + (jy * 2 - 1) * JITTER_BLOCKS * blockM;
         let ground: number | null = null;
         for (const hf of input.heightfields) {
           ground = sampleHeightfield(hf, x, y);
@@ -450,6 +468,7 @@ export function runContextTrees(options: ContextTreesOptions): ContextTreesResul
     ymax: core.hf.originY,
   };
 
+  const ringM = RING_FRACTION * (exclude.xmax - exclude.xmin);
   const sources: ImageSource[] = [];
   const heightfields: Heightfield[] = [];
 
@@ -516,7 +535,7 @@ export function runContextTrees(options: ContextTreesOptions): ContextTreesResul
 
   const { trees, forestBlocks } = placeContextTrees(
     { sources, heightfields, exclude },
-    { seed: TREE_SEED, blockM, baseDensity: BASE_DENSITY },
+    { seed: TREE_SEED, blockM, baseDensity: BASE_DENSITY, ringM },
   );
   const bin = packTrees(trees);
   const counts = countTrees(trees);
@@ -536,9 +555,11 @@ export function runContextTrees(options: ContextTreesOptions): ContextTreesResul
       greenMin: GREEN_MIN,
       greenFull: GREEN_FULL,
       baseDensity: BASE_DENSITY,
-      innerM: INNER_M,
+      innerM: (exclude.xmax - exclude.xmin) / 2,
       outerM: OUTER_M,
-      jitterM: JITTER_M,
+      jitterM: JITTER_BLOCKS * blockM,
+      ringM,
+      removalStep: REMOVAL_STEP,
       heightMinM: HEIGHT_MIN_M,
       heightMaxM: HEIGHT_MAX_M,
       heightJitter: HEIGHT_JITTER,
