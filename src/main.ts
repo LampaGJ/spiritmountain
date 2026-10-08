@@ -212,6 +212,26 @@ if (!('error' in areaLayerResult)) {
   for (const material of areaLayerResult.curtainMaterials) handle.applyHorizon(material);
 }
 
+// Lift chairs (#68): one instanced mesh riding the haul-rope loops. Ground-side: radial fade at build, then the horizon blend.
+import { effectiveScale } from './scene/elevated';
+import { installLiftChairs, type LiftChairsHandle } from './scene/lifts';
+let liftChairs: LiftChairsHandle | null = null;
+if (!('error' in areaLayerResult)) {
+  liftChairs = installLiftChairs(
+    handle.elevated,
+    areaLayerResult.registry.values(),
+    (east, north, elevation) => {
+      const p = toScene(east, north, elevation);
+      return [p.x, p.y, p.z];
+    },
+    { fadeCentre },
+  );
+  handle.applyHorizon(liftChairs.material);
+  const chairs = liftChairs;
+  // The phase advances only from the frame delta the host passes, so the animation is replayable.
+  handle.onFrame((deltaMs) => chairs.step(deltaMs, effectiveScale(handle.exaggeration)));
+}
+
 // Sport billboards (#43): one sign per same-sport cluster, inside the elevated group. A failure only loses the signs.
 let billboardLayer: BillboardLayer | null = null;
 if (!('error' in areaLayerResult)) {
@@ -660,6 +680,21 @@ if (!('error' in areaLayer)) {
   }
 }
 
+// Lift chairs (#68): the speed slider sits in its own block so it does not share a hunk with the trail controls above.
+if (liftChairs) {
+  const chairs = liftChairs;
+  registerDebugControl({
+    id: 'chair-speed',
+    label: 'Chair speed (m/s)',
+    min: 0,
+    max: 8,
+    step: 0.1,
+    value: chairs.speed,
+    format: (v) => v.toFixed(1),
+    onChange: (mps) => chairs.setSpeed(mps),
+  });
+}
+
 import annotationsUrl from '../data/annotations.json?url';
 import {
   failedAnnotationsHandle,
@@ -733,6 +768,8 @@ if (import.meta.env.DEV) {
   (window as unknown as { __spirit: unknown }).__spirit = {
     renderer: handle.renderer,
     scene: handle.scene,
+    camera: handle.camera,
+    controls: handle.controls,
     billboards: billboardLayer,
   };
 }
