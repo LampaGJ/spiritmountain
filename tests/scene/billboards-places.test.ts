@@ -218,6 +218,7 @@ describe('sign texture and drawing with a place', () => {
       moveTo() {},
       arc() {},
       arcTo() {},
+      lineTo() {},
       closePath() {},
       fill() {},
       fillText(text: string, _x: number, y: number) {
@@ -257,6 +258,7 @@ describe('sign texture and drawing with a place', () => {
         moveTo() {},
         arc() {},
         arcTo() {},
+        lineTo() {},
         closePath() {},
         fill() {},
         fillText(text: string) {
