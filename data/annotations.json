@@ -1,8 +1,8 @@
 {
   "version": 1,
   "generatedFrom": {
-    "inputHash": "7a0ee2f7ee4f13ab2e229a90bdb0278bc5e2bd5836c3b62a1fbbb685f998e89e",
-    "codeCommit": "f4daca344bebcd061ccefa7b0513fd83e0c642e8",
+    "inputHash": "a3b7ae0b5aea0be7da29c548f377d3032e77143286ad77c4c790ccdd1c4a75c3",
+    "codeCommit": "4c927e1d433bc6ffec7ee254f14713b6080b61fa",
     "effect": "expands"
   },
   "organizations": [
@@ -1231,6 +1231,48 @@
       "notes": ""
     },
     {
+      "areaId": "way/1087555346",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
       "areaId": "way/1110507433",
       "activities": [
         {
@@ -1348,6 +1390,90 @@
         {
           "orgId": "spirit-mountain-recreation-area-authority",
           "role": "operates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1110507443",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1110507444",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
         }
       ],
       "notes": ""
@@ -1475,6 +1601,48 @@
       "notes": ""
     },
     {
+      "areaId": "way/1179610014",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
       "areaId": "way/1180257595",
       "activities": [
         {
@@ -1597,6 +1765,300 @@
       "notes": ""
     },
     {
+      "areaId": "way/1182475845",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1182475847",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1182475848",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1182475850",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1182475852",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1182475855",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1182475858",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
       "areaId": "way/1183482171",
       "activities": [
         {
@@ -1692,6 +2154,48 @@
         {
           "orgId": "spirit-mountain-recreation-area-authority",
           "role": "operates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1183482197",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
         }
       ],
       "notes": ""
@@ -1842,6 +2346,90 @@
         {
           "orgId": "spirit-mountain-recreation-area-authority",
           "role": "operates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1183482202",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1183495453",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
         }
       ],
       "notes": ""
@@ -3006,6 +3594,48 @@
       "notes": ""
     },
     {
+      "areaId": "way/1189415340",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
       "areaId": "way/1194065570",
       "activities": [
         {
@@ -3062,6 +3692,132 @@
         {
           "orgId": "spirit-mountain-recreation-area-authority",
           "role": "operates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1194065572",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1194065573",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1247829459",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
         }
       ],
       "notes": ""
@@ -4067,6 +4823,132 @@
       "notes": ""
     },
     {
+      "areaId": "way/1385380471",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1385380472",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1385380473",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
       "areaId": "way/1394439540",
       "activities": [
         {
@@ -4123,6 +5005,48 @@
         {
           "orgId": "spirit-mountain-recreation-area-authority",
           "role": "operates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1468808040",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
         }
       ],
       "notes": ""
@@ -5020,6 +5944,174 @@
       "notes": ""
     },
     {
+      "areaId": "way/1529039396",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1529039397",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1529039415",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1529039416",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
       "areaId": "way/1529039444",
       "activities": [
         {
@@ -5142,6 +6234,132 @@
       "notes": ""
     },
     {
+      "areaId": "way/1530737446",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1530737447",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1530737448",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
       "areaId": "way/1530737449",
       "activities": [
         {
@@ -5198,6 +6416,258 @@
         {
           "orgId": "spirit-mountain-recreation-area-authority",
           "role": "operates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1530737451",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1530737453",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1532735533",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1532735534",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/175836810",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/208263297",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
         }
       ],
       "notes": ""
@@ -5420,6 +6890,174 @@
         {
           "orgId": "spirit-mountain-recreation-area-authority",
           "role": "operates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/56684437",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/56684466",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/56684617",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/56684636",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
         }
       ],
       "notes": ""
@@ -5730,6 +7368,48 @@
       "notes": ""
     },
     {
+      "areaId": "way/621838353",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
       "areaId": "way/621838361",
       "activities": [
         {
@@ -5825,6 +7505,216 @@
         {
           "orgId": "spirit-mountain-recreation-area-authority",
           "role": "operates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/709782213",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/782438179",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/782438180",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/782438181",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/912458627",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
         }
       ],
       "notes": ""
@@ -5947,6 +7837,90 @@
         {
           "orgId": "spirit-mountain-recreation-area-authority",
           "role": "operates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/942312490",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/942312495",
+      "activities": [
+        {
+          "activity": "hike",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        },
+        {
+          "activity": "trail-run",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "city-of-duluth-parks-and-recreation",
+          "role": "maintains"
+        },
+        {
+          "orgId": "lake-superior-zoo",
+          "role": "advocates"
+        },
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        },
+        {
+          "orgId": "superior-hiking-trail-association",
+          "role": "advocates"
         }
       ],
       "notes": ""

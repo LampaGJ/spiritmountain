@@ -1,7 +1,7 @@
 {
-  "inputHash": "a32e333486c894fee7720da56423ac052ca7b4429c59e56cd06de2057d92002d",
-  "codeCommit": "61a2fa56d9986cde012b512e159ef7d00b22aee0",
-  "outputHash": "4d4bf834ed2410471c299143eed4d58232081562eb433ebff7d13b4d9834212f",
+  "inputHash": "b354ed670b0df2aa64a28a934ae007e1b3852387f8754ea85da1474ffcc27d27",
+  "codeCommit": "4c927e1d433bc6ffec7ee254f14713b6080b61fa",
+  "outputHash": "aab57d0510baf5f2eb6acbdde9201ed00f0e7f3f256f41de8f2fbcd238e1e33a",
   "effect": "reduces",
   "toolVersions": {
     "osmtogeojson": "3.0.0-beta.5",
@@ -10,6 +10,7 @@
   "lockSubtreeSha256": "59aa92ae8e489559c0812f8d56d434f5374a49eda46b5d86a33c78479ebc4fde",
   "counts": {
     "downhill-run": 21,
+    "hiking-trail": 47,
     "lift": 8,
     "mtb-route": 29,
     "mtb-trail": 15,
@@ -17,8 +18,11 @@
     "snow-park": 2
   },
   "droppedCounts": {
+    "duplicate-member": 41,
     "node-pylon": 23,
-    "node-station": 2
+    "node-station": 2,
+    "outside-bbox": 1500,
+    "relation-no-new-members": 1
   },
   "dropped": [
     {
@@ -120,6 +124,6216 @@
     {
       "id": "node/8818885274",
       "reason": "node-pylon"
+    },
+    {
+      "id": "relation/11140514",
+      "reason": "relation-no-new-members",
+      "detail": "every member is a way element or was dropped"
+    },
+    {
+      "id": "relation/11140514#way/1001867393",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1003314812",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1005042745",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1005042746",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1005342167",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1005342170",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1005342171",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1005344507",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1005344508",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1005344510",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1005344512",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1005344513",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1005347063",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1005359090",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1005359092",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1005359093",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1008667018",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1008901090",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1030180296",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1030180297",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1037108418",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1059416521",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1061157298",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1061157300",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1074904254",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1074904255",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1074909696",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1074909698",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1074910080",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1074910081",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1074911943",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1074911944",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1074913806",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1074913807",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1074913808",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1074913809",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1074920052",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1074920053",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1078300801",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1081621484",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1081621486",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1081621488",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1081621490",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1081621491",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1088826332",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1088826333",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1088826334",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1094970383",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1094970384",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1098383156",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1098383159",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1099949603",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1099949604",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1099949605",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1099949606",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1099949607",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1099949608",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1103163255",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1103163256",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1106678857",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1110507443",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/1110507444",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/111362467",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/111412570",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/111412571",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1126473892",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/113767154",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/113767157",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/115699102",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/116046236",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/116046238",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/116046239",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/116427952",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/116427953",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/116427956",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/116427959",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1164562761",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1164562762",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1178187801",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1178187802",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1178187809",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1179610014",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/1181930602",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1182475845",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/1182475847",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/1182475848",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/1182475850",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/1182475852",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/1182475855",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/1182475858",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/1182475861",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1182673312",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1183482197",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/1183482202",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/1183495453",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/118634929",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1186508818",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1186508820",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1186508821",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/118760615",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1189415340",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/1189759123",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1194065572",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/1194065573",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/1204024869",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1205269832",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1205269833",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1205272764",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1207542558",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1207542559",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1216811175",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1217785628",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1217785629",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/121822015",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/121848027",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1218614251",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1218614252",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/122294452",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1233932584",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1233932585",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1243951833",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1244055541",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1244055542",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1244055543",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1244055544",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/124682909",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1247751224",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1247751225",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1247785543",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1247829459",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/1262217651",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1262217652",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/126272085",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/126272086",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/126278469",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/126278477",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/126278478",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/126278482",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/126278486",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1266287145",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1266287146",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1266287147",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1266287148",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1266287149",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1266287150",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1274229741",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1274229742",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1275033991",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1275033992",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1275033993",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1275033994",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/129179042",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1296245847",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1296245848",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1300718931",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1300718940",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1306686048",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1306686049",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1309077376",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1309077377",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1309077378",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1309077379",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1309507765",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1309507766",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1309507767",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1309507768",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1309507770",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1309507771",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1313269165",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1313269166",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1313269168",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1313269169",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1313269171",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1313269177",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1313269178",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1313269184",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1315451460",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1315451462",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1315451466",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1315451472",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1317495600",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/132890008",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/132890009",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1335831855",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1336997576",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1370915440",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1382780982",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1384171761",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1384171762",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1384171763",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1384174488",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1384174489",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1384178057",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1384178058",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1384178059",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1384178060",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1385380471",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/1385380472",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/1385380473",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/1389434108",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1389434109",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1389434110",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1389434111",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1389434113",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1389434114",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1389685494",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1389685495",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1389973713",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1389973714",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1389973715",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1390208784",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1390474962",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/139299128",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1396470343",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1411214217",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1411214218",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1418383128",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1418383129",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1418383962",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1418383963",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1423113403",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1423113404",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1423113405",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1423113406",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1423113409",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1423113410",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1426891039",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1426891040",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1427020455",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1427020456",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/143426297",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1442177892",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1442177893",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1442476724",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1442476763",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1442844661",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1450714252",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1450714253",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1450714256",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1450714257",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1450714259",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1450714260",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/145168453",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/145168457",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1459676539",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1459676541",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1459676542",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1459676543",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1459676544",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1459676545",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1459676546",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1459676547",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1459676548",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1468855791",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1468869148",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1469623874",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1469623875",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1471723061",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1471723062",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1471723063",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/148408348",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/148408350",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/148408354",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1489562632",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1489565924",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1497084994",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1497084995",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1500299499",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1500299503",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1500299505",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1500299506",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1501268450",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1501268451",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1502560585",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1502560586",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1502560587",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1502560591",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1502586259",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1502586260",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1502586261",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1502586262",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1502907160",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1502907161",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1524370337",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1524370338",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1524370339",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1525227829",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1525825306",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1529039396",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/1529039397",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/1529039415",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/1529039416",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/1529154796",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1529154797",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1529154804",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1529154805",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1529154806",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1530737448",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/1531347572",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1531347573",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1531858297",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1531858298",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1532735533",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/1532735534",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/1545220533",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1545220534",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1546335710",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1546335711",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1546335712",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1546335713",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1546340840",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/154654013",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1548705618",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1551396758",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1551878970",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1551878971",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1553219448",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1564496556",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1564496563",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1564496564",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1564496566",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1564496567",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1564496568",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/1564784042",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/160625501",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/162162369",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/163350519",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/172596508",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/172596514",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/172596558",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/172866455",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/173220888",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/173804951",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/173804952",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/173804971",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/173804974",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/173804981",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/173804984",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/173804986",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/174767826",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/174767830",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/175836808",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/175836809",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/175836810",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/175836811",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/175836812",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/175836813",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/175960238",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/175963308",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/175966833",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/175966835",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/175966837",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/175968295",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/175968296",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/175968297",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/176029656",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/177412321",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/177412323",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/178547003",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/17997233",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18000640",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18000770",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18002691",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18003384",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18003393",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18035627",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18099232",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18099793",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18104843",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18107580",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18111022",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18111043",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18111279",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18111682",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18111703",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18111973",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18111976",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18111978",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18112040",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18113825",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18114032",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18114531",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18116864",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18116957",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18116965",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18131691",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18133640",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18136516",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18136519",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18136586",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18136765",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18136766",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18136768",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18136808",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18138246",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18182686",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18183215",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18188484",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18189016",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18189877",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18190141",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18191338",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18191347",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18192202",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18192206",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18192210",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18192214",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18194753",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18195405",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18195450",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18196051",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18196336",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18197539",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18197949",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18199515",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18199568",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18200041",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18200462",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18200857",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18200875",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18202538",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18202767",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18202773",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18230848",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18237059",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18241137",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18242155",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18242389",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18242392",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18243485",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18244613",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18244814",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18245451",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18245507",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18245509",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18246006",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18246080",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18246487",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18246881",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18247609",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18248362",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18249217",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18250022",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18250700",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18250743",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18250773",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18250997",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18251207",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18253144",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18254079",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18280877",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18281647",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18281998",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18282060",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18282469",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18282472",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18282474",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/18282772",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/182894650",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/182894658",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/182958007",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/182958008",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/183026717",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/183026738",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/183026744",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/183026746",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/183026747",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/183026756",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/183029694",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/183029708",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/183181983",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/184253392",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/184253395",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/184253403",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/184366741",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/184366742",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/184366743",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/184366747",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/205798367",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/205798376",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/205854461",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/205854462",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/205854465",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/208263297",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/213829026",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/217602731",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/217602739",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/234196306",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/234502490",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/234502763",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/234899855",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/239183870",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/239183871",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/239183872",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/239183873",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/239183874",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/239183877",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/243506405",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/243506406",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/244573517",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/244778775",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/255979022",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/255979023",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/256521385",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/256521386",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/287806974",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/287806975",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/346964236",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/346965869",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/346965870",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/348012332",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/348012364",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/351550525",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/351550538",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/351550542",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/356937444",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/356939508",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/356939509",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/356939511",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/356939513",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/356939515",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/356939518",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/356939519",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/356939520",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/356944746",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/356944753",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/356944764",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/356944775",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/356944778",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/356944779",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/362103193",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/362142042",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/362142043",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/362639148",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/385044366",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/399140082",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/399141921",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/399141923",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/399819997",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/399819999",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/403498171",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/403498172",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/430373620",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/439250469",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/439250956",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/439250961",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/439264350",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/439823159",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/439823795",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/439824262",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/439824264",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/440123027",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/440123029",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/440136567",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/440145304",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/441083348",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/441083351",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/441376578",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/441534797",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/444504174",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/444504181",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/444677564",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/444680137",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/446934958",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/446934959",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/475928702",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/475928707",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/475928708",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/475987446",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/475987447",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/475987448",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/475987449",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/475987450",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/475987451",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/475987454",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/475987456",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/475987457",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/476216982",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/476216983",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/476216985",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/476216986",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/476216987",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/476217004",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/476478803",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/476478805",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/476478806",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/477062443",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/477062444",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/477062446",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/477062447",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/477062448",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/477062449",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/477062451",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/477062452",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/477062453",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/4813835",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/48537323",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/495551553",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/496235098",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/50043691",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/519452556",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/523954985",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/526408694",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/526411999",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/526412908",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/552246167",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/552246177",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/552246178",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/552246182",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/562757719",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/562757720",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/562757729",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/562757730",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56324360",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684351",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684356",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684361",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684363",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684366",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684367",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684370",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684371",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684385",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684396",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684406",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684410",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684437",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/56684453",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684470",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684481",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684482",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684496",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684523",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684536",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684548",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684550",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684556",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684560",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684565",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684583",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684591",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684593",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684598",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684599",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684608",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684614",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684616",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684617",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/56684633",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684636",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/56684643",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684644",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684649",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684651",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/56684658",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/587268021",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/60231054",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/60418457",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/61456092",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/61456093",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/61456095",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/615319595",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/615319596",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/615323419",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/615323420",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/621838353",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/649717315",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/671950880",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/684053373",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/684053374",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/684053378",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/690984688",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/695042128",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/695042132",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/707926698",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/709782213",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/724801934",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/745158728",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/766815559",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/770877827",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/770877828",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/770877833",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/770877834",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/772271704",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/772271705",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/779360545",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/779800025",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/779800026",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/779800027",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/779800028",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/780088884",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/780762398",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/781137945",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/781137946",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/781137948",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/781166808",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/781179160",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/781183653",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/781183655",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/781183656",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/781467510",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/781682301",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/781682303",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/781684549",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/781684551",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/781684554",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/781684557",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/781951776",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/781951782",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/781987321",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/781987322",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/781987323",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/781987324",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/781987325",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/782261053",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/782261055",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/782261057",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/782278194",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/782278195",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/782294435",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/782294436",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/782294437",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/782294438",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/782294440",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/782294441",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/782294443",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/782294446",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/782311925",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/782311927",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/782438179",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/782442232",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/782442234",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/784696619",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/789710344",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/790238111",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/790238116",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/790238117",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/790245511",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/790245512",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/790245513",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/790245514",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/790245515",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/790630123",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/793102547",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/793102548",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/796727418",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/796727419",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/798188816",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/798188817",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/798188818",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/798188819",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/799230749",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/799230750",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/799230751",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/799271286",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/806258882",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/806258883",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/808509645",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/808509646",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/809872055",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/809872057",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/809872065",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/809872066",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/809950335",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/809950340",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/809950341",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/809950342",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/809950344",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/809950346",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/809952876",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/812589520",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/816323808",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/816323809",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/821962438",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/821962439",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/821976199",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/821976200",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/821976201",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/823683531",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/824624797",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/828265560",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/828265561",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/82865223",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/831359687",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/831359689",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/835855842",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/835855843",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/837900881",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/837900882",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/840297857",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/844117201",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845434235",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845434236",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845457677",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845457680",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845457687",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845457689",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845457691",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845480961",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845480962",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845481858",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845481859",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845487235",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845487236",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845487241",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845487242",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845497795",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845497796",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845497798",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845765715",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845765718",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845765719",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845765720",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845765721",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845765723",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845765724",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845765725",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845765726",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845765728",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845765732",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845765734",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845765735",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845765738",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845765739",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845765742",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845765743",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845765744",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845765750",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845765752",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845765753",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845885065",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845885067",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845885068",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845885070",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845885071",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/845885072",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/846251458",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/846251462",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/846251463",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/849301540",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/849301541",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/849301772",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/849301773",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/849339671",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/849339672",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/849343025",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/849343034",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/849916826",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/849916828",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/852456790",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/852456791",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/852456794",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/858191683",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/858211070",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/858211071",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/858276604",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/858276605",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/858276608",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/858276609",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/858784872",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/858784873",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/858790906",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/858790907",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/858790909",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/859029460",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/859029462",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/863390219",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/863390222",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/863390223",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/863565903",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/863565905",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/875602094",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/875602095",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/875832697",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/875832698",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/875832700",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/875832705",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/886806933",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/886806934",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/889417147",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/889417148",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/889417149",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/889417151",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/889417152",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/889417153",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/889417155",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/889417156",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/889604642",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/889604643",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/889604644",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/889604645",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/889604646",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/889604648",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/889604649",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/889604650",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/889604651",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/889604652",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/889604653",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/889604654",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/889604655",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/889604656",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/889604657",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/889604658",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/889604659",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/889604660",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/889604661",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/889604662",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/892603678",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/912458627",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/912458644",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/912458645",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/912458649",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/912458650",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/912458655",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/912458657",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/912530689",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/914492546",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/914492547",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/914492551",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/916980249",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/916980250",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/916980251",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/918341908",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/918341911",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/918341912",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/918341913",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/918341917",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/918341918",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/918341919",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/918341920",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/918341926",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/918341927",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/918341928",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/918341929",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/918712524",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/918712526",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/918712528",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/918712529",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/918712533",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/918712534",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/919137309",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/919137310",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/91929665",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/91929682",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/92112066",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/924551644",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/924551645",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/924551650",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/924551652",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/942312490",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/942312495",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/11140514#way/954194203",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/954194204",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/954466639",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/954466640",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/954467433",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/954467434",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/954706474",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/954706476",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/954706477",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/954710546",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/954833972",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/954835689",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/954835691",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/955149073",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/955883396",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/955883397",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/955883398",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/958708266",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/965085226",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/972892405",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/972892406",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/972892407",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/972892408",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/973562858",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/973565316",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/973565317",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/973808737",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/973808738",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/973808741",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/973808742",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/973814012",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/973814014",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/973814015",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/974496562",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/974497871",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/975800360",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/975801180",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/975801181",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/975803103",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/975815919",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/975815926",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/975815927",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/975834763",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/975834764",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/976192889",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/976192890",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/976234274",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/976766262",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/976766296",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/979842801",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/983231541",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/988538498",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/988579578",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/988579579",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992055447",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992117452",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992117453",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992117454",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992117457",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992117458",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992117459",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992117460",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/99219979",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992365208",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992365209",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992365213",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992365214",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992365216",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992365217",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992365218",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992365219",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992365220",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992365221",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992374767",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992374769",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992374770",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992374771",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992374772",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992374773",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992374775",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992374776",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992374778",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992374779",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992374781",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992374782",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992609733",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992609736",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992609742",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992609744",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992609746",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992609749",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992609750",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992972298",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992972299",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992972300",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992972301",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992972302",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992972304",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992972305",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992972306",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992972308",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992972309",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992972310",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992972313",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992972314",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992972316",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992972318",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992972319",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992972321",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992972322",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992972324",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992972325",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992972326",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992972327",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992972329",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/992972333",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/993368799",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/993368800",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/993368801",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/993368802",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/993368805",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/993368806",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/993368809",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/996671654",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/996671655",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/11140514#way/996671656",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1001867393",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1003314812",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1005042745",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1005042746",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1005342167",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1005342170",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1005342171",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1005344507",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1005344508",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1005344510",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1005344512",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1005344513",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1005347063",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1005359090",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1005359092",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1005359093",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1008667018",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1008901090",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1030180296",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1030180297",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1061157298",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1061157300",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1074904254",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1074904255",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1074909696",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1074909698",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1074910080",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1074910081",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1074911943",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1074911944",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1074913806",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1074913807",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1074913808",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1074913809",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1074920052",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1074920053",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1078300801",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1098383156",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1098383159",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1099949603",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1099949604",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1099949605",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1099949606",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1099949607",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1099949608",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1103163255",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1103163256",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1106678857",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/111412571",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1126473892",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/113767154",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/113767157",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/115699102",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/116046236",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/116046238",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/116046239",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/116427952",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/116427953",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/116427956",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/116427959",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1178187801",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1178187802",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1178187809",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1182475861",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1182673312",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1186508818",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1186508820",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1186508821",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1189759123",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1204024869",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1205269832",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1205269833",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1205272764",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1207542558",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1207542559",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1216811175",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1217785628",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1217785629",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/121822015",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/121848027",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/122294452",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1243951833",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1244055541",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1244055542",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1244055543",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1244055544",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1247829459",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/1612587#way/126272085",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/126272086",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/126278469",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/126278477",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/126278478",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/126278482",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/126278486",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1274229741",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1274229742",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1306686048",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1306686049",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1309077376",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1309077377",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1309077378",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1309077379",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1309507765",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1309507766",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1309507767",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1309507768",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1309507770",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1309507771",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1315451460",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1315451462",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1315451466",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1315451472",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1317495600",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1370915440",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1382780982",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1384171761",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1384171762",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1384171763",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1384174488",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1384174489",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1384178057",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1384178058",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1384178059",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1384178060",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1389434108",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1389434109",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1389434110",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1389434111",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1389434113",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1389434114",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1389685494",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1389685495",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1389973713",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1389973714",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1389973715",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1390208784",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1390474962",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/139299128",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1418383128",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1418383129",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1418383962",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1418383963",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1423113403",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1423113404",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1423113405",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1423113406",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1423113409",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1423113410",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1426891039",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1426891040",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1442844661",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/145168453",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/145168457",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1489562632",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1489565924",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1501268450",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1501268451",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1502560585",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1502560586",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1502560587",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1502560591",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1502586259",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1502586260",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1502586261",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1502586262",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1529154796",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1529154797",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1529154804",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1529154805",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1529154806",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1531858297",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1531858298",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1551396758",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1551878970",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1551878971",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1553219448",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/1564784042",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/160625501",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/162162369",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/172866455",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/173220888",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/174767826",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/174767830",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/175836808",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/175836809",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/175836811",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/175836812",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/175836813",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/18131691",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/18242155",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/18244814",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/18245509",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/18246006",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/18246080",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/18249217",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/18254079",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/213829026",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/243506405",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/243506406",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/244778775",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/256521385",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/256521386",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/362103193",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/385044366",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/403498171",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/403498172",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/446934958",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/446934959",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/475928702",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/475928707",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/475928708",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/475987446",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/475987447",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/475987448",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/475987449",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/475987450",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/475987451",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/475987454",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/475987456",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/475987457",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/476216982",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/476216983",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/476216985",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/476216986",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/476216987",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/476217004",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/476478803",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/476478805",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/476478806",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/477062443",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/477062444",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/477062446",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/477062447",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/477062448",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/477062449",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/477062451",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/477062452",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/477062453",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/48537323",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/495551553",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/552246167",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/552246177",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/552246178",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/552246182",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/562757719",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/562757720",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/562757729",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/562757730",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684351",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684356",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684361",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684363",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684366",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684367",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684370",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684371",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684385",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684396",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684406",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684410",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684453",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684470",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684481",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684482",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684496",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684523",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684536",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684548",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684550",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684556",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684560",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684565",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684583",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684591",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684593",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684598",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684599",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684608",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684614",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684616",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684633",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684643",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684644",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684649",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684651",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/56684658",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/615319595",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/615319596",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/615323419",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/615323420",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/624293441",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/649717315",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/695042128",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/695042132",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/724801934",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/745158728",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/770877827",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/770877828",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/770877833",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/770877834",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/772271704",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/772271705",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/779360545",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/781183653",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/781183655",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/781183656",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/781467510",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/781682301",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/781682303",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/781684549",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/781684551",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/781684554",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/781684557",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/781951776",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/781951782",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/781987321",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/781987322",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/781987323",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/781987324",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/781987325",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/782261053",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/782261055",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/782261057",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/782278194",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/782278195",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/782294435",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/782294436",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/782294437",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/782294438",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/782294440",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/782294441",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/782294443",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/782294446",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/782311925",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/782311927",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/782442232",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/782442234",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/789710344",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/790238111",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/790238116",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/790238117",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/790245511",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/790245512",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/790245513",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/790245514",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/790245515",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/790630123",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/793102547",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/793102548",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/796727418",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/796727419",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/798188816",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/798188817",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/798188818",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/798188819",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/799230749",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/799230750",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/799230751",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/799271286",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/806258882",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/806258883",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/808509645",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/808509646",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/812589520",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/824624797",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/828265560",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/828265561",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/82865223",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/835855842",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/835855843",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/837900881",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/837900882",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/845434235",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/845434236",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/849301540",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/849301541",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/849301772",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/849301773",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/852456790",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/852456791",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/852456794",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/858784872",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/858784873",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/858790906",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/858790907",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/858790909",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/859029460",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/859029462",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/875602094",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/875602095",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/875832697",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/875832698",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/875832700",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/875832705",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/912458644",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/912458645",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/912458649",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/912458650",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/912458655",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/912458657",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/914492546",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/914492547",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/914492551",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/916980249",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/916980250",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/916980251",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/918341908",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/918341911",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/918341912",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/918341913",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/918341917",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/918341918",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/918341919",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/918341920",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/918341926",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/918341927",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/918341928",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/918341929",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/918712524",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/918712526",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/918712528",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/918712529",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/918712533",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/918712534",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/919137309",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/919137310",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/91929665",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/91929682",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/92112066",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/924551644",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/924551645",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/924551650",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/924551652",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/942312490",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/1612587#way/942312495",
+      "reason": "duplicate-member",
+      "detail": "already exploded from an earlier relation"
+    },
+    {
+      "id": "relation/1612587#way/954194203",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/954194204",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/954466639",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/954466640",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/954467433",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/954467434",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/954706474",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/954706476",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/954706477",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/954710546",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/972892405",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/972892406",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/972892407",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/972892408",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/974496562",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/974497871",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/975815919",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/975815926",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/975815927",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/975834763",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/975834764",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/976192889",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/976192890",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/976766262",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/976766296",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/979842801",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/996671654",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/996671655",
+      "reason": "outside-bbox"
+    },
+    {
+      "id": "relation/1612587#way/996671656",
+      "reason": "outside-bbox"
     }
   ]
 }

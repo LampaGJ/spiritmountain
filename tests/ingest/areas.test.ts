@@ -180,7 +180,8 @@ function independentCounts(raw: Uint8Array): {
     pistes.has(tags['piste:type'] ?? '') ||
     lifts.has(tags['aerialway'] ?? '') ||
     tags['mtb:scale'] !== undefined ||
-    tags['route'] === 'mtb';
+    tags['route'] === 'mtb' ||
+    tags['route'] === 'hiking';
   const inBox = (points: RawPoint[]): boolean =>
     points.some(
       (p) => p.lat >= BBOX.south && p.lat <= BBOX.north && p.lon >= BBOX.west && p.lon <= BBOX.east,
@@ -243,9 +244,12 @@ describe.each([
     const ids = result.collection.features.map((f) => f.properties.id);
     expect(ids.some((id) => id.startsWith('relation/'))).toBe(false);
     expect(new Set(ids).size).toBe(ids.length);
-    const coords = result.collection.features.flatMap((f) =>
-      f.geometry.type === 'LineString' ? f.geometry.coordinates : f.geometry.coordinates.flat(),
-    );
+    // hiking-trail ways may run kilometres past the bbox (275 mi route, #48 step 6): any vertex inside keeps the way, the radial fade hides the rest.
+    const coords = result.collection.features
+      .filter((f) => f.properties.kind !== 'hiking-trail')
+      .flatMap((f) =>
+        f.geometry.type === 'LineString' ? f.geometry.coordinates : f.geometry.coordinates.flat(),
+      );
     expect(coords.every((p) => p[2] === 0)).toBe(true);
   });
 
@@ -253,9 +257,12 @@ describe.each([
     const [x0, y0] = toLocal(BBOX.west, BBOX.south);
     const [x1, y1] = toLocal(BBOX.east, BBOX.north);
     const pad = 500;
-    const coords = result.collection.features.flatMap((f) =>
-      f.geometry.type === 'LineString' ? f.geometry.coordinates : f.geometry.coordinates.flat(),
-    );
+    // hiking-trail ways may run kilometres past the bbox (275 mi route, #48 step 6): any vertex inside keeps the way, the radial fade hides the rest.
+    const coords = result.collection.features
+      .filter((f) => f.properties.kind !== 'hiking-trail')
+      .flatMap((f) =>
+        f.geometry.type === 'LineString' ? f.geometry.coordinates : f.geometry.coordinates.flat(),
+      );
     expect(coords.length).toBeGreaterThan(0);
     for (const [x, y] of coords) {
       expect(x).toBeGreaterThanOrEqual(Math.min(x0, x1) - pad);
