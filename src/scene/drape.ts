@@ -200,3 +200,111 @@ export function minClearance(
   }
   return min;
 }
+
+/** Spacing of the points a smoothed trail is resampled to, in plan (#54). */
+export const SMOOTH_STEP_M = 5;
+
+/**
+ * Resample a polyline through a centripetal Catmull-Rom spline (Barry-Goldman form) in plan. The curve passes through
+ * every original vertex, so the endpoints are kept; each span gets ceil(length / stepM) pieces. Consecutive duplicate
+ * points are dropped first, and a line of fewer than 3 distinct points stays straight. Elevation is carried by
+ * interpolating linearly along the span; the caller drapes the result. Pure, so it tests in node.
+ */
+export function smoothPolyline(
+  positions: ReadonlyArray<ReadonlyArray<number>>,
+  stepM = SMOOTH_STEP_M,
+): number[][] {
+  const pts: number[][] = [];
+  for (const p of positions) {
+    const last = pts[pts.length - 1];
+    if (last && last[0] === p[0] && last[1] === p[1]) continue;
+    pts.push([p[0] as number, p[1] as number, p[2] ?? 0]);
+  }
+  if (pts.length < 3) return pts;
+  const at = (i: number): number[] => {
+    if (i < 0) {
+      const a = pts[0] as number[];
+      const b = pts[1] as number[];
+      return [2 * a[0]! - b[0]!, 2 * a[1]! - b[1]!, a[2]!];
+    }
+    if (i >= pts.length) {
+      const a = pts[pts.length - 1] as number[];
+      const b = pts[pts.length - 2] as number[];
+      return [2 * a[0]! - b[0]!, 2 * a[1]! - b[1]!, a[2]!];
+    }
+    return pts[i] as number[];
+  };
+  const mix = (a: number[], b: number[], wa: number, wb: number): number[] => [
+    a[0]! * wa + b[0]! * wb,
+    a[1]! * wa + b[1]! * wb,
+  ];
+  const out: number[][] = [[...(pts[0] as number[])]];
+  for (let i = 0; i < pts.length - 1; i += 1) {
+    const p0 = at(i - 1);
+    const p1 = at(i);
+    const p2 = at(i + 1);
+    const p3 = at(i + 2);
+    const knot = (a: number[], b: number[]): number =>
+      Math.sqrt(Math.hypot(b[0]! - a[0]!, b[1]! - a[1]!));
+    const t0 = 0;
+    const t1 = t0 + knot(p0, p1);
+    const t2 = t1 + knot(p1, p2);
+    const t3 = t2 + knot(p2, p3);
+    const length = Math.hypot(p2[0]! - p1[0]!, p2[1]! - p1[1]!);
+    const pieces = Math.max(1, Math.ceil(length / stepM - 1e-9));
+    for (let k = 1; k <= pieces; k += 1) {
+      const f = k / pieces;
+      if (k === pieces) {
+        out.push([p2[0]!, p2[1]!, p2[2]!]);
+        break;
+      }
+      const t = t1 + f * (t2 - t1);
+      const a1 = mix(p0, p1, (t1 - t) / (t1 - t0), (t - t0) / (t1 - t0));
+      const a2 = mix(p1, p2, (t2 - t) / (t2 - t1), (t - t1) / (t2 - t1));
+      const a3 = mix(p2, p3, (t3 - t) / (t3 - t2), (t - t2) / (t3 - t2));
+      const b1 = mix(a1, a2, (t2 - t) / (t2 - t0), (t - t0) / (t2 - t0));
+      const b2 = mix(a2, a3, (t3 - t) / (t3 - t1), (t - t1) / (t3 - t1));
+      const c = mix(b1, b2, (t2 - t) / (t2 - t1), (t - t1) / (t2 - t1));
+      out.push([c[0]!, c[1]!, p1[2]! + f * (p2[2]! - p1[2]!)]);
+    }
+  }
+  return out;
+}
+
+/** Default distance between parallel sport strands of one trail, in plan (#54). */
+export const LINE_SPACING_M = 2.5;
+
+/**
+ * Offset a polyline sideways in plan by offsetM (positive is to the left of travel, east/north axes). Each vertex moves
+ * along the normalised average of its adjacent segment normals; an end vertex uses its one segment. Zero-length
+ * segments are ignored, and a vertex with no usable segment stays put. Elevation is carried through unchanged: the
+ * caller drapes the result. Pure, so it tests in node.
+ */
+export function offsetPolyline(
+  positions: ReadonlyArray<ReadonlyArray<number>>,
+  offsetM: number,
+): number[][] {
+  const normalOf = (a: ReadonlyArray<number>, b: ReadonlyArray<number>): Vec2 | null => {
+    const dx = (b[0] as number) - (a[0] as number);
+    const dy = (b[1] as number) - (a[1] as number);
+    const length = Math.hypot(dx, dy);
+    return length === 0 ? null : [-dy / length, dx / length];
+  };
+  return positions.map((p, i) => {
+    const before = i > 0 ? normalOf(positions[i - 1] as ReadonlyArray<number>, p) : null;
+    const next = positions[i + 1];
+    const after = next === undefined ? null : normalOf(p, next);
+    let nx = (before?.[0] ?? 0) + (after?.[0] ?? 0);
+    let ny = (before?.[1] ?? 0) + (after?.[1] ?? 0);
+    const length = Math.hypot(nx, ny);
+    if (length < 1e-9) {
+      const fallback = before ?? after;
+      nx = fallback?.[0] ?? 0;
+      ny = fallback?.[1] ?? 0;
+    } else {
+      nx /= length;
+      ny /= length;
+    }
+    return [(p[0] as number) + nx * offsetM, (p[1] as number) + ny * offsetM, p[2] ?? 0];
+  });
+}
