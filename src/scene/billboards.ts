@@ -230,10 +230,21 @@ export function clusterAreas(
 
 /** Two tracks join one concentration when any vertex of one lies within this distance of any vertex of the other. */
 export const CONCENTRATION_RADIUS_M = 250;
-/** A concentration with more tracks than this ... */
-export const SPLIT_TRACKS = 12;
+/** A concentration with more tracks than this ... (8, not 12: with places claiming their own tracks, no leftover sign may claim the whole mountain, #61) */
+export const SPLIT_TRACKS = 8;
 /** ... and a plan extent (bounding-box diagonal) over this many metres splits in two with k-means. */
-export const SPLIT_EXTENT_M = 1500;
+export const SPLIT_EXTENT_M = 1000;
+/** A track belongs to the nearest place sign whose position lies within this many metres of the track's length-weighted centroid (#61). */
+export const CATCHMENT_M = 900;
+/** Place kinds that get their own sign. Lift tops and the campground only name a spot; they never gather tracks. */
+export const PLACE_SIGN_KINDS: ReadonlySet<Place['kind']> = new Set<Place['kind']>([
+  'chalet',
+  'nordic-centre',
+  'park-zone',
+  'adventure-park',
+  'peak',
+  'overlook',
+]);
 /** Two endpoints of different segments closer than this are one junction, not a free end of the track. */
 export const FREE_ENDPOINT_TOLERANCE_M = 5;
 /** Fixed Lloyd iterations of the k = 2 split. */
@@ -413,24 +424,8 @@ export interface SignPlan {
   readonly label: string;
   /** Distinct tracks under this sign. */
   readonly trackCount: number;
-  /** Concentration signs only: the name of the nearest verified place that reaches the sign (#61); absent when none does. */
+  /** Place signs only (#61): the place name, drawn in bold above the trail count. Absent on every other sign. */
   readonly place?: string;
-}
-
-/**
- * @displayName Place name for a sign
- * @strategicPurpose Lets a concentration sign read as a real place ("Grand Avenue Chalet") instead of only "N trails", using only places a source confirmed.
- * @tacticalObjective Returns the name of the nearest place that is verified, has a position, and has the point within its radiusM (the radius itself counts); equal distances go to the earlier place in the list. Null when none qualifies, so an unverified place never labels anything.
- */
-export function placeNameFor(point: PlanePoint, places: readonly Place[]): string | null {
-  let best: { name: string; distance: number } | null = null;
-  for (const place of places) {
-    if (!place.verified || place.east === null || place.north === null) continue;
-    const distance = Math.hypot(point.east - place.east, point.north - place.north);
-    if (distance > place.radiusM) continue;
-    if (best === null || distance < best.distance) best = { name: place.name, distance };
-  }
-  return best === null ? null : best.name;
 }
 
 /**
@@ -454,12 +449,15 @@ function trackActivities(
 }
 
 /**
- * The signs for the visible areas. Areas group into tracks by trackKey; tracks group into concentrations
- * (concentrateTracks); one sign sits at the weighted centroid of every vertex of the concentration. A concentration
- * of more than SPLIT_TRACKS tracks and a plan extent over SPLIT_EXTENT_M splits in two (splitInTwo), each half
- * taking the tracks that have a vertex in it, so one trail running through both halves shows on both signs. The label
- * is the track name for one track, else `N trails`; when a verified place reaches the centroid (placeNameFor) the sign also
- * carries its name. Output order is by east, then north, so it is stable across runs.
+ * The signs for the visible areas. Areas group into tracks by trackKey. Places define concentrations first (#61): every
+ * verified, positioned place of a PLACE_SIGN_KINDS kind owns the tracks whose length-weighted centroid is within
+ * CATCHMENT_M of it (the nearest place wins, a tie goes to the earlier place in the list), and gets one sign at its
+ * position with the place name, the union of its tracks' sports and `N trails`. A place with no member track shows no
+ * sign. The tracks no place owns group into concentrations (concentrateTracks); one sign sits at the weighted centroid
+ * of every vertex of the concentration. A concentration of more than SPLIT_TRACKS tracks and a plan extent over
+ * SPLIT_EXTENT_M splits in two (splitInTwo), each half taking the tracks that have a vertex in it, so one trail running
+ * through both halves shows on both signs. Its label is the track name for one track, else `N trails`. Output order is
+ * by east, then north, so it is stable across runs.
  */
 export function planSigns(
   areas: readonly TrackArea[],
@@ -493,28 +491,73 @@ export function planSigns(
     return trackName(first) ?? signGlyph(sport as Activity).label;
   };
   const plans: SignPlan[] = [];
+  const unionOf = (indices: readonly number[]): Activity[] => {
+    const union = new Set(indices.flatMap((i) => activities[i] as Activity[]));
+    return ActivitySchema.options.filter((a) => union.has(a));
+  };
+
+  // 1. Places claim tracks (#61).
+  const signPlaces = places.filter(
+    (p) => p.verified && p.east !== null && p.north !== null && PLACE_SIGN_KINDS.has(p.kind),
+  );
+  const owned = signPlaces.map((): number[] => []);
+  const leftover: number[] = [];
+  tracks.forEach((track, t) => {
+    const centre = weightedCentroid(track.points);
+    let best = -1;
+    let bestDistance = Number.POSITIVE_INFINITY;
+    signPlaces.forEach((place, p) => {
+      const distance = Math.hypot(
+        centre.east - (place.east as number),
+        centre.north - (place.north as number),
+      );
+      // Strictly nearer wins, so an equal distance stays with the earlier place.
+      if (distance <= CATCHMENT_M && distance < bestDistance) {
+        best = p;
+        bestDistance = distance;
+      }
+    });
+    if (best === -1) leftover.push(t);
+    else (owned[best] as number[]).push(t);
+  });
+  signPlaces.forEach((place, p) => {
+    const indices = owned[p] as number[];
+    if (indices.length === 0) return;
+    plans.push({
+      east: place.east as number,
+      north: place.north as number,
+      family: 'concentration',
+      activities: unionOf(indices),
+      label: `${indices.length} ${indices.length === 1 ? 'trail' : 'trails'}`,
+      trackCount: indices.length,
+      place: place.name,
+    });
+  });
+
+  // 2. The tracks no place owns cluster as before.
   const emit = (indices: readonly number[], points: readonly WeightedPoint[]): void => {
     if (indices.length === 0 || points.length === 0) return;
-    const union = new Set(indices.flatMap((i) => activities[i] as Activity[]));
-    const centre = weightedCentroid(points);
-    const place = placeNameFor(centre, places);
     plans.push({
-      ...centre,
+      ...weightedCentroid(points),
       family: 'concentration',
-      activities: ActivitySchema.options.filter((a) => union.has(a)),
+      activities: unionOf(indices),
       label: labelOf(indices),
       trackCount: indices.length,
-      ...(place === null ? {} : { place }),
     });
   };
-  for (const group of concentrateTracks(tracks)) {
+  const leftTracks = leftover.map((t) => tracks[t] as TrackPoints);
+  for (const localGroup of concentrateTracks(leftTracks)) {
+    const group = localGroup.map((l) => leftover[l] as number);
     const all = group.flatMap((t) => (tracks[t] as TrackPoints).points);
     if (group.length > SPLIT_TRACKS && planExtent(all) > SPLIT_EXTENT_M) {
-      const owned: OwnedPoint[] = group.flatMap((t) =>
+      const ownedPoints: OwnedPoint[] = group.flatMap((t) =>
         (tracks[t] as TrackPoints).points.map((p) => ({ ...p, track: t })),
       );
       const seedTrack = group[0] as number;
-      const [a, b] = splitInTwo(owned, weightedCentroid((tracks[seedTrack] as TrackPoints).points));
+      const [a, b] = splitInTwo(
+        ownedPoints,
+        weightedCentroid((tracks[seedTrack] as TrackPoints).points),
+      );
       if (a.length > 0 && b.length > 0) {
         for (const half of [a, b]) {
           emit(
@@ -709,8 +752,9 @@ export interface ScreenRect {
 export const SIGN_GAP_PX = 4;
 
 /**
- * Screen-space declutter: nearest first, a sign is shown only when its rect (plus SIGN_GAP_PX) overlaps no sign
- * already shown. Returns one flag per input, in input order. Equal distances go by priority (concentration signs first), then input order.
+ * Screen-space declutter: lowest priority number first (concentration and place signs, 0, before trail signs, 1), then
+ * nearest first within a priority, then input order. A sign is shown only when its rect (plus SIGN_GAP_PX) overlaps no
+ * sign already shown, so a trail sign yields to any concentration or place sign, however near it is. Returns one flag per input, in input order.
  */
 export function declutter(rects: readonly ScreenRect[]): boolean[] {
   const order = rects
@@ -718,7 +762,7 @@ export function declutter(rects: readonly ScreenRect[]): boolean[] {
     .sort((a, b) => {
       const ra = rects[a] as ScreenRect;
       const rb = rects[b] as ScreenRect;
-      return ra.distance - rb.distance || (ra.priority ?? 0) - (rb.priority ?? 0) || a - b;
+      return (ra.priority ?? 0) - (rb.priority ?? 0) || ra.distance - rb.distance || a - b;
     });
   const shown = rects.map(() => false);
   const kept: ScreenRect[] = [];
@@ -859,12 +903,12 @@ export function drawSign(ctx: SignContext2D, spec: SignSpec): void {
     return;
   }
   if (spec.place !== undefined) {
-    // A named place: chips on top, the place name in bold, then the trail count smaller underneath (same hierarchy as a trail sign).
+    // A named place: chips on top, the place name in bold, then the trail count smaller underneath. The name matches a trail sign's name: 0.34 of the height, bold.
     drawChips(ctx, spec, pad, h * 0.2, h * 0.15, w - 2 * pad, h * 0.05);
     ctx.fillStyle = cssHex(LABEL_LIGHT);
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'center';
-    fitLabel(ctx, spec.place, Math.round(h * 0.27), w - 2 * pad, 'bold');
+    fitLabel(ctx, spec.place, Math.round(h * 0.34), w - 2 * pad, 'bold');
     ctx.fillText(spec.place, w / 2, h * 0.55);
     fitLabel(ctx, spec.label, Math.round(h * 0.2), w - 2 * pad);
     ctx.fillText(spec.label, w / 2, h * 0.85);
