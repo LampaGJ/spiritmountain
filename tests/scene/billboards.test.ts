@@ -1,4 +1,4 @@
-import { Mesh, MeshBasicMaterial, PerspectiveCamera, Sprite, Vector3 } from 'three';
+import { Mesh, MeshBasicMaterial, PerspectiveCamera, Sprite, Vector3, type Object3D } from 'three';
 import { describe, expect, it, vi } from 'vitest';
 import { fadeAlpha } from '../../scripts/ingest/context-tiles';
 import { GHOST_RENDER_ORDER, type SceneMapper } from '../../src/scene/areas';
@@ -12,8 +12,15 @@ import {
   labelColorFor,
   lineCentroid,
   loadSignFont,
+  planSigns,
+  pointerVertices,
   polygonCentroid,
+  signTextureKey,
   signWidthPx,
+  LABEL_LIGHT,
+  SIGN_PANEL_COLOR,
+  trackEnds,
+  POINTER_ANGLE_DEG,
   SIGN_OFFSET_M,
   type BillboardFrameHost,
   type ClusterInput,
@@ -26,7 +33,7 @@ import { SPORT_COLOR } from '../../src/scene/palette';
 import type { Activity } from '../../src/scene/sport-routing';
 import { ActivitySchema, type Annotation } from '../../src/schema/annotation';
 import type { Area } from '../../src/schema/area';
-import { signGlyph } from '../../src/ui/icons';
+import { iconFor, signGlyph } from '../../src/ui/icons';
 import { makeFixtureField } from '../fixtures/make-field';
 
 const input = (id: string, sport: Activity | null, east: number, north: number): ClusterInput => ({
@@ -129,6 +136,253 @@ describe('centroids', () => {
   });
 });
 
+const seg = (
+  id: string,
+  kind: Area['kind'],
+  name: string | null,
+  coords: ReadonlyArray<readonly [number, number]>,
+): Area =>
+  ({
+    id,
+    kind,
+    name,
+    difficulty: null,
+    osmTags: {},
+    geometry: { type: 'LineString', coordinates: coords.map(([e, n]) => [e, n, 0]) },
+  }) as unknown as Area;
+
+const note = (areaId: string, activities: Activity[]): Annotation =>
+  ({
+    areaId,
+    activities: activities.map((activity) => ({ activity, seasons: [], notes: '' })),
+    stakeholders: [],
+    notes: '',
+  }) as Annotation;
+
+const uphillEast = (east: number): number => east;
+
+describe('trackEnds', () => {
+  const chain = [
+    seg('way/1', 'mtb-trail', 'T', [
+      [0, 0],
+      [100, 0],
+    ]),
+    seg('way/2', 'mtb-trail', 'T', [
+      [103, 2],
+      [200, 0],
+    ]),
+    seg('way/3', 'mtb-trail', 'T', [
+      [200, 0],
+      [300, 0],
+    ]),
+  ];
+
+  it('treats an endpoint within 5 m of another segment as a junction, not a free end', () => {
+    const ends = trackEnds(chain, uphillEast);
+    expect(ends.start).toEqual({ east: 300, north: 0 });
+    expect(ends.end).toEqual({ east: 0, north: 0 });
+  });
+
+  it('puts START at the highest free endpoint and END at the lowest', () => {
+    const flipped = trackEnds(chain, (east) => -east);
+    expect(flipped.start).toEqual({ east: 0, north: 0 });
+    expect(flipped.end).toEqual({ east: 300, north: 0 });
+  });
+
+  it('gives a loop one START at the first vertex of its smallest-id segment and no END', () => {
+    const loop = [
+      seg('way/9', 'nordic-trail', 'L', [
+        [500, 0],
+        [0, 0],
+      ]),
+      seg('way/2', 'nordic-trail', 'L', [
+        [0, 0],
+        [250, 300],
+        [500, 0],
+      ]),
+    ];
+    expect(trackEnds(loop, uphillEast)).toEqual({ start: { east: 0, north: 0 }, end: null });
+    const closedWay = [
+      seg('way/1', 'nordic-trail', 'C', [
+        [10, 10],
+        [200, 10],
+        [10, 10],
+      ]),
+    ];
+    expect(trackEnds(closedWay, uphillEast)).toEqual({ start: { east: 10, north: 10 }, end: null });
+  });
+
+  it('drops an END within 150 m of the START and keeps one at 151 m', () => {
+    const short = [
+      seg('way/1', 'mtb-trail', 'S', [
+        [0, 0],
+        [150, 0],
+      ]),
+    ];
+    expect(trackEnds(short, uphillEast).end).toBeNull();
+    const long = [
+      seg('way/1', 'mtb-trail', 'S', [
+        [0, 0],
+        [151, 0],
+      ]),
+    ];
+    expect(trackEnds(long, uphillEast).end).not.toBeNull();
+  });
+
+  it('puts a polygon-only track at its centroid', () => {
+    const park = {
+      id: 'way/5',
+      kind: 'snow-park',
+      name: 'Park',
+      osmTags: {},
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [0, 0, 0],
+            [10, 0, 0],
+            [10, 10, 0],
+            [0, 10, 0],
+            [0, 0, 0],
+          ],
+        ],
+      },
+    } as unknown as Area;
+    expect(trackEnds([park], uphillEast)).toEqual({ start: { east: 5, north: 5 }, end: null });
+  });
+});
+
+describe('planSigns', () => {
+  const all = (areas: readonly Area[]): Set<string> => new Set(areas.map((a) => a.id));
+
+  it('yields exactly 2 signs for a 47-segment trail', () => {
+    const sht = Array.from({ length: 47 }, (_, i) =>
+      seg(`way/${100 + i}`, 'hiking-trail', 'Superior Hiking Trail', [
+        [i * 100, 0],
+        [(i + 1) * 100, 0],
+      ]),
+    );
+    const annotations = new Map(sht.map((a) => [a.id, note(a.id, ['hike'])]));
+    const plans = planSigns(sht, annotations, new Set(), all(sht), uphillEast);
+    expect(plans).toHaveLength(2);
+    expect(plans.map((p) => p.role).sort()).toEqual(['end', 'start']);
+    expect(plans.every((p) => p.label === 'Superior Hiking Trail' && p.trackCount === 1)).toBe(
+      true,
+    );
+  });
+
+  it('shows classic and skate chips together on one nordic trail, in schema order', () => {
+    const trail = [
+      seg('way/1', 'nordic-trail', 'Birch', [
+        [0, 0],
+        [400, 0],
+      ]),
+    ];
+    const annotations = new Map([['way/1', note('way/1', ['nordic-skate', 'nordic-classic'])]]);
+    const plans = planSigns(trail, annotations, new Set(), all(trail), uphillEast);
+    expect(plans).toHaveLength(2);
+    for (const plan of plans) expect(plan.activities).toEqual(['nordic-classic', 'nordic-skate']);
+  });
+
+  it('intersects the annotation with the selected filter, and falls back to sportForArea', () => {
+    const trail = [
+      seg('way/1', 'nordic-trail', 'Birch', [
+        [0, 0],
+        [400, 0],
+      ]),
+      seg('way/2', 'lift', 'Chair', [
+        [1000, 0],
+        [1400, 0],
+      ]),
+    ];
+    const annotations = new Map([
+      ['way/1', note('way/1', ['nordic-classic', 'nordic-skate'])],
+      ['way/2', note('way/2', ['lift-ride'])],
+    ]);
+    const plans = planSigns(trail, annotations, new Set(['nordic-skate']), all(trail), uphillEast);
+    const birch = plans.filter((p) => p.label === 'Birch');
+    const chair = plans.filter((p) => p.label === 'Chair');
+    for (const p of birch) expect(p.activities).toEqual(['nordic-skate']);
+    for (const p of chair) expect(p.activities).toEqual(['lift-ride']);
+  });
+
+  it('merges signs within 60 m into one carrying the union of activities, and splits at 61 m', () => {
+    const make = (gap: number): Area[] => [
+      seg('way/1', 'nordic-trail', 'A', [
+        [0, 0],
+        [400, 0],
+      ]),
+      seg('way/2', 'mtb-trail', 'B', [
+        [400 + gap, 0],
+        [900, 0],
+      ]),
+    ];
+    const notes = (areas: Area[]): Map<string, Annotation> =>
+      new Map([
+        [areas[0]?.id as string, note('way/1', ['nordic-classic'])],
+        [areas[1]?.id as string, note('way/2', ['mountain-bike'])],
+      ]);
+    const near = make(60);
+    const merged = planSigns(near, notes(near), new Set(), all(near), uphillEast).filter(
+      (p) => p.trackCount === 2,
+    );
+    expect(merged).toHaveLength(1);
+    expect(merged[0]?.activities).toEqual(['nordic-classic', 'mountain-bike']);
+    expect(merged[0]?.label).toBe('2 trails');
+    const far = make(61);
+    expect(
+      planSigns(far, notes(far), new Set(), all(far), uphillEast).filter((p) => p.trackCount === 2),
+    ).toHaveLength(0);
+  });
+
+  it('counts a split track once and ignores areas that are not visible', () => {
+    const parts = [
+      seg('way/1', 'hiking-trail', 'H', [
+        [0, 0],
+        [200, 0],
+      ]),
+      seg('way/2', 'hiking-trail', 'H', [
+        [200, 0],
+        [400, 0],
+      ]),
+    ];
+    expect(planSigns(parts, new Map(), new Set(), all(parts), uphillEast)).toHaveLength(2);
+    expect(planSigns(parts, new Map(), new Set(), new Set(), uphillEast)).toHaveLength(0);
+  });
+});
+
+describe('pointerVertices', () => {
+  const angleOf = (v: number[], yScale: number): { leg1: number; leg2: number } => {
+    // World vertices: the ElevatedGroup scales y by yScale and leaves x alone.
+    const p = [0, 3, 6].map((i) => ({ x: v[i] as number, y: (v[i + 1] as number) * yScale }));
+    const [apex, top, far] = p as [
+      { x: number; y: number },
+      { x: number; y: number },
+      { x: number; y: number },
+    ];
+    const deg = (a: { x: number; y: number }, b: { x: number; y: number }): number =>
+      (Math.atan2(b.x - a.x, b.y - a.y) * 180) / Math.PI;
+    return { leg1: deg(apex, top), leg2: deg(apex, far) };
+  };
+
+  it.each([0.1, 1, 3, 10])(
+    'has a vertical leg 1 and a leg 2 at 15 degrees at exaggeration %s',
+    (k) => {
+      const v = pointerVertices(SIGN_OFFSET_M, POINTER_ANGLE_DEG, k);
+      expect(v.slice(0, 3)).toEqual([0, 0, 0]);
+      const { leg1, leg2 } = angleOf(v, k);
+      expect(leg1).toBeCloseTo(0, 9);
+      expect(leg2).toBeCloseTo(15, 6);
+    },
+  );
+
+  it('has a top edge of length h * tan(15 degrees) at true scale', () => {
+    const v = pointerVertices(25, 15, 1);
+    expect(v[6]).toBeCloseTo(25 * Math.tan((15 * Math.PI) / 180), 9);
+    expect(v[7]).toBe(25);
+  });
+});
+
 describe('labelColorFor', () => {
   it('picks the higher-contrast of white and near-black', () => {
     expect(labelColorFor(0x000000)).toBe(0xffffff);
@@ -206,6 +460,7 @@ function recordingContext(): SignContext2D & { calls: Call[] } {
     clearRect() {},
     beginPath() {},
     moveTo() {},
+    arc() {},
     arcTo() {},
     closePath() {},
     fill() {
@@ -224,32 +479,72 @@ function recordingContext(): SignContext2D & { calls: Call[] } {
 const hex = (n: number): string => `#${n.toString(16).padStart(6, '0')}`;
 
 describe('drawSign', () => {
-  it.each(ActivitySchema.options)('draws the %s panel, glyph and label', (sport) => {
+  it('draws a dark neutral panel at 0.9 alpha, then one chip per activity in ActivitySchema order', () => {
     const ctx = recordingContext();
-    const { symbol, label } = signGlyph(sport);
-    drawSign(ctx, { sport, symbol, label, glyph: true, width: 512, height: 128 });
-    const panel = ctx.calls.find((c) => c.op === 'fill');
-    expect(panel?.fillStyle).toBe(hex(SPORT_COLOR[sport]));
-    expect(panel?.globalAlpha).toBeCloseTo(0.9, 9);
-    const glyphCall = ctx.calls.find((c) => c.op === 'fillText' && c.text === symbol);
-    expect(glyphCall?.font).toContain('"Material Symbols Outlined"');
-    expect(glyphCall?.fillStyle).toBe(hex(labelColorFor(SPORT_COLOR[sport])));
-    const labelCall = ctx.calls.find((c) => c.op === 'fillText' && c.text === label);
-    expect(labelCall?.fillStyle).toBe(hex(labelColorFor(SPORT_COLOR[sport])));
+    // Deliberately out of order: the chips must follow ActivitySchema.options, not the input.
+    drawSign(ctx, {
+      activities: ['nordic-skate', 'nordic-classic'],
+      label: 'Birch Loop',
+      role: 'start',
+      glyph: true,
+      width: 512,
+      height: 128,
+    });
+    const fills = ctx.calls.filter((c) => c.op === 'fill');
+    expect(fills.map((f) => f.fillStyle)).toEqual([
+      hex(SIGN_PANEL_COLOR),
+      hex(SPORT_COLOR['nordic-classic']),
+      hex(SPORT_COLOR['nordic-skate']),
+    ]);
+    expect(fills[0]?.globalAlpha).toBeCloseTo(0.9, 9);
+    const glyphs = ctx.calls.filter(
+      (c) => c.op === 'fillText' && c.font.includes('Material Symbols'),
+    );
+    expect(glyphs.map((g) => g.text)).toEqual([
+      signGlyph('nordic-classic').symbol,
+      signGlyph('nordic-skate').symbol,
+      iconFor('track-start').symbol,
+    ]);
+    expect(glyphs[0]?.fillStyle).toBe(hex(labelColorFor(SPORT_COLOR['nordic-classic'])));
+  });
+
+  it('shows the end glyph for an END and the label in white', () => {
+    const ctx = recordingContext();
+    drawSign(ctx, {
+      activities: ['hike'],
+      label: '2 trails',
+      role: 'end',
+      glyph: true,
+      width: 512,
+      height: 128,
+    });
+    expect(
+      ctx.calls.some((c) => c.op === 'fillText' && c.text === iconFor('track-end').symbol),
+    ).toBe(true);
+    const labelCall = ctx.calls.find((c) => c.op === 'fillText' && c.text === '2 trails');
+    expect(labelCall?.fillStyle).toBe(hex(LABEL_LIGHT));
     expect(labelCall?.font).not.toContain('Material Symbols');
   });
 
-  it('omits the glyph when glyph is false', () => {
+  it('omits every glyph when glyph is false but keeps the chips and the label', () => {
     const ctx = recordingContext();
     drawSign(ctx, {
-      sport: 'hike',
-      symbol: 'hiking',
+      activities: ['hike'],
       label: 'Hike',
+      role: 'start',
       glyph: false,
       width: 512,
       height: 128,
     });
     expect(ctx.calls.filter((c) => c.op === 'fillText').map((c) => c.text)).toEqual(['Hike']);
+    expect(ctx.calls.filter((c) => c.op === 'fill')).toHaveLength(2);
+  });
+
+  it('keys a texture by activities, label and role', () => {
+    const a = { activities: ['hike'] as Activity[], label: 'x', role: 'start' as const };
+    expect(signTextureKey(a)).toBe(signTextureKey({ ...a }));
+    expect(signTextureKey(a)).not.toBe(signTextureKey({ ...a, role: 'end' }));
+    expect(signTextureKey(a)).not.toBe(signTextureKey({ ...a, label: 'y' }));
   });
 });
 
@@ -308,7 +603,7 @@ const lineArea = (id: string, kind: Area['kind'], east: number, north: number): 
 
 const AREAS: Area[] = [
   lineArea('way/1', 'mtb-trail', 0, 0),
-  lineArea('way/2', 'mtb-trail', 100, 0),
+  lineArea('way/2', 'mtb-trail', 400, 0),
   lineArea('way/3', 'downhill-run', -200, 200),
   lineArea('way/4', 'lift', 200, -200),
 ];
@@ -372,12 +667,62 @@ const ALL_IDS = new Set(AREAS.map((a) => a.id));
 const NO_ANNOTATIONS = new Map<string, Annotation>();
 
 describe('buildBillboardLayer', () => {
-  it('shows one sign per cluster on first build, the lift included', () => {
+  it('shows one sign per track on first build (each fixture track is too short for an END), the lift included', () => {
     const { layer } = build();
-    // way/1 and way/2 are one mtb cluster; way/3 alpine; way/4 lift-ride.
-    expect(visibleSprites(layer.group)).toHaveLength(3);
-    expect(layer.stats().clusterCount).toBe(3);
+    // Four named tracks of 20 m: one START each; the END is within 150 m and dropped.
+    expect(visibleSprites(layer.group)).toHaveLength(4);
+    expect(layer.stats().clusterCount).toBe(4);
     expect(layer.stats().perSport['lift-ride']).toBe(1);
+    expect(layer.stats().perSport['mountain-bike']).toBe(2);
+  });
+
+  it('builds each sign as one rigid group: a pointer and a bottom-left-anchored sprite under one parent', () => {
+    const { layer } = build();
+    const sprite = visibleSprites(layer.group)[0] as Sprite;
+    expect(sprite.center.x).toBe(0);
+    expect(sprite.center.y).toBe(0);
+    const rigid = sprite.parent as Object3D;
+    expect(rigid.parent).toBe(layer.group);
+    expect(rigid.children).toHaveLength(2);
+    expect(rigid.children.some((c) => c instanceof Mesh)).toBe(true);
+    expect(sprite.position.x).toBe(0);
+    expect(sprite.position.y).toBe(SIGN_OFFSET_M);
+  });
+
+  it('yaws the pointer group toward the camera each frame', () => {
+    const host = makeHost();
+    const { layer } = build(host);
+    host.camera.position.set(3000, 1500, 0);
+    host.camera.lookAt(0, 0, 0);
+    host.camera.updateMatrixWorld(true);
+    host.callback?.(16);
+    const rigid = (sprites(layer.group)[0] as Sprite).parent as Object3D;
+    const expected = Math.atan2(3000 - rigid.position.x, 0 - rigid.position.z);
+    expect(rigid.rotation.y).toBeCloseTo(expected, 9);
+  });
+
+  it('keeps leg 2 at 15 degrees in the world as the exaggeration changes', () => {
+    const host = makeHost();
+    const { layer } = build(host);
+    const elevated = new ElevatedGroup();
+    elevated.add(layer.group);
+    const rigid = (sprites(layer.group)[0] as Sprite).parent as Object3D;
+    const pointer = rigid.children.find((c) => c instanceof Mesh) as Mesh;
+    for (const k of [0.1, 1, 10]) {
+      host.k = k;
+      elevated.setExaggeration(k, 0);
+      host.callback?.(16);
+      const pos = pointer.geometry.getAttribute('position');
+      const apex = new Vector3().fromBufferAttribute(pos, 0);
+      const top = new Vector3().fromBufferAttribute(pos, 1);
+      const far = new Vector3().fromBufferAttribute(pos, 2);
+      // Un-yawed group: world vertex = (x, y * scale, z) relative to the apex.
+      expect(top.x - apex.x).toBeCloseTo(0, 9);
+      expect(Math.atan2(far.x - apex.x, (far.y - apex.y) * effectiveScale(k))).toBeCloseTo(
+        (POINTER_ANGLE_DEG * Math.PI) / 180,
+        6,
+      );
+    }
   });
 
   it('draws the panel with no depth test above the ghost pass, and a depth-tested tapered pointer', () => {
@@ -388,7 +733,7 @@ describe('buildBillboardLayer', () => {
     expect(sprite.renderOrder).toBe(GHOST_RENDER_ORDER + 1);
     const pointers: Mesh[] = [];
     layer.group.traverse((o) => {
-      if (o instanceof Mesh && o.name.startsWith('billboard-pointer:')) pointers.push(o);
+      if (o instanceof Mesh && o.name.startsWith('billboard-pointer')) pointers.push(o);
     });
     expect(pointers.length).toBeGreaterThan(0);
     const first = pointers[0] as Mesh;
@@ -406,10 +751,10 @@ describe('buildBillboardLayer', () => {
     const { layer } = build();
     layer.applyFilter(NO_ANNOTATIONS, new Set(['mountain-bike']), new Set(['way/1', 'way/2']));
     const visible = visibleSprites(layer.group);
-    expect(visible).toHaveLength(1);
-    expect(visible[0]?.userData['sport']).toBe('mountain-bike');
+    expect(visible).toHaveLength(2);
+    expect(visible[0]?.userData['activities']).toEqual(['mountain-bike']);
     layer.applyFilter(NO_ANNOTATIONS, new Set(), ALL_IDS);
-    expect(visibleSprites(layer.group)).toHaveLength(3);
+    expect(visibleSprites(layer.group)).toHaveLength(4);
   });
 
   it('reuses sprites by index within a sport across filter changes', () => {
@@ -422,9 +767,13 @@ describe('buildBillboardLayer', () => {
 
   it('sits at the active surface height plus 25 m and follows redrape', () => {
     const { layer } = build();
-    const sign = sprites(layer.group).find((s) => s.userData['sport'] === 'alpine-ski') as Sprite;
-    const ground = surface.sample(-200, 200).height;
-    expect(sign.position.y).toBeCloseTo(ground + SIGN_OFFSET_M, 6);
+    const sign = sprites(layer.group).find(
+      (s) => (s.userData['activities'] as Activity[])[0] === 'alpine-ski',
+    ) as Sprite;
+    const worldY = (): number => sign.getWorldPosition(new Vector3()).y;
+    // The sign stands on the track's START: the higher of the 20 m line's two ends.
+    const ground = Math.max(surface.sample(-210, 200).height, surface.sample(-190, 200).height);
+    expect(worldY()).toBeCloseTo(ground + SIGN_OFFSET_M, 6);
     const raised: MeshSurface = {
       ...surface,
       sample: (e, n) => {
@@ -433,9 +782,32 @@ describe('buildBillboardLayer', () => {
       },
     };
     layer.redrape(raised);
-    expect(sign.position.y).toBeCloseTo(ground + 40 + SIGN_OFFSET_M, 6);
+    expect(worldY()).toBeCloseTo(ground + 40 + SIGN_OFFSET_M, 6);
     layer.redrape(surface);
-    expect(sign.position.y).toBeCloseTo(ground + SIGN_OFFSET_M, 6);
+    expect(worldY()).toBeCloseTo(ground + SIGN_OFFSET_M, 6);
+  });
+
+  it('re-picks START and END from the new surface on redrape', () => {
+    const track = seg('way/1', 'nordic-trail', 'Long', [
+      [0, 0],
+      [400, 0],
+    ]);
+    const host = makeHost();
+    const layer = buildBillboardLayer([track], surface, mapper, {
+      host,
+      fadeCentre: { east: 0, north: 0 },
+      createCanvas: fakeCanvas,
+      fonts: undefined,
+      warn: () => {},
+    });
+    const startEast = (): number => {
+      const start = sprites(layer.group).find((s) => s.userData['role'] === 'start') as Sprite;
+      return (start.parent as Object3D).position.x;
+    };
+    layer.redrape({ ...surface, sample: (e) => ({ ...surface.sample(e, 0), height: e }) });
+    expect(startEast()).toBeCloseTo(400, 6);
+    layer.redrape({ ...surface, sample: (e) => ({ ...surface.sample(e, 0), height: -e }) });
+    expect(startEast()).toBeCloseTo(0, 6);
   });
 
   it('compensates the group exaggeration: scale.y * effectiveScale(k) is constant', () => {
@@ -486,8 +858,8 @@ describe('buildBillboardLayer', () => {
     host.camera.lookAt(0, 0, 0);
     host.camera.updateMatrixWorld(true);
     host.callback?.(16);
-    expect(layer.stats().clusterCount).toBe(3);
-    expect(visibleSprites(layer.group).length).toBeLessThan(3);
+    expect(layer.stats().clusterCount).toBe(4);
+    expect(visibleSprites(layer.group).length).toBeLessThan(4);
     expect(layer.stats().shownCount).toBe(visibleSprites(layer.group).length);
   });
 
@@ -513,13 +885,13 @@ describe('buildBillboardLayer', () => {
         spies.push(vi.spyOn(o.material, 'dispose'));
         if (o.material.map) textures.add(o.material.map);
       }
-      if (o instanceof Mesh && o.name.startsWith('billboard-pointer:')) {
+      if (o instanceof Mesh && o.name.startsWith('billboard-pointer')) {
         spies.push(vi.spyOn(o.material as MeshBasicMaterial, 'dispose'));
         spies.push(vi.spyOn(o.geometry, 'dispose'));
       }
     });
     for (const texture of textures) spies.push(vi.spyOn(texture, 'dispose'));
-    expect(textures.size).toBe(3);
+    expect(textures.size).toBe(4);
     layer.dispose();
     for (const spy of spies) expect(spy).toHaveBeenCalled();
     expect(host.unsubscribe).toHaveBeenCalledTimes(1);

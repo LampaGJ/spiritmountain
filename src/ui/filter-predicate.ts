@@ -1,6 +1,10 @@
 import type { z } from 'zod';
 import type { Area } from '../schema/area';
 import { ActivitySchema, SeasonSchema, type Annotation } from '../schema/annotation';
+import { trackKey } from '../scene/track-key';
+
+/** Distinct tracks among areas (#50): OSM splits one trail into many ways, so counts use the same key as the signs. */
+const countTracks = (areas: readonly Area[]): number => new Set(areas.map(trackKey)).size;
 
 export type Activity = z.infer<typeof ActivitySchema>;
 export type Season = z.infer<typeof SeasonSchema>;
@@ -50,11 +54,11 @@ export function matchesFilter(
 export interface FacetCounts {
   readonly activities: ReadonlyMap<Activity, number>;
   readonly seasons: ReadonlyMap<Season, number>;
-  /** Areas (lifts excluded) matching the current filter. */
+  /** Distinct tracks (lifts excluded) matching the current filter. */
   readonly matching: number;
   /** Areas that are lifts and therefore always shown. */
   readonly lifts: number;
-  /** Non-lift areas in total. */
+  /** Distinct non-lift tracks in total. */
   readonly candidates: number;
 }
 
@@ -83,9 +87,9 @@ export function seasonActivities(
 
 /** Per-season and per-activity-in-season counts for the season menu; lifts excluded. */
 export interface SeasonCounts {
-  /** Non-lift areas with at least one entry in that season. */
+  /** Distinct non-lift tracks with at least one entry in that season. */
   readonly seasons: ReadonlyMap<Season, number>;
-  /** Non-lift areas with an entry listing that activity with that season. Only activities the season offers are keys. */
+  /** Distinct non-lift tracks with an entry listing that activity with that season. Only activities the season offers are keys. */
   readonly activities: ReadonlyMap<Season, ReadonlyMap<Activity, number>>;
 }
 
@@ -94,27 +98,42 @@ export function seasonCounts(
   areas: readonly Area[],
   annotations: ReadonlyMap<string, Annotation>,
 ): SeasonCounts {
-  const seasons = new Map<Season, number>(SeasonSchema.options.map((s) => [s, 0]));
-  const activities = new Map<Season, Map<Activity, number>>(
+  // Track keys seen per season and per activity in a season, so a split track counts once.
+  const seasonTracks = new Map<Season, Set<string>>(
+    SeasonSchema.options.map((s) => [s, new Set()]),
+  );
+  const activityTracks = new Map<Season, Map<Activity, Set<string>>>(
     SeasonSchema.options.map((s) => [s, new Map()]),
   );
   for (const area of areas) {
     if (area.kind === 'lift') continue;
     const annotation = annotations.get(area.id);
     if (annotation === undefined) continue;
+    const key = trackKey(area);
     for (const season of SeasonSchema.options) {
       const here = annotation.activities.filter(
         (e) => e.activity !== 'lift-ride' && e.seasons.includes(season),
       );
       if (here.length === 0) continue;
-      seasons.set(season, (seasons.get(season) ?? 0) + 1);
-      const perActivity = activities.get(season);
+      seasonTracks.get(season)?.add(key);
+      const perActivity = activityTracks.get(season);
       if (perActivity === undefined) continue;
       for (const act of new Set(here.map((e) => e.activity))) {
-        perActivity.set(act, (perActivity.get(act) ?? 0) + 1);
+        const keys = perActivity.get(act);
+        if (keys) keys.add(key);
+        else perActivity.set(act, new Set([key]));
       }
     }
   }
+  const seasons = new Map<Season, number>(
+    SeasonSchema.options.map((s) => [s, seasonTracks.get(s)?.size ?? 0]),
+  );
+  const activities = new Map<Season, Map<Activity, number>>(
+    SeasonSchema.options.map((s) => [
+      s,
+      new Map([...(activityTracks.get(s) ?? [])].map(([a, keys]) => [a, keys.size])),
+    ]),
+  );
   // Re-key each per-activity map in schema order so iteration never depends on annotation order.
   const ordered = new Map<Season, ReadonlyMap<Activity, number>>(
     SeasonSchema.options.map((s) => {
@@ -131,7 +150,7 @@ export function seasonCounts(
 }
 
 /**
- * For every option, the number of non-lift areas that would match if that option were
+ * For every option, the number of distinct non-lift tracks that would match if that option were
  * ADDED to the current filter (the standard faceted-navigation count). Options already
  * selected report their count under the current filter. Pure and deterministic.
  */
@@ -144,7 +163,7 @@ export function facetCounts(
 ): FacetCounts {
   const nonLift = areas.filter((a) => a.kind !== 'lift');
   const count = (f: Filter): number =>
-    nonLift.filter((a) => matchesFilter(a, annotations.get(a.id), f)).length;
+    countTracks(nonLift.filter((a) => matchesFilter(a, annotations.get(a.id), f)));
   const withActivity = (act: Activity): Filter => ({
     activities: new Set([...filter.activities, act]),
     seasons: filter.seasons,
@@ -160,8 +179,8 @@ export function facetCounts(
   return {
     activities,
     seasons,
-    matching: isFilterActive(filter) ? count(filter) : nonLift.length,
+    matching: isFilterActive(filter) ? count(filter) : countTracks(nonLift),
     lifts: areas.length - nonLift.length,
-    candidates: nonLift.length,
+    candidates: countTracks(nonLift),
   };
 }
