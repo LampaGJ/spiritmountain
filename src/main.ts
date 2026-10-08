@@ -28,7 +28,7 @@ const handle = createScene(app, heightfield, { lakeLevelM: header.minElev });
 export const readiness = createReadiness({
   onFrame: (callback) => handle.onFrame(callback),
   onReady: () => overlay.open(),
-  onChange: (unsettled) => overlay.setLabel(unsettled),
+  onChange: (unsettled) => overlay.step(unsettled, readiness.state()),
   onTimeout: (unsettled) =>
     reportSceneFailure('reveal', `timed out waiting for ${unsettled.join(', ')}`),
 });
