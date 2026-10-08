@@ -47,7 +47,9 @@ import { decodeHash } from './ui/filter-hash';
 import { Color, type Material, type Texture } from 'three';
 import { loadImageryStats } from './data/load-imagery-stats';
 import { loadSky } from './data/load-sky';
-import { loadSurface } from './data/load-surface';
+import { loadSurface, type SurfaceLoad } from './data/load-surface';
+import { canopyFromSurface } from './scene/curtain';
+import type { MeshSurface } from './scene/heightfield';
 import {
   loadContextTrees,
   loadTrees,
@@ -167,10 +169,16 @@ const meshSurface = createMeshSurface(heightfield);
 let areaLayerResult: AreaLayer | { error: string };
 try {
   const areas = await loadAreas(areasUrl);
-  areaLayerResult = installAreas(handle.elevated, areas, meshSurface, (east, north, elevation) => {
-    const p = toScene(east, north, elevation);
-    return [p.x, p.y, p.z];
-  });
+  areaLayerResult = installAreas(
+    handle.elevated,
+    areas,
+    meshSurface,
+    (east, north, elevation) => {
+      const p = toScene(east, north, elevation);
+      return [p.x, p.y, p.z];
+    },
+    { curtains: true },
+  );
 } catch (error) {
   areaLayerResult = reportAreasFailure(error instanceof Error ? error.message : String(error));
 }
@@ -196,6 +204,11 @@ if (!('error' in areaLayerResult)) {
 }
 readiness.register('areas', Promise.resolve());
 handle.setFadeCentre(fadeCentre);
+// Trail curtains (#64) are ground-side: radial fade first (applied at build), then the horizon blend.
+if (!('error' in areaLayerResult)) {
+  areaLayerResult.setCurtainFadeCentre(fadeCentre);
+  for (const material of areaLayerResult.curtainMaterials) handle.applyHorizon(material);
+}
 
 // Sport billboards (#43): one sign per same-sport cluster, inside the elevated group. A failure only loses the signs.
 let billboardLayer: BillboardLayer | null = null;
@@ -369,10 +382,16 @@ const yieldToBrowser = (): Promise<void> =>
 
 let surfaceWanted = decodeHash(location.hash).filter.surface === true;
 let surfaceRequest: Promise<void> | null = null;
+/** The first-return heightfields, fetched once and shared by the Surface layer and the trail curtains (#64). */
+let surfaceData: Promise<SurfaceLoad> | null = null;
+const loadSurfaceOnce = (): Promise<SurfaceLoad> => (surfaceData ??= loadSurface({ frameUrl }));
+/** The surface lines drape on: the drawn composite while Surface is visible, else bare earth. */
+const activeSurface = (): MeshSurface =>
+  surfaceWanted && surfaceHandle ? surfaceHandle.sampler(meshSurface) : meshSurface;
 /** Area lines follow the drawn surface while it is visible, and return to bare earth when it is hidden. */
 const applySurfaceDrape = (): void => {
   if ('error' in areaLayerResult) return;
-  const active = surfaceWanted && surfaceHandle ? surfaceHandle.sampler(meshSurface) : meshSurface;
+  const active = activeSurface();
   areaLayerResult.redrape(active);
   billboardLayer?.redrape(active);
 };
@@ -381,7 +400,7 @@ const applySurfaceDrape = (): void => {
 function requestSurface(): Promise<void> {
   if (surfaceRequest) return surfaceRequest;
   setSurfaceLoading(true);
-  surfaceRequest = loadSurface({ frameUrl })
+  surfaceRequest = loadSurfaceOnce()
     .then(async (result) => {
       const failures = [result.square, result.core].flatMap((layer) =>
         'error' in layer ? [layer.error] : [],
@@ -420,6 +439,26 @@ export const setSurfaceWanted = (on: boolean): void => {
   applyTreesMode();
 };
 if (surfaceWanted) readiness.register('surface', requestSurface());
+
+// Trail curtains (#64): the canopy height comes from the first-return raster, read lazily after first paint whether or
+// not Surface is on. Until it lands (or when it is absent) every curtain is CURTAIN_MIN_M.
+if (!('error' in areaLayerResult)) {
+  const lines = areaLayerResult;
+  void loadSurfaceOnce()
+    .then((result) => {
+      const canopy = canopyFromSurface(result, (e, n) => meshSurface.sample(e, n).height);
+      if (canopy === null) {
+        console.info(
+          'curtains: no first-return surface in the build; curtains stay at the minimum',
+        );
+        return;
+      }
+      lines.setCanopy(canopy);
+      billboardLayer?.redrape(activeSurface());
+      console.info('curtains: canopy applied');
+    })
+    .catch((error: unknown) => console.error('curtains:', error));
+}
 
 /**
  * The far-field trees are already thinned at ingest (full density to 5 km, none at FADE_OUTER_M), so the shader fade only
@@ -576,6 +615,28 @@ if (!('error' in areaLayer)) {
     label: 'Smooth trails',
     value: true,
     onChange: (on) => lines.setSmooth(on),
+  });
+  // Trail curtains (#64): the sign anchors follow the curtain top, so they re-height too.
+  registerDebugToggle({
+    id: 'curtains',
+    label: 'Curtains',
+    value: true,
+    onChange: (on) => {
+      lines.setCurtainsOn(on);
+      billboardLayer?.redrape(activeSurface());
+    },
+  });
+  registerDebugControl({
+    id: 'curtain-height',
+    label: 'Curtain height x',
+    min: 0,
+    max: 2,
+    step: 0.1,
+    value: 1,
+    onChange: (k) => {
+      lines.setCurtainScale(k);
+      billboardLayer?.redrape(activeSurface());
+    },
   });
   // Only the world-space fallback has a metre spacing; screen strands are one band width apart.
   if (lines.strandMode === 'world') {

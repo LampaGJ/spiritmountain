@@ -137,20 +137,50 @@ function finiteOrThrow(height: number, east: number, north: number): number {
 /**
  * Drape a line on the mesh surface: split at mesh edges, densify to maxStepM, then set each
  * point to the mesh height plus liftM. Only the horizontal part of each input position is used.
+ * liftM is one lift for every point, or one per input vertex (#64: the trail curtain top); an inserted point then takes
+ * the lift interpolated linearly by plan distance between the two input vertices around it. The plan points are the
+ * same either way.
  */
 export function drapeLine(
   surface: MeshSurface,
   positions: ReadonlyArray<ReadonlyArray<number>>,
   maxStepM = MAX_STEP_M,
-  liftM = DRAPE_LIFT_M,
+  liftM: number | readonly number[] = DRAPE_LIFT_M,
 ): Polyline3 {
   const flat = positions.map((p): Vec2 => [p[0] as number, p[1] as number]);
-  const dense = densify(splitAtAllMeshEdges(surface, flat), maxStepM);
+  let dense: Vec2[];
+  let lifts: number[] | null = null;
+  if (typeof liftM === 'number') {
+    dense = densify(splitAtAllMeshEdges(surface, flat), maxStepM);
+  } else {
+    if (liftM.length !== flat.length) {
+      throw new Error(`drapeLine: ${liftM.length} lift entries for ${flat.length} vertices`);
+    }
+    // Segment by segment gives the same points as the whole line: both splitting and densifying work per pair.
+    const first = flat[0];
+    dense = first === undefined ? [] : [[first[0], first[1]]];
+    lifts = first === undefined ? [] : [liftM[0] as number];
+    for (let k = 1; k < flat.length; k += 1) {
+      const a = flat[k - 1] as Vec2;
+      const b = flat[k] as Vec2;
+      const length = Math.hypot(b[0] - a[0], b[1] - a[1]);
+      const la = liftM[k - 1] as number;
+      const lb = liftM[k] as number;
+      const piece = densify(splitAtAllMeshEdges(surface, [a, b]), maxStepM);
+      for (let p = 1; p < piece.length; p += 1) {
+        const point = piece[p] as Vec2;
+        const t = length === 0 ? 1 : Math.hypot(point[0] - a[0], point[1] - a[1]) / length;
+        dense.push(point);
+        lifts.push(la + t * (lb - la));
+      }
+    }
+  }
   let clampedCount = 0;
-  const points = dense.map(([east, north]): Vec3 => {
+  const points = dense.map(([east, north], i): Vec3 => {
     const s = surface.sample(east, north);
     if (s.clamped) clampedCount += 1;
-    return [east, north, finiteOrThrow(s.height, east, north) + liftM];
+    const lift = lifts === null ? (liftM as number) : (lifts[i] as number);
+    return [east, north, finiteOrThrow(s.height, east, north) + lift];
   });
   return { points, clampedCount };
 }

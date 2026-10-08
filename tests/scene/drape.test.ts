@@ -252,3 +252,47 @@ describe('lift cables', () => {
     expect(minClearance(surface, points, 1)).toBeLessThan(0);
   });
 });
+
+describe('drapeLine with a per-vertex lift array (#64)', () => {
+  const surface = createMeshSurface(rampField(() => 100));
+
+  it('lifts each input vertex by its own entry and interpolates along plan distance between them', () => {
+    const { points } = drapeLine(
+      surface,
+      [
+        [0, 50],
+        [40, 50],
+      ],
+      10,
+      [2, 6],
+    );
+    for (const [east, , z] of points) expect(z).toBeCloseTo(100 + 2 + (4 * east) / 40, 6);
+    expect(points[0]?.[2]).toBeCloseTo(102, 6);
+    expect(points[points.length - 1]?.[2]).toBeCloseTo(106, 6);
+  });
+
+  it('gives the same plan points as the scalar lift', () => {
+    const line = [
+      [3, 7],
+      [57, 33],
+      [91, 120],
+    ];
+    const scalar = drapeLine(surface, line);
+    const array = drapeLine(surface, line, 10, [DRAPE_LIFT_M, DRAPE_LIFT_M, DRAPE_LIFT_M]);
+    expect(array.points).toEqual(scalar.points);
+  });
+
+  it('throws when the array does not match the vertex count', () => {
+    expect(() =>
+      drapeLine(
+        surface,
+        [
+          [0, 0],
+          [10, 0],
+        ],
+        10,
+        [1],
+      ),
+    ).toThrow(/lift/);
+  });
+});

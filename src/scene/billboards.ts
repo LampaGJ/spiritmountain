@@ -28,7 +28,7 @@ import { ActivitySchema, type Annotation } from '../schema/annotation';
 import type { Area } from '../schema/area';
 import type { Place } from '../schema/places';
 import { signGlyph } from '../ui/icons';
-import type { SceneMapper } from './areas';
+import { trailTopHeight, type SceneMapper } from './areas';
 import { effectiveScale } from './elevated';
 import type { MeshSurface } from './heightfield';
 import { SPORT_COLOR } from './palette';
@@ -1196,7 +1196,10 @@ export function buildBillboardLayer(
       sign.sprite.userData['label'] = plan.label;
       sign.sprite.visible = true;
       arrange(sign, plan.family);
-      const ground = heightAt(plan.east, plan.north);
+      const ground =
+        plan.family === 'trail'
+          ? Math.max(heightAt(plan.east, plan.north), trailTopHeight(plan.east, plan.north))
+          : heightAt(plan.east, plan.north); // #64: trail tail on the curtain top
       const [x, y, z] = toScene(plan.east, plan.north, ground);
       if (plan.family === 'trail') sign.rigid.position.set(x, y, z);
       else sign.sprite.position.set(x, y + SIGN_OFFSET_M, z);

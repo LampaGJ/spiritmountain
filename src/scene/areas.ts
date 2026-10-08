@@ -1,19 +1,32 @@
-import { Group, type Object3D } from 'three';
+import { Group, type Material, type Mesh, type Object3D } from 'three';
 import { Line2 } from 'three/addons/lines/Line2.js';
 import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
 import type { Annotation } from '../schema/annotation';
 import type { Area } from '../schema/area';
 import {
+  buildCurtain,
+  canopyProfile,
+  createCurtainMaterial,
+  createCurtainMesh,
+  curtainStripes,
+  mergeCurtains,
+  type CanopyAt,
+  type Curtain,
+} from './curtain';
+import {
   cableLine,
+  DRAPE_LIFT_M,
   drapeLine,
   LINE_SPACING_M,
+  MAX_STEP_M,
   liftOffsetM,
   minClearance,
   offsetPolyline,
   smoothPolyline,
   type Vec3,
 } from './drape';
+import { applyRadialFade, setFadeCentre, type RadialFadeUniforms } from './fade';
 import type { MeshSurface } from './heightfield';
 import { SPORT_COLOR } from './palette';
 import { sportForArea, type Activity } from './sport-routing';
@@ -92,6 +105,11 @@ export interface BuildOptions {
   readonly strandOffsetsM?: readonly number[];
   /** Resample a non-lift LineString through a Catmull-Rom spline before draping (#54). Default off here. */
   readonly smooth?: boolean;
+  /**
+   * Lift above the surface per vertex of a non-lift LineString's (resampled) centreline, for every strand (#64: the
+   * curtain top). Default DRAPE_LIFT_M everywhere. Polygons and lifts ignore it.
+   */
+  readonly liftsFor?: (centre: ReadonlyArray<ReadonlyArray<number>>) => readonly number[];
 }
 
 /** Pure positions builder: no three objects, so it tests in node. */
@@ -101,7 +119,7 @@ export function buildAreaPositions(
   toScene: SceneMapper,
   options: BuildOptions = {},
 ): AreaPolylines {
-  const { strandOffsetsM = [0], smooth = false } = options;
+  const { strandOffsetsM = [0], smooth = false, liftsFor } = options;
   const world: Vec3[][] = [];
   let clampedCount = 0;
   let liftMinClearanceM: number | null = null;
@@ -116,8 +134,11 @@ export function buildAreaPositions(
     liftMinClearanceM = minClearance(surface, cable.points);
   } else {
     let lines: ReadonlyArray<ReadonlyArray<ReadonlyArray<number>>>;
+    let lifts: number | readonly number[] = DRAPE_LIFT_M;
     if (area.geometry.type === 'LineString') {
       const centre = smooth ? smoothPolyline(area.geometry.coordinates) : area.geometry.coordinates;
+      // offsetPolyline keeps the vertex count, so one lift array serves every strand.
+      if (liftsFor) lifts = liftsFor(centre);
       lines = strandOffsetsM.map((offset) =>
         offset === 0 ? centre : offsetPolyline(centre, offset),
       );
@@ -125,7 +146,7 @@ export function buildAreaPositions(
       lines = area.geometry.coordinates.map((ring) => closeRing(ring));
     }
     for (const line of lines) {
-      const draped = drapeLine(surface, line);
+      const draped = drapeLine(surface, line, MAX_STEP_M, lifts);
       world.push(draped.points);
       clampedCount += draped.clampedCount;
     }
@@ -153,6 +174,8 @@ export interface AreaEntry {
   readonly area: Area;
   /** Mutable in place: applyStrands appends the extra strands of a multi-sport trail to the same array. */
   readonly lines: readonly Line2[];
+  /** The wall under a non-lift LineString when the layer was built with curtains (#64); never picked. */
+  readonly curtain?: Curtain;
 }
 
 export interface AreaLayerStats {
@@ -196,7 +219,50 @@ export interface AreaLayer {
   setStrandSpacing(metres: number): void;
   /** Turns Catmull-Rom smoothing of non-lift LineStrings on or off and re-drapes them. On by default. */
   setSmooth(on: boolean): void;
+  /** The radial-faded curtain material (#64), for the caller's horizon blend; empty without curtains. */
+  readonly curtainMaterials: readonly Material[];
+  /** The one mesh every visible curtain is merged into; null without curtains. */
+  readonly curtainMesh: Mesh | null;
+  /** Moves the radial fade centre of the curtain material. */
+  setCurtainFadeCentre(centre: { readonly east: number; readonly north: number }): void;
+  /** Sets the canopy height source (null: CURTAIN_MIN_M everywhere) and re-drapes the trails onto the new curtain tops. */
+  setCanopy(canopyAt: CanopyAt | null): void;
+  /** DEBUG: scales the curtain height (0 to 2, default 1) and re-drapes. */
+  setCurtainScale(k: number): void;
+  /** DEBUG: curtains off hides the walls and drapes the lines back onto the surface. */
+  setCurtainsOn(on: boolean): void;
+  /** Height of the curtain top at a plan point (bare earth plus canopy), or -Infinity with curtains off or absent. */
+  trailTopHeight(east: number, north: number): number;
 }
+
+export interface AreaLayerOptions {
+  /** Build a curtain under every non-lift LineString and drape its lines on the curtain top (#64). Default off. */
+  readonly curtains?: boolean;
+}
+
+/** The curtain-top source of the last layer built with curtains; billboards.ts anchors trail signs on it. */
+let activeTrailTop: ((east: number, north: number) => number) | null = null;
+
+/**
+ * Height of the trail curtain top (bare earth plus canopy) at a plan point, from the last area layer built with
+ * curtains, or -Infinity when there is none or its curtains are off. The trail sign anchor takes the larger of this and
+ * the active surface, so its tail lands on the top edge of the curtain.
+ */
+export function trailTopHeight(east: number, north: number): number {
+  return activeTrailTop === null ? Number.NEGATIVE_INFINITY : activeTrailTop(east, north);
+}
+
+/**
+ * The plan offsets a point's canopy is sampled at for trailTopHeight: a cross of the CURTAIN_SMOOTH_VERTICES window at
+ * the 5 m resample (plus or minus 10 m), standing in for the moving maximum along a line the point is not tied to.
+ */
+const TOP_PROBE_M: readonly (readonly [number, number])[] = [
+  [0, 0],
+  [10, 0],
+  [-10, 0],
+  [0, 10],
+  [0, -10],
+];
 
 /**
  * Build the Line2 objects. Needs no renderer. Throws on a duplicate area id.
@@ -209,6 +275,7 @@ export function buildAreaLayer(
   surface: MeshSurface,
   toScene: SceneMapper,
   resolution: { readonly width: number; readonly height: number },
+  layerOptions: AreaLayerOptions = {},
 ): AreaLayer {
   const materials = {} as Record<Activity, LineMaterial>;
   const allMaterials: LineMaterial[] = [];
@@ -261,15 +328,64 @@ export function buildAreaLayer(
   let clampedVertexCount = 0;
   let liftMinClearanceM: number | null = null;
 
+  // ---- curtains (#64) ----
+  const curtainsBuilt = layerOptions.curtains === true;
+  let curtainsOn = curtainsBuilt;
+  let canopyAt: CanopyAt | null = null;
+  let curtainScale = 1;
+  /** Curtains stand on the bare earth the layer was built on, whatever surface the lines are re-draped onto. */
+  const bareAt = (east: number, north: number): number => surface.sample(east, north).height;
+  const curtainMaterial = curtainsBuilt ? createCurtainMaterial() : null;
+  const curtainFades: RadialFadeUniforms[] = [];
+  const curtainMaterials: Material[] = [];
+  if (curtainMaterial) {
+    const centre = { east: surface.extent.centreEast, north: surface.extent.centreNorth };
+    curtainFades.push(applyRadialFade(curtainMaterial, { centre }));
+    curtainMaterials.push(curtainMaterial);
+  }
+  /** Every curtain drawn in one call: the merge of the visible areas' walls, rebuilt on each change. */
+  const curtainMesh = curtainMaterial ? createCurtainMesh(curtainMaterial) : null;
+  /**
+   * Lift per centreline vertex: the curtain top (bare earth plus canopy) above whatever surface the line is draped on,
+   * never below that surface, plus DRAPE_LIFT_M. On bare earth that is canopy plus DRAPE_LIFT_M.
+   */
+  const liftsFor = (centre: ReadonlyArray<ReadonlyArray<number>>): number[] => {
+    const profile = canopyProfile(centre, canopyAt, curtainScale);
+    return centre.map((p, i) => {
+      const east = p[0] as number;
+      const north = p[1] as number;
+      const top = bareAt(east, north) + (profile[i] as number);
+      return DRAPE_LIFT_M + Math.max(0, top - currentSurface.sample(east, north).height);
+    });
+  };
+  const trailTop = (east: number, north: number): number => {
+    if (!curtainsOn) return Number.NEGATIVE_INFINITY;
+    const probes = TOP_PROBE_M.map(([de, dn]) => [east + de, north + dn]);
+    return bareAt(east, north) + Math.max(...canopyProfile(probes, canopyAt, curtainScale));
+  };
+  if (curtainsBuilt) activeTrailTop = trailTop;
+
   /** Areas drawn as k >= 2 strands, with the activity of each strand in order. */
   const strandPlan = new Map<string, readonly Activity[]>();
   const optionsFor = (area: Area): BuildOptions => {
+    const lift = curtainsOn ? { liftsFor } : {};
     const plan = strandPlan.get(area.id);
-    if (plan === undefined) return { smooth };
+    if (plan === undefined) return { smooth, ...lift };
     const offsets = plan.map((_, i) =>
       strandMode === 'world' ? (i - (plan.length - 1) / 2) * spacingM : 0,
     );
-    return { smooth, strandOffsetsM: offsets };
+    return { smooth, strandOffsetsM: offsets, ...lift };
+  };
+  /** A curtain for a non-lift LineString, one stripe in the kind default until the first route. */
+  const curtainFor = (area: Area, built: AreaPolylines): Curtain | undefined => {
+    if (!curtainMesh || area.kind === 'lift' || area.geometry.type !== 'LineString') {
+      return undefined;
+    }
+    const world = built.world[0];
+    if (world === undefined) return undefined;
+    const curtain = buildCurtain(area.id, world, bareAt, toScene);
+    curtain.setStripes([sportForArea(area, undefined, new Set())]);
+    return curtain;
   };
   const makeLine = (area: Area, positions: number[], sport: Activity): Line2 => {
     const geometry = new LineGeometry();
@@ -300,11 +416,12 @@ export function buildAreaLayer(
 
   for (const area of areas) {
     if (registry.has(area.id)) throw new Error(`duplicate area id ${area.id}`);
-    const built = buildAreaPositions(area, surface, toScene, { smooth });
+    const built = buildAreaPositions(area, surface, toScene, optionsFor(area));
     // First paint uses the kind default: annotations load after the layer, and the first filter apply re-routes.
     const sport = sportForArea(area, undefined, new Set());
     const lines = built.scene.map((positions) => makeLine(area, positions, sport));
-    registry.set(area.id, { area, lines });
+    const curtain = curtainFor(area, built);
+    registry.set(area.id, curtain ? { area, lines, curtain } : { area, lines });
     lineCount += lines.length;
     clampedVertexCount += built.clampedCount;
     if (built.liftMinClearanceM !== null) {
@@ -314,14 +431,34 @@ export function buildAreaLayer(
       );
     }
   }
+  /** Re-merges the visible curtains into the one drawn mesh, and shows it only while curtains are on. */
+  const refreshCurtains = (): void => {
+    if (!curtainMesh) return;
+    curtainMesh.geometry.dispose();
+    const curtains = [...registry.values()].flatMap((e) => (e.curtain ? [e.curtain] : []));
+    curtainMesh.geometry = mergeCurtains(curtains);
+    curtainMesh.visible = curtainsOn;
+  };
+  if (curtainMesh) {
+    group.add(curtainMesh);
+    refreshCurtains();
+  }
+  /** Re-shapes an area's curtain under its first (centre) line. */
+  const syncCurtain = (entry: AreaEntry, built: AreaPolylines): void => {
+    const world = built.world[0];
+    if (entry.curtain && world !== undefined) entry.curtain.setLine(world, bareAt);
+  };
   const rebuildAll = (): void => {
-    for (const { area, lines } of registry.values()) {
+    for (const entry of registry.values()) {
+      const { area, lines } = entry;
       if (area.kind === 'lift') continue;
       const built = buildAreaPositions(area, currentSurface, toScene, optionsFor(area));
       built.scene.forEach((positions, i) => {
         (lines[i] as Line2).geometry.setPositions(positions);
       });
+      if (curtainsOn) syncCurtain(entry, built);
     }
+    refreshCurtains();
   };
   const redrape = (next: MeshSurface): void => {
     currentSurface = next;
@@ -358,7 +495,9 @@ export function buildAreaLayer(
         line.userData['strandFactor'] = factor;
         setStrandMaterials(line, activity, factor);
       });
+      if (curtainsOn) syncCurtain(entry, built);
     }
+    refreshCurtains();
   };
   const setLineWidth = (px: number): void => {
     widthPx = px;
@@ -380,8 +519,14 @@ export function buildAreaLayer(
     annotations: ReadonlyMap<string, Annotation>,
     selected: ReadonlySet<Activity>,
   ): void => {
-    for (const [areaId, { area, lines }] of registry) {
+    for (const [areaId, { area, lines, curtain }] of registry) {
       const sport = sportForArea(area, annotations.get(areaId), selected);
+      if (curtain) {
+        // applyFilter has just set every line of the area to the area's visibility; read it before strands hide below.
+        curtain.visible = lines.some((line) => line.visible);
+        const carried = (annotations.get(areaId)?.activities ?? []).map((a) => a.activity);
+        curtain.setStripes(curtainStripes(carried, selected, sport));
+      }
       for (const line of lines) {
         const strand = line.userData['activity'] as Activity | undefined;
         if (strand !== undefined) {
@@ -395,6 +540,11 @@ export function buildAreaLayer(
         line.userData['baseMaterial'] = materials[sport];
       }
     }
+    refreshCurtains();
+  };
+  const setCurtainsOn = (on: boolean): void => {
+    curtainsOn = curtainsBuilt && on;
+    rebuildAll();
   };
   return {
     group,
@@ -408,6 +558,21 @@ export function buildAreaLayer(
     setLineWidth,
     setStrandSpacing,
     setSmooth,
+    curtainMaterials,
+    curtainMesh,
+    setCurtainFadeCentre(centre) {
+      for (const fade of curtainFades) setFadeCentre(fade, centre);
+    },
+    setCanopy(next) {
+      canopyAt = next;
+      rebuildAll();
+    },
+    setCurtainScale(k) {
+      curtainScale = k;
+      rebuildAll();
+    },
+    setCurtainsOn,
+    trailTopHeight: trailTop,
   };
 }
 
@@ -417,11 +582,15 @@ export function installAreas(
   areas: readonly Area[],
   surface: MeshSurface,
   toScene: SceneMapper,
+  layerOptions: AreaLayerOptions = {},
 ): AreaLayer {
-  const layer = buildAreaLayer(areas, surface, toScene, {
-    width: window.innerWidth,
-    height: window.innerHeight,
-  });
+  const layer = buildAreaLayer(
+    areas,
+    surface,
+    toScene,
+    { width: window.innerWidth, height: window.innerHeight },
+    layerOptions,
+  );
   scene.add(layer.group);
   const { stats } = layer;
   if (stats.clampedVertexCount > 0) {
