@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "count": 82287,
+  "count": 96740,
   "recordFloats": 9,
   "byteOrder": "LE",
   "dtype": "float32",
@@ -15,35 +15,37 @@
     "g",
     "b"
   ],
-  "byteLength": 2962332,
+  "byteLength": 3482640,
   "types": {
-    "broadleaf": 61694,
-    "conifer": 20593
+    "broadleaf": 72450,
+    "conifer": 24290
   },
   "archetypes": [
-    15675,
-    15341,
-    15459,
-    15219,
-    10251,
-    10342
+    18160,
+    17974,
+    18112,
+    18204,
+    12103,
+    12187
   ],
   "params": {
     "seed": 53,
-    "blockM": 30,
+    "blockM": 15,
     "greenMin": 0.055,
     "greenFull": 0.11,
     "baseDensity": 0.85,
-    "innerM": 5000,
+    "innerM": 1250,
     "outerM": 10100,
-    "jitterM": 6,
+    "jitterM": 7.5,
+    "ringM": 250,
+    "removalStep": 0.1,
     "heightMinM": 8,
     "heightMaxM": 22,
     "heightJitter": 0.1,
     "broadleafShare": 0.75,
     "darken": 0.85
   },
-  "forestBlocks": 178319,
+  "forestBlocks": 716040,
   "frame": {
     "file": "data/frame.json",
     "sha256": "68400bc7bf517d7870decf26c3c4c67d720347c85c35c567629d043b51698c38"

@@ -16,6 +16,7 @@ import { ElevatedGroup, effectiveScale, mapY, remapCamera } from './elevated';
 import { elevationToSceneY } from './frame';
 import { createMeshSurface, type Heightfield, type MeshSurface } from './heightfield';
 import { setFadeCentre } from './fade';
+import { createInsetPatch, type InsetPatch, type InsetRect } from './inset';
 import { createGround, groundSlopeColor } from './ground';
 import {
   applyHorizonBlend,
@@ -58,6 +59,8 @@ export interface SceneHandle {
   refit(): void;
   /** Shows the texture on the terrain, or restores slope shading with null. */
   setImagery(texture: Texture | null): void;
+  /** Mixes a native-resolution inset over the base photo inside rect (local metres), or clears it with null. Shown only while imagery is on. */
+  setInset(inset: { readonly texture: Texture; readonly rect: InsetRect } | null): void;
   /** The photo sky as environment light only (the backdrop is the procedural sky); the sun and hemisphere are trimmed so it is not blown out. */
   setSky(texture: Texture): void;
   /** Restores the flat sky colour, no environment, and the original light intensities. */
@@ -124,6 +127,8 @@ export function createScene(
     field.data.reduce((lowest, h) => Math.min(lowest, h), Number.POSITIVE_INFINITY);
   const baseSceneY = elevationToSceneY(lakeLevelM);
   let exaggeration = 1;
+  let insetPatch: InsetPatch | null = null;
+  let imageryOn = false;
 
   const hemisphere = new HemisphereLight(0xdde8ff, 0x3a3a30, 1.2);
   scene.add(hemisphere);
@@ -261,6 +266,21 @@ export function createScene(
     },
     setImagery(texture) {
       setTerrainImagery(terrain, texture);
+      imageryOn = texture !== null;
+      if (insetPatch) insetPatch.mesh.visible = imageryOn;
+    },
+    setInset(inset) {
+      if (insetPatch) {
+        elevated.remove(insetPatch.mesh);
+        insetPatch.mesh.geometry.dispose();
+        insetPatch.material.dispose();
+        insetPatch = null;
+      }
+      if (!inset) return;
+      insetPatch = createInsetPatch(terrain, inset.texture, inset.rect, terrainFade(terrain));
+      applyHorizonBlend(insetPatch.material, horizon);
+      insetPatch.mesh.visible = imageryOn;
+      elevated.add(insetPatch.mesh);
     },
     setSky(texture) {
       sky.setSky(texture);
@@ -294,6 +314,7 @@ export function createScene(
     },
     setFadeCentre(centre) {
       setFadeCentre(terrainFade(terrain), centre);
+      if (insetPatch) setFadeCentre(insetPatch.fade, centre);
     },
     refit() {
       if (!userMoved) setView(lastName);

@@ -54,11 +54,6 @@ export function patchStrandShader(vertexShader: string): string | null {
     );
 }
 
-/** Opacity of the ghost pass that shows an occluded stretch of a line through whatever hides it. */
-export const GHOST_OPACITY = 0.35;
-/** The ghost draws after every default-order object, including the fade-transparent ground meshes. */
-export const GHOST_RENDER_ORDER = 1;
-
 /**
  * Maps a local-metre position (east, north, elevation in world metres, BEFORE vertical
  * exaggeration) to three.js scene coordinates. The production mapper wraps toScene from
@@ -172,8 +167,6 @@ export interface AreaLayer {
   readonly registry: ReadonlyMap<string, AreaEntry>;
   /** One shared solid material per sport, coloured from SPORT_COLOR. */
   readonly materials: Readonly<Record<Activity, LineMaterial>>;
-  /** The no-depth-test ghost pass materials, one per sport (see GHOST_OPACITY). */
-  readonly ghostMaterials: Readonly<Record<Activity, LineMaterial>>;
   readonly stats: AreaLayerStats;
   /**
    * Rewrites every non-lift line's positions in place from another surface (the composite from surfaceSampler, or the
@@ -182,7 +175,7 @@ export interface AreaLayer {
   redrape(surface: MeshSurface): void;
   /**
    * Re-colours every line by sport (sportForArea) for the current annotations and Activity selection. Swaps shared
-   * per-sport materials only: never rebuilds geometry, adds or removes a Line2, or touches the ghost renderOrder or
+   * per-sport materials only: never rebuilds geometry, adds or removes a Line2, or touches renderOrder or
    * raycast. Records the sport material in line.userData.baseMaterial; a line currently highlighted (its material is
    * not the recorded base) keeps its highlight, and the highlighter restores the new base later. Idempotent.
    */
@@ -197,7 +190,7 @@ export interface AreaLayer {
    * array, userData.activity set), once annotations are known. Idempotent. Polygons and lifts are untouched.
    */
   applyStrands(annotations: ReadonlyMap<string, Annotation>): void;
-  /** Sets the band width in px on every solid and ghost material in place; screen strand shifts follow. */
+  /** Sets the band width in px on every material in place; screen strand shifts follow. */
   setLineWidth(px: number): void;
   /** World-mode fallback only: re-offsets and re-drapes the strands metres apart. No effect in screen mode. */
   setStrandSpacing(metres: number): void;
@@ -218,7 +211,6 @@ export function buildAreaLayer(
   resolution: { readonly width: number; readonly height: number },
 ): AreaLayer {
   const materials = {} as Record<Activity, LineMaterial>;
-  const ghostMaterials = {} as Record<Activity, LineMaterial>;
   const allMaterials: LineMaterial[] = [];
   let widthPx = DEFAULT_LINE_WIDTH_PX;
   let smooth = true;
@@ -242,7 +234,17 @@ export function buildAreaLayer(
     return material;
   };
   for (const sport of Object.keys(SPORT_COLOR) as Activity[]) {
-    const material = prepare(new LineMaterial({ color: SPORT_COLOR[sport], linewidth: widthPx }));
+    // Opaque and depth-tested (#57): trees and terrain occlude the line, and the line writes depth itself.
+    const material = prepare(
+      new LineMaterial({
+        color: SPORT_COLOR[sport],
+        linewidth: widthPx,
+        transparent: false,
+        opacity: 1,
+        depthTest: true,
+        depthWrite: true,
+      }),
+    );
     material.resolution.set(resolution.width, resolution.height);
     // The line sits 0.5 m above the surface; a constant depth bias (units only, no slope term) keeps it drawn over the
     // terrain at grazing angles, where depth error would otherwise push it behind the ground.
@@ -250,20 +252,6 @@ export function buildAreaLayer(
     material.polygonOffsetFactor = 0;
     material.polygonOffsetUnits = -4;
     materials[sport] = material;
-    // The ghost pass (#36): the same line drawn faint with no depth test, so a trail hidden behind a ridge, a LiDAR tree
-    // crown or a simulated tree still reads as a trace. The solid pass above keeps the depth cue where it is in view.
-    const ghost = prepare(
-      new LineMaterial({
-        color: SPORT_COLOR[sport],
-        linewidth: widthPx,
-        transparent: true,
-        opacity: GHOST_OPACITY,
-        depthTest: false,
-        depthWrite: false,
-      }),
-    );
-    ghost.resolution.set(resolution.width, resolution.height);
-    ghostMaterials[sport] = ghost;
   }
 
   const group = new Group();
@@ -290,22 +278,15 @@ export function buildAreaLayer(
     line.name = area.id;
     line.userData['areaId'] = area.id;
     line.userData['baseMaterial'] = materials[sport];
-    // The ghost is a child so it follows the line's visibility and shares its geometry (redrape moves both). It
-    // renders after the fade-transparent ground meshes and never intercepts a pick ray.
-    const ghost = new Line2(geometry, ghostMaterials[sport]);
-    ghost.name = `${area.id}:ghost`;
-    ghost.renderOrder = GHOST_RENDER_ORDER;
-    ghost.raycast = () => {};
-    line.add(ghost);
     group.add(line);
     return line;
   };
-  /** The solid or ghost material for a sport at a screen-shift factor (in band widths); one clone per distinct factor. */
+  /** The material for a sport at a screen-shift factor (in band widths); one clone per distinct factor. */
   const variants = new Map<string, LineMaterial>();
-  const variant = (sport: Activity, factor: number, isGhost: boolean): LineMaterial => {
-    const base = isGhost ? ghostMaterials[sport] : materials[sport];
+  const variant = (sport: Activity, factor: number): LineMaterial => {
+    const base = materials[sport];
     if (factor === 0 || strandMode === 'world') return base;
-    const key = `${isGhost ? 'g' : 's'}|${sport}|${factor}`;
+    const key = `${sport}|${factor}`;
     let material = variants.get(key);
     if (material === undefined) {
       material = base.clone();
@@ -347,12 +328,10 @@ export function buildAreaLayer(
     rebuildAll();
   };
   const setStrandMaterials = (line: Line2, activity: Activity, factor: number): void => {
-    const solid = variant(activity, factor, false);
+    const solid = variant(activity, factor);
     const previous = line.userData['baseMaterial'] as LineMaterial | undefined;
     if (previous === undefined || line.material === previous) line.material = solid;
     line.userData['baseMaterial'] = solid;
-    const ghost = line.children[0];
-    if (ghost instanceof Line2) ghost.material = variant(activity, factor, true);
   };
   const applyStrands = (annotations: ReadonlyMap<string, Annotation>): void => {
     for (const [areaId, entry] of registry) {
@@ -414,8 +393,6 @@ export function buildAreaLayer(
         const previous = line.userData['baseMaterial'] as LineMaterial | undefined;
         if (previous === undefined || line.material === previous) line.material = materials[sport];
         line.userData['baseMaterial'] = materials[sport];
-        const ghost = line.children[0];
-        if (ghost instanceof Line2) ghost.material = ghostMaterials[sport];
       }
     }
   };
@@ -423,7 +400,6 @@ export function buildAreaLayer(
     group,
     registry,
     materials,
-    ghostMaterials,
     stats: { lineCount, clampedVertexCount, liftMinClearanceM },
     redrape,
     route,

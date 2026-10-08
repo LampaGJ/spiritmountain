@@ -35,16 +35,22 @@ export const ContextTreesHeaderSchema = z
       greenMin: z.number(),
       greenFull: z.number(),
       baseDensity: z.number().min(0).max(1),
+      /** The core half-width: ring 0 starts here. */
       innerM: z.number().nonnegative(),
       outerM: z.number().positive(),
+      /** Jitter half-range on each axis: half a block. */
       jitterM: z.number().nonnegative(),
+      /** Ring width in metres (a tenth of the core diameter). */
+      ringM: z.number().positive().optional(),
+      /** Share each ring removes of what the previous ring kept. */
+      removalStep: z.number().min(0).max(1).optional(),
       heightMinM: z.number().positive(),
       heightMaxM: z.number().positive(),
       heightJitter: z.number().nonnegative(),
       broadleafShare: z.number().min(0).max(1),
       darken: z.number().positive(),
     }),
-    /** Blocks that passed the greenness test and lie outside the core window, before the radial thinning. */
+    /** Blocks that passed the greenness test and lie outside the core window, before the ring thinning. */
     forestBlocks: z.int().nonnegative(),
     frame: z.strictObject({ file: z.literal('data/frame.json'), sha256: Sha256Schema }),
     sources: z.array(z.strictObject({ path: z.string().min(1), sha256: Sha256Schema })).min(1),

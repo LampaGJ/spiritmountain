@@ -9,8 +9,8 @@ export const FADE_MS = 200;
 export const BACKSTOP_MARGIN_MS = 100;
 /** Feather width added to the end radius, in CSS pixels. */
 const FEATHER_PX = 160;
-/** Logo height at the first step, in vmin; must match `#reveal-logo` height in reveal.css. */
-export const LOGO_BASE_VMIN = 40;
+/** Logo height at the first step, in px, when the element has not been laid out yet (reveal.css sets 2em). */
+export const LOGO_BASE_FALLBACK_PX = 32;
 /** Minimum dwell per intro step (words pop, logo pulse). */
 export const STEP_MS = 520;
 /** A late load shorter than this never re-covers the scene. */
@@ -269,10 +269,11 @@ export function createRevealOverlay(doc: Document): RevealOverlay {
     labelEl.classList.remove('pop');
     void labelEl.offsetWidth;
     labelEl.classList.add('pop');
-    const short = Math.min(window.innerWidth, window.innerHeight);
     const long = Math.max(window.innerWidth, window.innerHeight);
-    // Base size is LOGO_BASE_VMIN of the short axis; the last step covers the long axis.
-    const maxScale = long / ((LOGO_BASE_VMIN / 100) * short);
+    // The logo starts about 2em tall and the last step covers the long axis; each step is a proportional,
+    // one-way jump toward it (fraction = settled / total, which never decreases).
+    const base = logoEl.offsetHeight || LOGO_BASE_FALLBACK_PX; // layout box: unaffected by the scale transform
+    const maxScale = Math.max(1, long / base);
     const scale = 1 + (maxScale - 1) * entry.fraction;
     logoEl.style.setProperty('--logo-scale', scale.toFixed(4));
   };

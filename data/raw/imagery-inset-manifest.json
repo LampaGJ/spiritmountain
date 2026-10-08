@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "name": "naip-inset",
+  "path": "data/raw/naip-inset.jpg",
+  "url": "https://imagery.nationalmap.gov/arcgis/rest/services/USGSNAIPPlus/ImageServer/exportImage",
+  "method": "GET",
+  "params": {
+    "bbox": "558952.112255701,5172894.48355887,561272.112255701,5175214.48355887",
+    "bboxSR": "26915",
+    "imageSR": "26915",
+    "size": "4000,4000",
+    "format": "jpg",
+    "compressionQuality": "75",
+    "f": "image"
+  },
+  "requestHeaders": {
+    "userAgent": "spiritmountain-poc/0.1"
+  },
+  "httpStatus": 200,
+  "contentType": "image/jpeg",
+  "fetchedAt": "2026-10-08T20:49:10.850Z",
+  "byteLength": 3474344,
+  "sha256": "31fca17d5254542de27e570cd4531fa65d9e6a56946c214910d800ccf7060913",
+  "epsg": 26915,
+  "origin": {
+    "easting": 560002.112255701,
+    "northing": 5173237.48355887
+  },
+  "bbox": {
+    "xmin": 558952.112255701,
+    "ymin": 5172894.48355887,
+    "xmax": 561272.112255701,
+    "ymax": 5175214.48355887
+  },
+  "localRect": {
+    "minEast": -1050,
+    "minNorth": -343,
+    "maxEast": 1270,
+    "maxNorth": 1977
+  },
+  "compressionQuality": 75,
+  "width": 4000,
+  "height": 4000,
+  "metresPerPixel": 0.58
+}
