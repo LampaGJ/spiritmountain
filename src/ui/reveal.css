@@ -65,15 +65,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2vmin;
+  padding: 1vmin;
   box-sizing: border-box;
+  overflow: hidden;
   text-align: center;
   text-transform: uppercase;
   overflow-wrap: anywhere;
   font:
-    800 14vmin/0.95 system-ui,
+    900 24vmin/0.88 system-ui,
     sans-serif;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.04em;
   color: #fff;
   opacity: 0.9;
 }
