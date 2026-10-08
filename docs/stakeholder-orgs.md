@@ -8,9 +8,9 @@ review_by: 2027-04-01
 
 ## TL;DR
 
-Thirteen organizations are verified as Spirit Mountain stakeholders and ten are unverified. The verified set covers mountain bike (COGGS, City Parks, Duluth DEVO), nordic (Duluth Cross Country Ski Club), alpine (Team Duluth Ski Club, National Ski Patrol), adaptive (Northland Adaptive), trail (Superior Hiking Trail Association) and governance (the Authority, City of Duluth, tourism tax). No source found names organizations for snowshoe, fat bike, tubing, high school alpine teams, Duluth Dirt Fest, Spirit Mountain Foundation, or Duluth Parks Fund.
+Fifteen organizations are verified as Spirit Mountain stakeholders and eight are unverified. The seed rule assigns only verified organizations to areas. The verified set covers mountain bike (COGGS, City Parks, Duluth DEVO, Earth Rider Brewery, Ski Hut), nordic (Duluth Cross Country Ski Club), alpine (Team Duluth Ski Club, National Ski Patrol), adaptive (Northland Adaptive), trail (Superior Hiking Trail Association) and governance (the Authority, City of Duluth, tourism tax). No source found names organizations for snowshoe, fat bike, tubing, high school alpine teams, Duluth Dirt Fest, Spirit Mountain Foundation, or Duluth Parks Fund.
 
-Sub-claims sourced: sub-claim 1: mountain bike stakeholders; sub-claim 2: nordic stakeholders; sub-claim 3: alpine stakeholders; sub-claim 4: adaptive stakeholders; sub-claim 5: trail and land stakeholders; sub-claim 6: governance and funding stakeholders; sub-claim 7: events organizers.
+Sub-claims sourced in the first pass: sub-claim 1: mountain bike stakeholders; sub-claim 2: nordic stakeholders; sub-claim 3: alpine stakeholders; sub-claim 4: adaptive stakeholders; sub-claim 5: trail and land stakeholders; sub-claim 6: governance and funding stakeholders; sub-claim 7: events organizers.
 
 The machine-readable list is `scripts/ingest/organizations.seed.json`. Wording of sources is paraphrased, never quoted, because WebFetch returns summaries rather than raw page text. Website URLs for most organizations were not fetched as homepages, so the source page stands in for the website here and `url` is null in the seed where no homepage was seen.
 
@@ -35,19 +35,24 @@ The machine-readable list is `scripts/ingest/organizations.seed.json`. Wording o
 - City of Duluth, municipal: manages the Nordic Center project through Parks and Recreation and contributed AVRI funding, https://duluthmn.gov/parks/parks-trails/current-projects/spirit-mountain-nordic-center/ [sub-claim 6: governance and funding stakeholders]
 - Tourism tax: the city allocated tourism tax revenue to Spirit Mountain operations, including $300,000 in August 2015 and a proposed further $250,000 for 2016, https://www.duluthnewstribune.com/news/duluth-to-carve-tourism-tax-pie [sub-claim 6: governance and funding stakeholders]
 - Bike Duluth Festival, held at Spirit Mountain with a co-chair named in the source and four beneficiary nonprofits (listed above), https://www.northernnewsnow.com/2023/07/10/bike-duluth-festival-sees-growing-participation-ninth-year/ [sub-claim 7: events organizers]
+- Earth Rider Brewery and Ski Hut, businesses: a trail maintenance workday was a collaboration of Spirit Mountain, Ski Hut, COGGS and Earth Rider, and the two also co-organise a weekly summer evening event at the base area, https://wdio.com/?p=30585 [issue 47 pass: Earth Rider and Ski Hut verified]
+- Duluth Cross Country Ski Club (DXC), already verified above, funds and advocates for the Spirit Mountain Nordic Center and says it helped raise over $900,000, https://www.duluthxc.com/spirit-mountain-nordic-center [issue 47 pass: this concerns DXC, not "Duluth Nordic (youth)", which stays unverified]
+- St. Louis River Alliance: its homepage mentions one guided botanical hike held at Spirit Mountain (weak, single event), https://www.stlouisriver.org [issue 47 pass: stays unverified]
+- Kraus-Anderson Community Foundation, lead contradicted: the article names Duluth Harbortown Rotary as organiser and Kraus-Anderson Construction (a company) as presenter, and does not name the Foundation, https://www.duluthnewstribune.com/news/9th-annual-bike-duluth-festival-is-underway-at-spirit-mountain [issue 47 pass: stays unverified]
+- Minnesota High School Cycling League (NICA), lead does not support it: the page mentions Spirit Mountain partnering with Duluth DEVO on the Duluth Trails Fest and does not mention the league, https://www.wdio.com/?p=847287 [issue 47 pass: stays unverified]
 
 ## Gaps
 
 - unverified: fetch of https://www.fox21online.com/?p=1358464 (adaptive skiing story) failed with HTTP 429; Mono Ski Madness and other Northland Adaptive events are not sourced beyond the Spirit Mountain page.
 - unverified: fetch of https://www.revisor.mn.gov/laws/1973/0/Session+Law/Chapter/327 returned an unreadable PDF; the 1973 creation date, mission and board composition of the Authority are not confirmed.
-- unverified: Ski Hut (business) and Earth Rider (business) as trail maintenance collaborators on Spirit Mountain summer events; search lead https://wdio.com/?p=30585 was not fetched.
-- unverified: Kraus-Anderson Community Foundation as organizer of the Bike Duluth Festival; search lead https://www.duluthnewstribune.com/news/9th-annual-bike-duluth-festival-is-underway-at-spirit-mountain was not fetched.
-- unverified: Lake Superior Zoo adjacency (a Duluth Traverse section between the zoo and Spirit Mountain); search lead https://midwestweekends.com/plan-a-trip/outdoors-recreation/hiking/superior-hiking-trail-duluth/ was not fetched, and the zoo operator's nonprofit type is not sourced.
-- unverified: youth mountain bike team in the Minnesota High School Cycling League (NICA Minnesota) based in Duluth; search lead https://www.wdio.com/?p=847287 was not fetched.
-- unverified: Duluth Nordic (youth) and Minnesota Youth Ski League chapters; no source found. The DXC page does not mention them.
+- unverified: Kraus-Anderson Community Foundation as organizer or funder; the fetched article names others (see Findings), and https://www.coggs.com/bike-duluth-festival returned 404.
+- unverified: Lake Superior Zoo; https://midwestweekends.com/plan-a-trip/outdoors-recreation/hiking/superior-hiking-trail-duluth/ is a secondary travel page that describes a hike past the zoo without naming a tie to Spirit Mountain, and the fetch of https://www.lakesuperiorzoo.org redirected to lszoo.org and was not followed.
+- unverified: Minnesota High School Cycling League (NICA Minnesota) role at Spirit Mountain; the lead page does not name it, and the fetch of https://www.fox21online.com/?p=135786 failed with HTTP 429.
+- unverified: Duluth Nordic (youth) and Minnesota Youth Ski League; no source found. A search snippet (not fetched) names a Nordic Spirit Youth Ski League run with DXC registration, a different named program.
 - unverified: IMBA chapter status for COGGS; only the Gold Level Ride Center designation is sourced.
-- unverified: Spirit Mountain Foundation and Duluth Parks Fund; no source found, and no foundation was found to exist.
-- unverified: St. Louis River Alliance and Duluth Climbers Coalition; no source found. The SHT press release names St. Louis River Corridor tourism tax, which is not the Alliance.
+- unverified: Spirit Mountain Foundation and Duluth Parks Fund; no source found, and the fetch of https://www.duluthparksfund.org failed (host not found). No foundation was found to exist.
+- unverified: Duluth Climbers Coalition; the fetch of https://duluthclimbers.org returned no page content. St. Louis River Alliance is weakly sourced (single hike, see Findings) and stays unverified. The SHT press release names St. Louis River Corridor tourism tax, which is not the Alliance.
+- unverified: Earth Rider Brewery homepage; the fetch of https://earthriderbrewery.com failed (host not found), so its `url` stays null. Ski Hut homepage was not found, so its `url` stays null.
 - unverified: Minnesota DNR Grant-in-Aid trail sponsors in the area; no source found.
 - unverified: high school alpine teams, snowshoe, fat bike and tubing organizations, Duluth Dirt Fest, and nordic race organizers; no source found. The festival found is Bike Duluth Festival, not Dirt Fest.
 - Context, not a finding: a Kootenay Adaptive Sport Association standards reference appears on the cycling trails page as a design-standards advisor, not a local stakeholder, and is excluded from the seed.
@@ -55,13 +60,13 @@ The machine-readable list is `scripts/ingest/organizations.seed.json`. Wording o
 
 ## Confidence
 
-Medium: 13 organizations are confirmed by fetched official or club pages, but the research budget ended before the Authority statute, adaptive news story, and several named candidates could be fetched. Fetched-page summaries were model-written, so no wording is quoted.
+Medium: 15 organizations are confirmed by fetched official or club pages, but the research budget ended before the Authority statute, adaptive news story, and several named candidates could be fetched. Fetched-page summaries were model-written, so no wording is quoted.
 
 ## Verified vs Unverified
 
-- Verified organizations: 13 (seed entries with verified true).
-- Unverified organizations: 10 (seed entries with verified false).
-- Unverified claim bullets under Gaps: 12, covering 2 failed fetches and the unsourced candidates above.
+- Verified organizations: 15 (seed entries with verified true).
+- Unverified organizations: 8 (seed entries with verified false).
+- Unverified claim bullets under Gaps: see the list above; failed fetches are listed there by URL.
 
 ## Reproduction
 
@@ -88,3 +93,4 @@ Fetch log, in order:
 - ok: https://duluthmn.gov/web-subscriptions/View-press-release/?prid=4998 (sub-claim 5)
 - ok: https://www.duluthnewstribune.com/news/duluth-to-carve-tourism-tax-pie (sub-claim 6)
 - ok: https://destinationduluth.org/?p=4390 (sub-claim 1)
+- issue 47 pass, fetches in order: ok https://wdio.com/?p=30585; ok https://www.duluthnewstribune.com/news/9th-annual-bike-duluth-festival-is-underway-at-spirit-mountain; ok https://www.wdio.com/?p=847287; ok https://midwestweekends.com/plan-a-trip/outdoors-recreation/hiking/superior-hiking-trail-duluth/; ok https://www.duluthxc.com/spirit-mountain-nordic-center; failed (empty) https://duluthclimbers.org; failed (host not found) https://www.duluthparksfund.org; ok https://www.stlouisriver.org; failed (404) https://www.coggs.com/bike-duluth-festival; failed (429) https://www.fox21online.com/?p=135786; failed (host not found) https://earthriderbrewery.com; failed (redirect not followed) https://www.lakesuperiorzoo.org

@@ -342,18 +342,32 @@ describe('stakeholder rule', () => {
     const lift = built.annotations.find((a) => a.areaId === 'way/7');
     expect(lift?.stakeholders).toEqual([{ orgId: AUTHORITY, role: 'operates' }]);
   });
-  it('a mountain-bike area gets COGGS, the DEVO program, the high-school league and the City', () => {
+  it('a mountain-bike area gets COGGS, the DEVO program and the City, and not the unverified high-school league', () => {
     const mtb = built.annotations.find((a) => a.areaId === 'way/20');
     const got = ids(mtb?.stakeholders ?? []);
     for (const id of [
       'cyclists-of-gitchee-gumee-shores',
       'duluth-devo-mountain-bike-program',
-      'minnesota-high-school-cycling-league',
       'city-of-duluth-parks-and-recreation',
       AUTHORITY,
     ])
       expect(got).toContain(id);
+    expect(got).not.toContain('minnesota-high-school-cycling-league');
     expect(got).not.toContain('duluth-cross-country-ski-club');
+  });
+  it('never assigns an unverified org, even when its activities match', () => {
+    const unverified = seed.filter(
+      (org) => !org.verified && org.activities.includes('mountain-bike'),
+    );
+    expect(unverified.length).toBeGreaterThan(0);
+    expect(ids(stakeholdersFor([entry('mountain-bike')], seed))).not.toContain(unverified[0]?.id);
+    const fake = { ...seed[0], id: 'zz-fake', activities: ['mountain-bike'], verified: false };
+    expect(ids(stakeholdersFor([entry('mountain-bike')], [...seed, fake as never]))).not.toContain(
+      'zz-fake',
+    );
+    for (const annotation of built.annotations)
+      for (const link of annotation.stakeholders)
+        expect(built.organizations.find((o) => o.id === link.orgId)?.verified).toBe(true);
   });
   it('sorts by org id in code-unit order, one link per org', () => {
     for (const annotation of built.annotations) {

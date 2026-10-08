@@ -78,7 +78,7 @@ const ROLE_BY_ORG_TYPE: Record<Organization['type'], StakeholderLink['role']> = 
 /**
  * @displayName Stakeholder rule
  * @strategicPurpose Attaches related organizations to each area without hand-editing, so the stakeholder panel shows who is connected to what.
- * @tacticalObjective Pure function: every organization whose activities intersect the area's activities, plus the Recreation Authority on every area (a lift gets only the Authority), one link per org, role by org type, sorted by org id in code-unit order.
+ * @tacticalObjective Pure function: every verified organization (an unverified one is never assigned) whose activities intersect the area's activities, plus the Recreation Authority on every area (a lift gets only the Authority), one link per org, role by org type, sorted by org id in code-unit order.
  */
 export function stakeholdersFor(
   activities: readonly ActivityEntry[],
@@ -86,6 +86,7 @@ export function stakeholdersFor(
 ): StakeholderLink[] {
   const present = new Set(activities.map((entry) => entry.activity));
   return organizations
+    .filter((org) => org.verified)
     .filter((org) => org.id === AUTHORITY_ORG_ID || org.activities.some((a) => present.has(a)))
     .sort((a, b) => compareCodeUnit(a.id, b.id))
     .map((org) => ({ orgId: org.id, role: ROLE_BY_ORG_TYPE[org.type] }));
