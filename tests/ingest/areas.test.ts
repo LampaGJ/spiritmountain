@@ -166,6 +166,9 @@ interface RawElement {
   id: number;
   tags?: Record<string, string>;
   geometry?: RawPoint[];
+  lat?: number;
+  lon?: number;
+  nodes?: number[];
   members?: Array<{ type: string; ref: number; geometry?: RawPoint[] }>;
 }
 
@@ -208,10 +211,52 @@ function independentCounts(raw: Uint8Array): {
   let features = 0;
   let dropped = 0;
   let exploded = 0;
+  // #71 families, retyped: a way is one when the old tags miss and one of these hits. A camp_site or climbing area needs a closed ring.
+  const rides = new Set([
+    'amusement_ride',
+    'big_wheel',
+    'bumper_car',
+    'bungee_jumping',
+    'carousel',
+  ]);
+  for (const ride of [
+    'dark_ride',
+    'drop_tower',
+    'kiddie_ride',
+    'log_flume',
+    'maze',
+    'river_rafting',
+    'roller_coaster',
+    'summer_toboggan',
+    'swing_carousel',
+    'water_slide',
+  ])
+    rides.add(ride);
+  const polygonFamily = (tags: Record<string, string> = {}): boolean =>
+    tags['tourism'] === 'camp_site' ||
+    tags['sport'] === 'climbing' ||
+    tags['climbing'] !== undefined;
+  const lineFamily = (tags: Record<string, string> = {}): boolean =>
+    tags['aerialway'] === 'zip_line' ||
+    tags['roller_coaster'] === 'track' ||
+    rides.has(tags['attraction'] ?? '');
+  const closedRing = (e: RawElement): boolean => {
+    const n = e.nodes ?? [];
+    return n.length >= 4 && n[0] === n[n.length - 1];
+  };
   for (const element of elements) {
-    if (element.type === 'node') dropped += 1;
-    else if (element.type === 'way') {
-      if (wanted(element.tags) && inBox(element.geometry ?? [])) features += 1;
+    if (element.type === 'node') {
+      const t = element.tags ?? {};
+      const point = { lat: element.lat ?? Number.NaN, lon: element.lon ?? Number.NaN };
+      // Only a lone camp_site or climbing node is promoted to an octagon feature, and only inside the bbox.
+      if (t['aerialway'] === undefined && polygonFamily(t) && inBox([point])) features += 1;
+      else dropped += 1;
+    } else if (element.type === 'way') {
+      const inside = inBox(element.geometry ?? []);
+      if (wanted(element.tags) || lineFamily(element.tags)) {
+        if (inside) features += 1;
+        else dropped += 1;
+      } else if (polygonFamily(element.tags) && inside && closedRing(element)) features += 1;
       else dropped += 1;
     }
   }
@@ -294,7 +339,9 @@ describe.each([
   it('agrees with the independent raw-element counter', () => {
     // Derived tubing runs add no raw element, so they are counted apart (see the derived tubing run block).
     const real = result.collection.features.filter((f) => !f.properties.id.startsWith('derived/'));
-    const exploded = real.filter((f) => !rawWayKeys.has(f.properties.id));
+    const exploded = real.filter(
+      (f) => !rawWayKeys.has(f.properties.id) && !f.properties.id.startsWith('node/'),
+    );
     expect({
       features: real.length,
       dropped: result.replay.dropped.length,

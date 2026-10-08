@@ -1,7 +1,7 @@
 {
-  "inputHash": "b354ed670b0df2aa64a28a934ae007e1b3852387f8754ea85da1474ffcc27d27",
-  "codeCommit": "a2c7e0a67b63d6570fabbe44a79c1b9cd9aa75ed",
-  "outputHash": "868d60a8d24d19a1edd8416a00637063428afef2661cf8a3521578477fa1da1b",
+  "inputHash": "791bda50dc9d341953c4bc85d9856b92aab813848570806748dac1a75fd49ee0",
+  "codeCommit": "3a29fc2291f43a9d5591e70223835129d9e7b1c4",
+  "outputHash": "394d2189a67fbfc5b0ee3ca634b9d8831ee9e2f3d731c5c87a1d7554bb197b09",
   "effect": "reduces",
   "toolVersions": {
     "osmtogeojson": "3.0.0-beta.5",
@@ -9,6 +9,9 @@
   },
   "lockSubtreeSha256": "59aa92ae8e489559c0812f8d56d434f5374a49eda46b5d86a33c78479ebc4fde",
   "counts": {
+    "attraction": 6,
+    "campground": 2,
+    "climbing": 0,
     "downhill-run": 21,
     "hiking-trail": 47,
     "lift": 8,
@@ -16,16 +19,94 @@
     "mtb-trail": 15,
     "nordic-trail": 40,
     "snow-park": 2,
-    "tubing-run": 1
+    "tubing-run": 1,
+    "zip-line": 0
   },
   "droppedCounts": {
     "duplicate-member": 41,
+    "node-other": 15,
     "node-pylon": 23,
     "node-station": 2,
     "outside-bbox": 1500,
-    "relation-no-new-members": 1
+    "relation-no-new-members": 1,
+    "unmapped-tags": 3
   },
   "dropped": [
+    {
+      "id": "node/13954489755",
+      "reason": "node-other",
+      "detail": "attraction=train"
+    },
+    {
+      "id": "node/13956197851",
+      "reason": "node-other",
+      "detail": "attraction=animal"
+    },
+    {
+      "id": "node/13956197852",
+      "reason": "node-other",
+      "detail": "attraction=animal"
+    },
+    {
+      "id": "node/13956197853",
+      "reason": "node-other",
+      "detail": "attraction=animal"
+    },
+    {
+      "id": "node/13956197859",
+      "reason": "node-other",
+      "detail": "attraction=animal"
+    },
+    {
+      "id": "node/13956197860",
+      "reason": "node-other",
+      "detail": "attraction=animal"
+    },
+    {
+      "id": "node/13956197861",
+      "reason": "node-other",
+      "detail": "attraction=animal"
+    },
+    {
+      "id": "node/13956197862",
+      "reason": "node-other",
+      "detail": "attraction=animal"
+    },
+    {
+      "id": "node/13956197863",
+      "reason": "node-other",
+      "detail": "attraction=animal"
+    },
+    {
+      "id": "node/13956197864",
+      "reason": "node-other",
+      "detail": "attraction=animal"
+    },
+    {
+      "id": "node/13956197865",
+      "reason": "node-other",
+      "detail": "attraction=animal"
+    },
+    {
+      "id": "node/13956245290",
+      "reason": "node-other",
+      "detail": "attraction=animal"
+    },
+    {
+      "id": "node/13956245291",
+      "reason": "node-other",
+      "detail": "attraction=animal"
+    },
+    {
+      "id": "node/13956245292",
+      "reason": "node-other",
+      "detail": "attraction=animal"
+    },
+    {
+      "id": "node/13956317924",
+      "reason": "node-other",
+      "detail": "attraction=animal"
+    },
     {
       "id": "node/1601376969",
       "reason": "node-station"
@@ -6335,6 +6416,21 @@
     {
       "id": "relation/1612587#way/996671656",
       "reason": "outside-bbox"
+    },
+    {
+      "id": "way/1530894787",
+      "reason": "unmapped-tags",
+      "detail": "attraction=animal"
+    },
+    {
+      "id": "way/1530894794",
+      "reason": "unmapped-tags",
+      "detail": "attraction=animal"
+    },
+    {
+      "id": "way/1531264209",
+      "reason": "unmapped-tags",
+      "detail": "attraction=animal"
     }
   ]
 }

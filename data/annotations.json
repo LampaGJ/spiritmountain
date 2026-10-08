@@ -1,8 +1,8 @@
 {
   "version": 1,
   "generatedFrom": {
-    "inputHash": "b7ba9d65a1aa46ff50cd75a536ecafd0815ee18607ee0499acd95120f3bef7a9",
-    "codeCommit": "a2c7e0a67b63d6570fabbe44a79c1b9cd9aa75ed",
+    "inputHash": "b581fa0ac229eac34b3a75b3fb190fa4012a79d394d55a5adce598e4d5cc78cc",
+    "codeCommit": "3a29fc2291f43a9d5591e70223835129d9e7b1c4",
     "effect": "expands"
   },
   "organizations": [
@@ -1342,6 +1342,120 @@
             "winter"
           ],
           "notes": "derived from OSM kind"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1018865245",
+      "activities": [
+        {
+          "activity": "alpine-coaster",
+          "seasons": [
+            "summer"
+          ],
+          "notes": "Timber Twister Alpine Coaster; page blocked by Cloudflare at fetch time, cited from issue #71 (https://spiritmt.com/summer/adventure-park/)"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1018865246",
+      "activities": [
+        {
+          "activity": "alpine-coaster",
+          "seasons": [
+            "summer"
+          ],
+          "notes": "Timber Twister Alpine Coaster; page blocked by Cloudflare at fetch time, cited from issue #71 (https://spiritmt.com/summer/adventure-park/)"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1018865247",
+      "activities": [
+        {
+          "activity": "alpine-coaster",
+          "seasons": [
+            "summer"
+          ],
+          "notes": "Timber Twister Alpine Coaster; page blocked by Cloudflare at fetch time, cited from issue #71 (https://spiritmt.com/summer/adventure-park/)"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1018865248",
+      "activities": [
+        {
+          "activity": "alpine-coaster",
+          "seasons": [
+            "summer"
+          ],
+          "notes": "Timber Twister Alpine Coaster; page blocked by Cloudflare at fetch time, cited from issue #71 (https://spiritmt.com/summer/adventure-park/)"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1018865249",
+      "activities": [
+        {
+          "activity": "alpine-coaster",
+          "seasons": [
+            "summer"
+          ],
+          "notes": "Timber Twister Alpine Coaster; page blocked by Cloudflare at fetch time, cited from issue #71 (https://spiritmt.com/summer/adventure-park/)"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/1023700535",
+      "activities": [
+        {
+          "activity": "alpine-coaster",
+          "seasons": [
+            "summer"
+          ],
+          "notes": "Timber Twister Alpine Coaster; page blocked by Cloudflare at fetch time, cited from issue #71 (https://spiritmt.com/summer/adventure-park/)"
         }
       ],
       "stakeholders": [
@@ -7362,6 +7476,27 @@
       "notes": ""
     },
     {
+      "areaId": "way/1535981247",
+      "activities": [
+        {
+          "activity": "camping",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "campground open May 20 to Oct 25 2026 (https://spiritmt.com/summer/camping/)"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
+        }
+      ],
+      "notes": ""
+    },
+    {
       "areaId": "way/175836810",
       "activities": [
         {
@@ -7695,6 +7830,27 @@
         {
           "orgId": "superior-hiking-trail-association",
           "role": "advocates"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "areaId": "way/525648834",
+      "activities": [
+        {
+          "activity": "camping",
+          "seasons": [
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "notes": "campground open May 20 to Oct 25 2026 (https://spiritmt.com/summer/camping/)"
+        }
+      ],
+      "stakeholders": [
+        {
+          "orgId": "spirit-mountain-recreation-area-authority",
+          "role": "operates"
         }
       ],
       "notes": ""
