@@ -26,6 +26,7 @@ import {
 import { fadeAlpha } from '../../scripts/ingest/context-tiles';
 import { ActivitySchema, type Annotation } from '../schema/annotation';
 import type { Area } from '../schema/area';
+import type { Place } from '../schema/places';
 import { signGlyph } from '../ui/icons';
 import type { SceneMapper } from './areas';
 import { effectiveScale } from './elevated';
@@ -412,6 +413,24 @@ export interface SignPlan {
   readonly label: string;
   /** Distinct tracks under this sign. */
   readonly trackCount: number;
+  /** Concentration signs only: the name of the nearest verified place that reaches the sign (#61); absent when none does. */
+  readonly place?: string;
+}
+
+/**
+ * @displayName Place name for a sign
+ * @strategicPurpose Lets a concentration sign read as a real place ("Grand Avenue Chalet") instead of only "N trails", using only places a source confirmed.
+ * @tacticalObjective Returns the name of the nearest place that is verified, has a position, and has the point within its radiusM (the radius itself counts); equal distances go to the earlier place in the list. Null when none qualifies, so an unverified place never labels anything.
+ */
+export function placeNameFor(point: PlanePoint, places: readonly Place[]): string | null {
+  let best: { name: string; distance: number } | null = null;
+  for (const place of places) {
+    if (!place.verified || place.east === null || place.north === null) continue;
+    const distance = Math.hypot(point.east - place.east, point.north - place.north);
+    if (distance > place.radiusM) continue;
+    if (best === null || distance < best.distance) best = { name: place.name, distance };
+  }
+  return best === null ? null : best.name;
 }
 
 /**
@@ -439,13 +458,15 @@ function trackActivities(
  * (concentrateTracks); one sign sits at the weighted centroid of every vertex of the concentration. A concentration
  * of more than SPLIT_TRACKS tracks and a plan extent over SPLIT_EXTENT_M splits in two (splitInTwo), each half
  * taking the tracks that have a vertex in it, so one trail running through both halves shows on both signs. The label
- * is the track name for one track, else `N trails`. Output order is by east, then north, so it is stable across runs.
+ * is the track name for one track, else `N trails`; when a verified place reaches the centroid (placeNameFor) the sign also
+ * carries its name. Output order is by east, then north, so it is stable across runs.
  */
 export function planSigns(
   areas: readonly TrackArea[],
   annotations: ReadonlyMap<string, Annotation>,
   selected: ReadonlySet<Activity>,
   visibleIds: ReadonlySet<string>,
+  places: readonly Place[] = [],
 ): SignPlan[] {
   const byKey = new Map<string, TrackArea[]>();
   for (const area of areas) {
@@ -475,12 +496,15 @@ export function planSigns(
   const emit = (indices: readonly number[], points: readonly WeightedPoint[]): void => {
     if (indices.length === 0 || points.length === 0) return;
     const union = new Set(indices.flatMap((i) => activities[i] as Activity[]));
+    const centre = weightedCentroid(points);
+    const place = placeNameFor(centre, places);
     plans.push({
-      ...weightedCentroid(points),
+      ...centre,
       family: 'concentration',
       activities: ActivitySchema.options.filter((a) => union.has(a)),
       label: labelOf(indices),
       trackCount: indices.length,
+      ...(place === null ? {} : { place }),
     });
   };
   for (const group of concentrateTracks(tracks)) {
@@ -738,6 +762,8 @@ export interface SignSpec {
   readonly activities: readonly Activity[];
   readonly label: string;
   readonly family: SignFamily;
+  /** Concentration signs: a place name drawn in bold above `label`, which then becomes the smaller second line. */
+  readonly place?: string | undefined;
   /** False until the Material Symbols font has loaded (or forever when it fails): chips and label only. */
   readonly glyph: boolean;
   readonly width: number;
@@ -747,8 +773,9 @@ export interface SignSpec {
 const cssHex = (hex: number): string => `#${hex.toString(16).padStart(6, '0')}`;
 
 /** Cache key of a sign texture: the same activities, label and role draw the same pixels. */
-export const signTextureKey = (spec: Pick<SignSpec, 'activities' | 'label' | 'family'>): string =>
-  `${spec.family}|${spec.activities.join(',')}|${spec.label}`;
+export const signTextureKey = (
+  spec: Pick<SignSpec, 'activities' | 'label' | 'family' | 'place'>,
+): string => `${spec.family}|${spec.activities.join(',')}|${spec.label}|${spec.place ?? ''}`;
 
 function roundedPanel(ctx: SignContext2D, w: number, h: number, colour: number): void {
   const r = h * 0.22;
@@ -831,6 +858,18 @@ export function drawSign(ctx: SignContext2D, spec: SignSpec): void {
     drawChips(ctx, spec, pad, h * 0.72, h * 0.19, w - 2 * pad, h * 0.06);
     return;
   }
+  if (spec.place !== undefined) {
+    // A named place: chips on top, the place name in bold, then the trail count smaller underneath (same hierarchy as a trail sign).
+    drawChips(ctx, spec, pad, h * 0.2, h * 0.15, w - 2 * pad, h * 0.05);
+    ctx.fillStyle = cssHex(LABEL_LIGHT);
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'center';
+    fitLabel(ctx, spec.place, Math.round(h * 0.27), w - 2 * pad, 'bold');
+    ctx.fillText(spec.place, w / 2, h * 0.55);
+    fitLabel(ctx, spec.label, Math.round(h * 0.2), w - 2 * pad);
+    ctx.fillText(spec.label, w / 2, h * 0.85);
+    return;
+  }
   drawChips(ctx, spec, pad, h * 0.28, h * 0.2, w - 2 * pad, h * 0.06);
   ctx.fillStyle = cssHex(LABEL_LIGHT);
   ctx.textBaseline = 'middle';
@@ -901,6 +940,8 @@ export interface BillboardDeps {
   readonly createCanvas?: () => SignCanvas;
   /** Defaults to document.fonts; pass undefined explicitly for none. */
   readonly fonts?: SignFontSet | undefined;
+  /** Named places (#61); only verified ones label a concentration sign. Defaults to none. */
+  readonly places?: readonly Place[];
   /** Defaults to console.warn. */
   readonly warn?: (message: string) => void;
 }
@@ -981,7 +1022,7 @@ export function buildBillboardLayer(
   interface SignTexture {
     readonly canvas: SignCanvas;
     readonly texture: CanvasTexture;
-    readonly spec: Pick<SignSpec, 'activities' | 'label' | 'family'>;
+    readonly spec: Pick<SignSpec, 'activities' | 'label' | 'family' | 'place'>;
   }
   const textures = new Map<string, SignTexture>();
   const paint = (entry: SignTexture): void => {
@@ -995,7 +1036,9 @@ export function buildBillboardLayer(
     });
     entry.texture.needsUpdate = true;
   };
-  const textureFor = (spec: Pick<SignSpec, 'activities' | 'label' | 'family'>): CanvasTexture => {
+  const textureFor = (
+    spec: Pick<SignSpec, 'activities' | 'label' | 'family' | 'place'>,
+  ): CanvasTexture => {
     const key = signTextureKey(spec);
     const cached = textures.get(key);
     if (cached) return cached.texture;
@@ -1094,7 +1137,7 @@ export function buildBillboardLayer(
     const { annotations, selected, visibleIds } = lastArgs;
     // Concentration signs first: they win declutter ties and keep their pool slots across trail-sign changes.
     lastPlans = [
-      ...planSigns(areas, annotations, selected, visibleIds),
+      ...planSigns(areas, annotations, selected, visibleIds, deps.places ?? []),
       ...planTrailSigns(areas, annotations, selected, visibleIds),
     ];
     lastPlans.forEach((plan, i) => {

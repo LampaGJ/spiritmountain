@@ -1,0 +1,322 @@
+[
+  {
+    "id": "spirit-mountain-upper-chalet",
+    "name": "Spirit Mountain Upper Chalet",
+    "kind": "chalet",
+    "lat": 46.718,
+    "lon": -92.2167,
+    "radiusM": 200,
+    "anchor": null,
+    "sourceUrl": "https://overpass-api.de/api/interpreter?data=[out:json][timeout:25];(node(around:3500,46.71,-92.21)[name][~\"^(natural|tourism|amenity|aerialway|leisure|place|man_made)$\"~\".\"];way(around:2500,46.71,-92.21)[name][~\"^(leisure|tourism|aerialway)$\"~\".\"];);out center tags 120;",
+    "verified": true,
+    "positionNote": "OSM chalet point as relayed by the research report; spiritmt.com calls it Skyline Chalet, same building not confirmed."
+  },
+  {
+    "id": "nordic-center-at-grand",
+    "name": "Nordic Center at Grand",
+    "kind": "nordic-centre",
+    "lat": null,
+    "lon": null,
+    "radiusM": 200,
+    "anchor": {
+      "placeId": "grand-avenue-chalet"
+    },
+    "sourceUrl": "https://spiritmt.com/winter/nordic/",
+    "verified": true,
+    "positionNote": "spiritmt.com puts the Lower Nordic centre at 8551 Grand Ave with the Grand Avenue Chalet, so it takes the chalet position."
+  },
+  {
+    "id": "grand-avenue-chalet",
+    "name": "Grand Avenue Chalet",
+    "kind": "chalet",
+    "lat": 46.7155,
+    "lon": -92.2058,
+    "radiusM": 200,
+    "anchor": null,
+    "sourceUrl": "https://overpass-api.de/api/interpreter?data=[out:json][timeout:25];(node(around:3500,46.71,-92.21)[name][~\"^(natural|tourism|amenity|aerialway|leisure|place|man_made)$\"~\".\"];way(around:2500,46.71,-92.21)[name][~\"^(leisure|tourism|aerialway)$\"~\".\"];);out center tags 120;",
+    "verified": true,
+    "positionNote": "OSM point named \"Grand Avenue Chalet, Riverside Bar & Grill\", as relayed by the research report."
+  },
+  {
+    "id": "spirit-mountain-adventure-park",
+    "name": "Spirit Mountain Adventure Park",
+    "kind": "adventure-park",
+    "lat": 46.715,
+    "lon": -92.2182,
+    "radiusM": 300,
+    "anchor": null,
+    "sourceUrl": "https://overpass-api.de/api/interpreter?data=[out:json][timeout:25];(node(around:3500,46.71,-92.21)[name][~\"^(natural|tourism|amenity|aerialway|leisure|place|man_made)$\"~\".\"];way(around:2500,46.71,-92.21)[name][~\"^(leisure|tourism|aerialway)$\"~\".\"];);out center tags 120;",
+    "verified": true,
+    "positionNote": "OSM attraction point as relayed by the research report."
+  },
+  {
+    "id": "spirit-mountain-campsite",
+    "name": "Spirit Mountain Campsite",
+    "kind": "campground",
+    "lat": 46.7137,
+    "lon": -92.2222,
+    "radiusM": 200,
+    "anchor": null,
+    "sourceUrl": "https://overpass-api.de/api/interpreter?data=[out:json][timeout:25];(node(around:3500,46.71,-92.21)[name][~\"^(natural|tourism|amenity|aerialway|leisure|place|man_made)$\"~\".\"];way(around:2500,46.71,-92.21)[name][~\"^(leisure|tourism|aerialway)$\"~\".\"];);out center tags 120;",
+    "verified": true,
+    "positionNote": "OSM camp_site point as relayed by the research report."
+  },
+  {
+    "id": "bardon-peak",
+    "name": "Bardon Peak",
+    "kind": "peak",
+    "lat": 46.6897,
+    "lon": -92.2357,
+    "radiusM": 600,
+    "anchor": null,
+    "sourceUrl": "https://overpass-api.de/api/interpreter?data=[out:json][timeout:25];(node(around:3500,46.71,-92.21)[name][~\"^(natural|tourism|amenity|aerialway|leisure|place|man_made)$\"~\".\"];way(around:2500,46.71,-92.21)[name][~\"^(leisure|tourism|aerialway)$\"~\".\"];);out center tags 120;",
+    "verified": true,
+    "positionNote": "OSM peak point as relayed by the research report; the City of Duluth spells it Bardon's Peak."
+  },
+  {
+    "id": "bardon-peak-overlook",
+    "name": "Bardon Peak Overlook",
+    "kind": "overlook",
+    "lat": 46.6876,
+    "lon": -92.2319,
+    "radiusM": 200,
+    "anchor": null,
+    "sourceUrl": "https://overpass-api.de/api/interpreter?data=[out:json][timeout:25];(node(around:3500,46.71,-92.21)[name][~\"^(natural|tourism|amenity|aerialway|leisure|place|man_made)$\"~\".\"];way(around:2500,46.71,-92.21)[name][~\"^(leisure|tourism|aerialway)$\"~\".\"];);out center tags 120;",
+    "verified": true,
+    "positionNote": "OSM viewpoint point as relayed by the research report."
+  },
+  {
+    "id": "elys-peak",
+    "name": "Elys Peak",
+    "kind": "peak",
+    "lat": 46.6792029,
+    "lon": -92.2525987,
+    "radiusM": 600,
+    "anchor": null,
+    "sourceUrl": "https://overpass-api.de/api/interpreter?data=[out:json][timeout:20];node[natural=peak][name~\"Ely\"](46.6,-92.4,46.8,-92.1);out;",
+    "verified": true,
+    "positionNote": "OSM peak point (GNIS 661210) as relayed by the research report; OSM spelling kept."
+  },
+  {
+    "id": "summit-chair",
+    "name": "Summit Chair",
+    "kind": "lift-top",
+    "lat": null,
+    "lon": null,
+    "radiusM": 150,
+    "anchor": {
+      "areaName": "Summit Chair",
+      "at": "top"
+    },
+    "sourceUrl": "https://overpass-api.de/api/interpreter?data=[out:json][timeout:25];(node(around:3500,46.71,-92.21)[name][~\"^(natural|tourism|amenity|aerialway|leisure|place|man_made)$\"~\".\"];way(around:2500,46.71,-92.21)[name][~\"^(leisure|tourism|aerialway)$\"~\".\"];);out center tags 120;",
+    "verified": true,
+    "positionNote": "Top station: last vertex of the OSM lift way in data/areas.geojson (way direction runs uphill, checked against the 3DEP terrain). The research report relays only the line midpoint for this lift, which is not a top station, so it is not used. This is the summit position: no separately named summit is confirmed."
+  },
+  {
+    "id": "spirit-express-ii",
+    "name": "Spirit Express II",
+    "kind": "lift-top",
+    "lat": null,
+    "lon": null,
+    "radiusM": 150,
+    "anchor": {
+      "areaName": "Spirit Express II",
+      "at": "top"
+    },
+    "sourceUrl": "https://overpass-api.de/api/interpreter?data=[out:json][timeout:25];(node(around:3500,46.71,-92.21)[name][~\"^(natural|tourism|amenity|aerialway|leisure|place|man_made)$\"~\".\"];way(around:2500,46.71,-92.21)[name][~\"^(leisure|tourism|aerialway)$\"~\".\"];);out center tags 120;",
+    "verified": true,
+    "positionNote": "Top station: last vertex of the OSM lift way in data/areas.geojson (way direction runs uphill, checked against the 3DEP terrain). The research report relays only the line midpoint for this lift, which is not a top station, so it is not used."
+  },
+  {
+    "id": "gandy-chair",
+    "name": "Gandy Chair",
+    "kind": "lift-top",
+    "lat": null,
+    "lon": null,
+    "radiusM": 150,
+    "anchor": {
+      "areaName": "Gandy Chair",
+      "at": "top"
+    },
+    "sourceUrl": "https://overpass-api.de/api/interpreter?data=[out:json][timeout:25];(node(around:3500,46.71,-92.21)[name][~\"^(natural|tourism|amenity|aerialway|leisure|place|man_made)$\"~\".\"];way(around:2500,46.71,-92.21)[name][~\"^(leisure|tourism|aerialway)$\"~\".\"];);out center tags 120;",
+    "verified": true,
+    "positionNote": "Top station: last vertex of the OSM lift way in data/areas.geojson (way direction runs uphill, checked against the 3DEP terrain). The research report relays only the line midpoint for this lift, which is not a top station, so it is not used."
+  },
+  {
+    "id": "big-air-chair",
+    "name": "Big Air Chair",
+    "kind": "lift-top",
+    "lat": null,
+    "lon": null,
+    "radiusM": 150,
+    "anchor": {
+      "areaName": "Big Air Chair",
+      "at": "top"
+    },
+    "sourceUrl": "https://overpass-api.de/api/interpreter?data=[out:json][timeout:25];(node(around:3500,46.71,-92.21)[name][~\"^(natural|tourism|amenity|aerialway|leisure|place|man_made)$\"~\".\"];way(around:2500,46.71,-92.21)[name][~\"^(leisure|tourism|aerialway)$\"~\".\"];);out center tags 120;",
+    "verified": true,
+    "positionNote": "Top station: last vertex of the OSM lift way in data/areas.geojson (way direction runs uphill, checked against the 3DEP terrain). The research report relays only the line midpoint for this lift, which is not a top station, so it is not used."
+  },
+  {
+    "id": "lone-oak-rope-tow",
+    "name": "Lone Oak Rope Tow",
+    "kind": "lift-top",
+    "lat": null,
+    "lon": null,
+    "radiusM": 150,
+    "anchor": {
+      "areaName": "Lone Oak Rope Tow",
+      "at": "top"
+    },
+    "sourceUrl": "https://overpass-api.de/api/interpreter?data=[out:json][timeout:25];(node(around:3500,46.71,-92.21)[name][~\"^(natural|tourism|amenity|aerialway|leisure|place|man_made)$\"~\".\"];way(around:2500,46.71,-92.21)[name][~\"^(leisure|tourism|aerialway)$\"~\".\"];);out center tags 120;",
+    "verified": true,
+    "positionNote": "Top station: last vertex of the OSM lift way in data/areas.geojson (way direction runs uphill, checked against the 3DEP terrain). The research report relays only the line midpoint for this lift, which is not a top station, so it is not used."
+  },
+  {
+    "id": "prospector-carpet",
+    "name": "Prospector Carpet",
+    "kind": "lift-top",
+    "lat": null,
+    "lon": null,
+    "radiusM": 150,
+    "anchor": {
+      "areaName": "Prospector Carpet",
+      "at": "top"
+    },
+    "sourceUrl": "https://overpass-api.de/api/interpreter?data=[out:json][timeout:25];(node(around:3500,46.71,-92.21)[name][~\"^(natural|tourism|amenity|aerialway|leisure|place|man_made)$\"~\".\"];way(around:2500,46.71,-92.21)[name][~\"^(leisure|tourism|aerialway)$\"~\".\"];);out center tags 120;",
+    "verified": true,
+    "positionNote": "Top station: last vertex of the OSM lift way in data/areas.geojson (way direction runs uphill, checked against the 3DEP terrain). The research report relays only the line midpoint for this lift, which is not a top station, so it is not used."
+  },
+  {
+    "id": "f-tow",
+    "name": "F-Tow",
+    "kind": "lift-top",
+    "lat": null,
+    "lon": null,
+    "radiusM": 150,
+    "anchor": {
+      "areaName": "F-Tow",
+      "at": "top"
+    },
+    "sourceUrl": "https://overpass-api.de/api/interpreter?data=[out:json][timeout:25];(node(around:3500,46.71,-92.21)[name][~\"^(natural|tourism|amenity|aerialway|leisure|place|man_made)$\"~\".\"];way(around:2500,46.71,-92.21)[name][~\"^(leisure|tourism|aerialway)$\"~\".\"];);out center tags 120;",
+    "verified": true,
+    "positionNote": "Top station: last vertex of the OSM lift way in data/areas.geojson (way direction runs uphill, checked against the 3DEP terrain). The research report relays only the line midpoint for this lift, which is not a top station, so it is not used."
+  },
+  {
+    "id": "tubing-hill-handle-tow",
+    "name": "Tubing Hill Handle Tow",
+    "kind": "lift-top",
+    "lat": null,
+    "lon": null,
+    "radiusM": 150,
+    "anchor": {
+      "areaName": "Tubing Hill Handle Tow",
+      "at": "top"
+    },
+    "sourceUrl": "https://overpass-api.de/api/interpreter?data=[out:json][timeout:25];(node(around:3500,46.71,-92.21)[name][~\"^(natural|tourism|amenity|aerialway|leisure|place|man_made)$\"~\".\"];way(around:2500,46.71,-92.21)[name][~\"^(leisure|tourism|aerialway)$\"~\".\"];);out center tags 120;",
+    "verified": true,
+    "positionNote": "Top station: last vertex of the OSM lift way in data/areas.geojson (way direction runs uphill, checked against the 3DEP terrain). The research report relays only the line midpoint for this lift, which is not a top station, so it is not used."
+  },
+  {
+    "id": "norton-park",
+    "name": "Norton Park",
+    "kind": "park-zone",
+    "lat": 46.7216,
+    "lon": -92.1955,
+    "radiusM": 400,
+    "anchor": null,
+    "sourceUrl": "https://overpass-api.de/api/interpreter?data=[out:json][timeout:25];(node(around:3500,46.71,-92.21)[name][~\"^(natural|tourism|amenity|aerialway|leisure|place|man_made)$\"~\".\"];way(around:2500,46.71,-92.21)[name][~\"^(leisure|tourism|aerialway)$\"~\".\"];);out center tags 120;",
+    "verified": true,
+    "positionNote": "OSM neighbourhood label point near the Kingsbury Creek side, as relayed by the research report. The City of Duluth names Norton Park as the east-side bike trails, so the label point only approximates the trail zone."
+  },
+  {
+    "id": "spirit-park",
+    "name": "Spirit Park",
+    "kind": "park-zone",
+    "lat": null,
+    "lon": null,
+    "radiusM": 200,
+    "anchor": {
+      "areaName": "Spirit Park",
+      "at": "centroid"
+    },
+    "sourceUrl": "https://www.openstreetmap.org/way/1016885258",
+    "verified": true,
+    "positionNote": "Snow park way named \"Spirit Park\" in the pinned OSM areas (way/1016885258); centroid of its vertices. The research report could not confirm this name from a web page."
+  },
+  {
+    "id": "lone-oak-rope-park",
+    "name": "Lone Oak Rope Park",
+    "kind": "park-zone",
+    "lat": null,
+    "lon": null,
+    "radiusM": 200,
+    "anchor": {
+      "areaName": "Lone Oak Rope Park",
+      "at": "centroid"
+    },
+    "sourceUrl": "https://www.openstreetmap.org/way/1016885259",
+    "verified": true,
+    "positionNote": "Snow park way named \"Lone Oak Rope Park\" in the pinned OSM areas (way/1016885259); centroid of its vertices. The research report could not confirm this name from a web page."
+  },
+  {
+    "id": "skills-area",
+    "name": "Skills Area",
+    "kind": "park-zone",
+    "lat": null,
+    "lon": null,
+    "radiusM": 400,
+    "anchor": null,
+    "sourceUrl": "https://duluthmn.gov/parks/parks-trails/current-projects/spirit-mountain-off-road-cycling-trails/",
+    "verified": false,
+    "positionNote": "City page says \"just west of the Grand Avenue chalet\" with no distance or coordinate; no defensible anchor, so it is not placed."
+  },
+  {
+    "id": "happy-hub",
+    "name": "Happy Hub",
+    "kind": "park-zone",
+    "lat": null,
+    "lon": null,
+    "radiusM": 400,
+    "anchor": null,
+    "sourceUrl": "https://duluthmn.gov/parks/parks-trails/current-projects/spirit-mountain-off-road-cycling-trails/",
+    "verified": false,
+    "positionNote": "City page says \"right off Skyline Parkway near the Happy Camper trail\" with no coordinate; no defensible anchor, so it is not placed."
+  },
+  {
+    "id": "upper-spirit-mountain-nordic-trails",
+    "name": "Upper Spirit Mountain Nordic Trails",
+    "kind": "nordic-centre",
+    "lat": null,
+    "lon": null,
+    "radiusM": 400,
+    "anchor": null,
+    "sourceUrl": "https://spiritmt.com/winter/nordic/",
+    "verified": false,
+    "positionNote": "spiritmt.com gives only the address 9535 West Skyline Parkway (Upper Nordic Building); no coordinate was fetched, so it is not placed."
+  },
+  {
+    "id": "timber-twister-alpine-coaster",
+    "name": "Timber Twister Alpine Coaster",
+    "kind": "adventure-park",
+    "lat": null,
+    "lon": null,
+    "radiusM": 200,
+    "anchor": null,
+    "sourceUrl": "https://spiritmt.com/summer/adventure-park/",
+    "verified": false,
+    "positionNote": "spiritmt.com lists it under the Adventure Park with no coordinate; the Adventure Park point is only a nearby anchor, so it is not placed."
+  },
+  {
+    "id": "timber-flyer-zip-line",
+    "name": "Timber Flyer Zip Line",
+    "kind": "adventure-park",
+    "lat": null,
+    "lon": null,
+    "radiusM": 200,
+    "anchor": null,
+    "sourceUrl": "https://spiritmt.com/summer/adventure-park/",
+    "verified": false,
+    "positionNote": "spiritmt.com lists it under the Adventure Park with no coordinate; the Adventure Park point is only a nearby anchor, so it is not placed."
+  }
+]
