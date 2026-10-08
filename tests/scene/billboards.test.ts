@@ -12,6 +12,7 @@ import {
   declutter,
   drawSign,
   labelColorFor,
+  layoutSign,
   lineCentroid,
   loadSignFont,
   mergeTrackPath,
@@ -21,11 +22,12 @@ import {
   polygonCentroid,
   signTextureKey,
   signWidthPx,
+  HERO_OFFSET_M,
   HERO_PLACE_ID,
+  HERO_SCALE,
   LABEL_LIGHT,
   POINTER_ANGLE_DEG,
   SIGN_OFFSET_M,
-  SIGN_CANVAS_HEIGHT,
   SIGN_CANVAS_WIDTH,
   SIGN_RENDER_ORDER,
   SIGN_PANEL_COLOR,
@@ -33,7 +35,6 @@ import {
   TAIL_X_FRACTION,
   type BillboardFrameHost,
   type ClusterInput,
-  type PlacePlan,
   type SignCanvas,
   type SignContext2D,
   type TrackPoints,
@@ -589,7 +590,6 @@ describe('drawSign', () => {
       family: 'concentration',
       glyph: true,
       width: 512,
-      height: 128,
     });
     const fills = ctx.calls.filter((c) => c.op === 'fill');
     expect(fills.map((f) => f.fillStyle)).toEqual([
@@ -616,7 +616,6 @@ describe('drawSign', () => {
       family: 'concentration',
       glyph: true,
       width: 512,
-      height: 128,
     });
     const symbols = ctx.calls.filter((c) => c.font.includes('Material Symbols'));
     expect(symbols).toHaveLength(1);
@@ -633,7 +632,6 @@ describe('drawSign', () => {
       family: 'trail',
       glyph: true,
       width: 512,
-      height: 128,
     });
     const fills = ctx.calls.filter((c) => c.op === 'fill');
     expect(fills.map((f) => f.fillStyle)).toEqual([
@@ -654,13 +652,12 @@ describe('drawSign', () => {
 
   it('draws a trail sign panel and tail as one path: one panel fill, leg 1 vertical at TAIL_X_FRACTION, apex below the panel', () => {
     const ctx = recordingContext();
-    drawSign(ctx, {
+    const { height } = drawSign(ctx, {
       activities: ['hike'],
       label: 'Birch',
       family: 'trail',
       glyph: false,
       width: SIGN_CANVAS_WIDTH,
-      height: SIGN_CANVAS_HEIGHT,
     });
     // Everything up to the first fill is the panel path: exactly one beginPath, and the tail lineTos sit inside it.
     const firstFill = ctx.calls.findIndex((c) => c.op === 'fill');
@@ -671,16 +668,16 @@ describe('drawSign', () => {
     const [leg2Top, apex, leg1Top] = legs;
     const legX = TAIL_X_FRACTION * SIGN_CANVAS_WIDTH;
     expect(leg1Top?.x).toBeCloseTo(legX, 9);
-    expect(leg1Top?.y).toBe(SIGN_CANVAS_HEIGHT);
+    expect(leg1Top?.y).toBe(height);
     expect(apex?.x).toBeCloseTo(legX, 9);
-    expect(apex?.y).toBe(SIGN_CANVAS_HEIGHT + TAIL_PX);
+    expect(apex?.y).toBe(height + TAIL_PX);
     expect(leg2Top?.x).toBeCloseTo(
       legX + TAIL_PX * Math.tan((POINTER_ANGLE_DEG * Math.PI) / 180),
       9,
     );
-    expect(leg2Top?.y).toBe(SIGN_CANVAS_HEIGHT);
+    expect(leg2Top?.y).toBe(height);
     // The tail joins well inside the bottom edge, past the corner radius.
-    expect(legX).toBeGreaterThan(SIGN_CANVAS_HEIGHT * 0.22 * 2);
+    expect(legX).toBeGreaterThan(28 * 2);
   });
 
   it('draws no tail on a concentration sign', () => {
@@ -691,7 +688,6 @@ describe('drawSign', () => {
       family: 'concentration',
       glyph: false,
       width: SIGN_CANVAS_WIDTH,
-      height: SIGN_CANVAS_HEIGHT,
     });
     expect(ctx.calls.filter((c) => c.op === 'lineTo')).toHaveLength(0);
   });
@@ -704,7 +700,6 @@ describe('drawSign', () => {
       family: 'trail',
       glyph: true,
       width: 512,
-      height: 128,
     });
     const texts = ctx.calls.filter((c) => c.op === 'fillText');
     expect(Number(texts[0]?.y)).toBeLessThan(Number(texts[1]?.y));
@@ -718,7 +713,6 @@ describe('drawSign', () => {
       family: 'concentration',
       glyph: false,
       width: 512,
-      height: 128,
     });
     expect(ctx.calls.filter((c) => c.op === 'fillText').map((c) => c.text)).toEqual(['Hike']);
     expect(ctx.calls.filter((c) => c.op === 'fill')).toHaveLength(2);
@@ -973,49 +967,110 @@ describe('buildBillboardLayer', () => {
     expect(world.y).toBeCloseTo(surface.sample(400, 0).height, 6);
   });
 
-  it('reports place plans through onPlan and gives the hero place no sprite', () => {
-    const plans: PlacePlan[][] = [];
-    const host = makeHost();
+  const HERO_PLACE = {
+    id: HERO_PLACE_ID,
+    name: 'Spirit Mountain Adventure Park',
+    kind: 'adventure-park',
+    east: 400,
+    north: 0,
+    radiusM: 200,
+    sourceUrl: 'https://example.com/',
+    verified: true,
+    positionNote: 'test',
+    positionSource: 'coordinates',
+  } as unknown as Place;
+  const buildHero = (host = makeHost()) => {
     const layer = buildBillboardLayer(FOUR_SPORT, surface, mapper, {
       host,
       fadeCentre: { east: 0, north: 0 },
       createCanvas: fakeCanvas,
       fonts: undefined,
       warn: () => {},
-      places: [
-        {
-          id: HERO_PLACE_ID,
-          name: 'Spirit Mountain Adventure Park',
-          kind: 'adventure-park',
-          east: 400,
-          north: 0,
-          radiusM: 200,
-          sourceUrl: 'https://example.com/',
-          verified: true,
-          positionNote: 'test',
-          positionSource: 'coordinates',
-        } as unknown as Place,
-      ],
-      onPlan: (p) => plans.push([...p]),
+      places: [HERO_PLACE],
     });
     layer.applyFilter(FOUR_NOTES, new Set(), new Set(['way/9']));
-    const last = plans[plans.length - 1] as PlacePlan[];
-    expect(last).toHaveLength(1);
-    expect(last[0]).toMatchObject({
-      id: HERO_PLACE_ID,
-      name: 'Spirit Mountain Adventure Park',
-      trailCount: 1,
+    return { layer, host };
+  };
+  const heroSprite = (group: Parameters<typeof sprites>[0]): Sprite =>
+    sprites(group).find((s) => s.name.includes('Spirit Mountain Adventure Park')) as Sprite;
+
+  it('gives the hero place a sprite HERO_OFFSET_M above the surface, 1.8x as wide as a normal sign (#70)', () => {
+    const { layer, host } = buildHero();
+    const hero = heroSprite(layer.group);
+    expect(hero).toBeDefined();
+    expect(hero.material.depthTest).toBe(false);
+    const world = hero.getWorldPosition(new Vector3());
+    expect(world.x).toBeCloseTo(400, 6);
+    expect(world.y).toBeCloseTo(surface.sample(400, 0).height + HERO_OFFSET_M, 6);
+    host.callback?.(16);
+    // Width in pixels = world width / world-per-pixel at the sprite's depth; compare against a normal sign.
+    const plain = build(makeHost(), FOUR_SPORT);
+    plain.layer.applyFilter(FOUR_NOTES, new Set(), new Set(['way/9']));
+    plain.host.callback?.(16);
+    const trail = sprites(plain.layer.group).find(
+      (s) => s.userData['family'] === 'trail',
+    ) as Sprite;
+    const depthOf = (s: Sprite): number => 1500 - s.getWorldPosition(new Vector3()).y;
+    const pxWide = (s: Sprite): number => s.scale.x / depthOf(s);
+    expect(pxWide(hero) / pxWide(trail)).toBeCloseTo(HERO_SCALE, 6);
+  });
+
+  it('never stretches a sign: every sprite keeps its own canvas width:height ratio (#70)', () => {
+    const { layer, host } = buildHero();
+    host.callback?.(16);
+    const shown = sprites(layer.group).filter((s) => s.scale.x > 0 && s.scale.y > 0);
+    expect(shown.length).toBeGreaterThanOrEqual(2);
+    for (const s of shown) {
+      const image = (s.material.map as { image: { width: number; height: number } }).image;
+      expect((s.scale.y * effectiveScale(host.exaggeration)) / s.scale.x).toBeCloseTo(
+        image.height / image.width,
+        9,
+      );
+    }
+  });
+
+  it('keeps the hero shown while another sign sits under it, and the other yields (#70)', () => {
+    const { layer, host } = buildHero();
+    for (let i = 0; i < 30; i++) host.callback?.(200);
+    const hero = heroSprite(layer.group);
+    expect(hero.visible).toBe(true);
+    expect(hero.material.opacity).toBeCloseTo(1, 6);
+    expect(trailSprites(layer.group)).toHaveLength(0);
+  });
+
+  it('sizes each canvas to its content: layoutSign height, plus TAIL_PX for a trail sign (#70)', () => {
+    const canvases: { width: number; height: number }[] = [];
+    const host = makeHost();
+    buildBillboardLayer(FOUR_SPORT, surface, mapper, {
+      host,
+      fadeCentre: { east: 0, north: 0 },
+      createCanvas: () => {
+        const canvas = fakeCanvas();
+        canvases.push(canvas);
+        return canvas;
+      },
+      fonts: undefined,
+      warn: () => {},
     });
-    expect(last[0]?.activities).toEqual(
-      ActivitySchema.options.filter((a) =>
-        ['hike', 'mountain-bike', 'nordic-classic', 'nordic-skate'].includes(a),
-      ),
+    const activities = ActivitySchema.options.filter((a) =>
+      ['hike', 'mountain-bike', 'nordic-classic', 'nordic-skate'].includes(a),
     );
-    // Only the trail sign has a sprite: the hero place's concentration sprite is suppressed.
-    expect(sprites(layer.group).map((x) => x.userData['family'])).toEqual(['trail']);
-    // A filter that leaves the place no track drops it from the plan, which hides the hero.
-    layer.applyFilter(FOUR_NOTES, new Set(), new Set());
-    expect(plans[plans.length - 1]).toEqual([]);
+    const trailPanel = layoutSign(recordingContext(), {
+      activities,
+      label: 'Birch Loop',
+      family: 'trail',
+      width: SIGN_CANVAS_WIDTH,
+    }).height;
+    const concPanel = layoutSign(recordingContext(), {
+      activities,
+      label: '1 trail',
+      family: 'concentration',
+      width: SIGN_CANVAS_WIDTH,
+    }).height;
+    expect(canvases.every((c) => c.width === SIGN_CANVAS_WIDTH)).toBe(true);
+    expect(canvases.map((c) => c.height).sort((a, b) => a - b)).toEqual(
+      [concPanel, trailPanel + TAIL_PX].sort((a, b) => a - b),
+    );
   });
 
   it('has no pointer mesh: the sprite alone is the trail sign, and concentration signs stay bottom-centre', () => {
@@ -1031,26 +1086,6 @@ describe('buildBillboardLayer', () => {
     );
     expect(concentration?.center.x).toBe(0.5);
     expect(concentration?.parent).toBe(layer.group);
-  });
-
-  it('gives a trail sign a texture TAIL_PX taller than a concentration sign', () => {
-    const canvases: { width: number; height: number }[] = [];
-    const host = makeHost();
-    buildBillboardLayer(FOUR_SPORT, surface, mapper, {
-      host,
-      fadeCentre: { east: 0, north: 0 },
-      createCanvas: () => {
-        const canvas = fakeCanvas();
-        canvases.push(canvas);
-        return canvas;
-      },
-      fonts: undefined,
-      warn: () => {},
-    });
-    expect(canvases.map((c) => c.height).sort()).toEqual([
-      SIGN_CANVAS_HEIGHT,
-      SIGN_CANVAS_HEIGHT + TAIL_PX,
-    ]);
   });
 
   it('compensates the group exaggeration: scale.y * effectiveScale(k) is constant', () => {

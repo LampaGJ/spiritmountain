@@ -233,7 +233,6 @@ describe('sign texture and drawing with a place', () => {
       place: 'Grand Avenue Chalet',
       glyph: false,
       width: 512,
-      height: 128,
     });
     const name = calls.find((c) => c.text === 'Grand Avenue Chalet');
     const count = calls.find((c) => c.text === '2 trails');
@@ -268,7 +267,7 @@ describe('sign texture and drawing with a place', () => {
       };
       return ctx as unknown as SignContext2D;
     };
-    const base = { glyph: false, width: 512, height: 128 };
+    const base = { glyph: false, width: 512 };
     drawSign(make(), {
       ...base,
       activities: ['hike'],
