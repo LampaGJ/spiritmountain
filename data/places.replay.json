@@ -1,0 +1,11 @@
+{
+  "inputHash": "c59f4b2803288cae69df550f435dc966c9f207198bbdf28be4f6f8f1794108ab",
+  "codeCommit": "011ddcd3b110a44572b7714efe7ec10c8d450199",
+  "outputHash": "f5a21485a4eb389839e76b504c65fcc0c8b371db62909761b224084940b3bf32",
+  "effect": "preserves",
+  "toolVersions": {
+    "proj4": "2.22.0",
+    "zod": "4.6.5"
+  },
+  "lockSubtreeSha256": "146a7027501028416b44997d9fed26feca5075774821d1d57903506cd10e397d"
+}
