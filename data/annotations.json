@@ -1,8 +1,8 @@
 {
   "version": 1,
   "generatedFrom": {
-    "inputHash": "a3b7ae0b5aea0be7da29c548f377d3032e77143286ad77c4c790ccdd1c4a75c3",
-    "codeCommit": "4c927e1d433bc6ffec7ee254f14713b6080b61fa",
+    "inputHash": "fc5d284b7b52adadb4a997fbb4cf09a10732c63af986da680c961b6053168d27",
+    "codeCommit": "0f3b25efc85e9b6484ab20727eae34612bcab9e0",
     "effect": "expands"
   },
   "organizations": [
@@ -93,7 +93,7 @@
         "mountain-bike"
       ],
       "sourceUrl": "https://wdio.com/?p=30585",
-      "verified": false
+      "verified": true
     },
     {
       "id": "greater-minnesota-regional-parks-and-trails-commission",
@@ -221,7 +221,7 @@
         "mountain-bike"
       ],
       "sourceUrl": "https://wdio.com/?p=30585",
-      "verified": false
+      "verified": true
     },
     {
       "id": "spirit-mountain-recreation-area-authority",
@@ -309,14 +309,6 @@
         {
           "orgId": "harbortown-rotary",
           "role": "programs"
-        },
-        {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
         },
         {
           "orgId": "national-center-for-youth-development",
@@ -1258,10 +1250,6 @@
           "role": "maintains"
         },
         {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
-        },
-        {
           "orgId": "spirit-mountain-recreation-area-authority",
           "role": "operates"
         },
@@ -1309,14 +1297,6 @@
         {
           "orgId": "harbortown-rotary",
           "role": "programs"
-        },
-        {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
         },
         {
           "orgId": "national-center-for-youth-development",
@@ -1372,14 +1352,6 @@
           "role": "programs"
         },
         {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
-        },
-        {
           "orgId": "national-center-for-youth-development",
           "role": "advocates"
         },
@@ -1422,10 +1394,6 @@
           "role": "maintains"
         },
         {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
-        },
-        {
           "orgId": "spirit-mountain-recreation-area-authority",
           "role": "operates"
         },
@@ -1462,10 +1430,6 @@
         {
           "orgId": "city-of-duluth-parks-and-recreation",
           "role": "maintains"
-        },
-        {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -1515,14 +1479,6 @@
         {
           "orgId": "harbortown-rotary",
           "role": "programs"
-        },
-        {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
         },
         {
           "orgId": "national-center-for-youth-development",
@@ -1578,14 +1534,6 @@
           "role": "programs"
         },
         {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
-        },
-        {
           "orgId": "national-center-for-youth-development",
           "role": "advocates"
         },
@@ -1626,10 +1574,6 @@
         {
           "orgId": "city-of-duluth-parks-and-recreation",
           "role": "maintains"
-        },
-        {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -1679,14 +1623,6 @@
         {
           "orgId": "harbortown-rotary",
           "role": "programs"
-        },
-        {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
         },
         {
           "orgId": "national-center-for-youth-development",
@@ -1742,14 +1678,6 @@
           "role": "programs"
         },
         {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
-        },
-        {
           "orgId": "national-center-for-youth-development",
           "role": "advocates"
         },
@@ -1792,10 +1720,6 @@
           "role": "maintains"
         },
         {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
-        },
-        {
           "orgId": "spirit-mountain-recreation-area-authority",
           "role": "operates"
         },
@@ -1832,10 +1756,6 @@
         {
           "orgId": "city-of-duluth-parks-and-recreation",
           "role": "maintains"
-        },
-        {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -1876,10 +1796,6 @@
           "role": "maintains"
         },
         {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
-        },
-        {
           "orgId": "spirit-mountain-recreation-area-authority",
           "role": "operates"
         },
@@ -1916,10 +1832,6 @@
         {
           "orgId": "city-of-duluth-parks-and-recreation",
           "role": "maintains"
-        },
-        {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -1960,10 +1872,6 @@
           "role": "maintains"
         },
         {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
-        },
-        {
           "orgId": "spirit-mountain-recreation-area-authority",
           "role": "operates"
         },
@@ -2000,10 +1908,6 @@
         {
           "orgId": "city-of-duluth-parks-and-recreation",
           "role": "maintains"
-        },
-        {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -2044,10 +1948,6 @@
           "role": "maintains"
         },
         {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
-        },
-        {
           "orgId": "spirit-mountain-recreation-area-authority",
           "role": "operates"
         },
@@ -2086,20 +1986,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -2136,20 +2028,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -2184,10 +2068,6 @@
         {
           "orgId": "city-of-duluth-parks-and-recreation",
           "role": "maintains"
-        },
-        {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -2228,20 +2108,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -2278,20 +2150,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -2328,20 +2192,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -2376,10 +2232,6 @@
         {
           "orgId": "city-of-duluth-parks-and-recreation",
           "role": "maintains"
-        },
-        {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -2418,10 +2270,6 @@
         {
           "orgId": "city-of-duluth-parks-and-recreation",
           "role": "maintains"
-        },
-        {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -2471,14 +2319,6 @@
         {
           "orgId": "harbortown-rotary",
           "role": "programs"
-        },
-        {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
         },
         {
           "orgId": "national-center-for-youth-development",
@@ -2534,14 +2374,6 @@
           "role": "programs"
         },
         {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
-        },
-        {
           "orgId": "national-center-for-youth-development",
           "role": "advocates"
         },
@@ -2593,14 +2425,6 @@
         {
           "orgId": "harbortown-rotary",
           "role": "programs"
-        },
-        {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
         },
         {
           "orgId": "national-center-for-youth-development",
@@ -2656,14 +2480,6 @@
           "role": "programs"
         },
         {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
-        },
-        {
           "orgId": "national-center-for-youth-development",
           "role": "advocates"
         },
@@ -2715,14 +2531,6 @@
         {
           "orgId": "harbortown-rotary",
           "role": "programs"
-        },
-        {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
         },
         {
           "orgId": "national-center-for-youth-development",
@@ -2778,14 +2586,6 @@
           "role": "programs"
         },
         {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
-        },
-        {
           "orgId": "national-center-for-youth-development",
           "role": "advocates"
         },
@@ -2837,14 +2637,6 @@
         {
           "orgId": "harbortown-rotary",
           "role": "programs"
-        },
-        {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
         },
         {
           "orgId": "national-center-for-youth-development",
@@ -2900,14 +2692,6 @@
           "role": "programs"
         },
         {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
-        },
-        {
           "orgId": "national-center-for-youth-development",
           "role": "advocates"
         },
@@ -2959,14 +2743,6 @@
         {
           "orgId": "harbortown-rotary",
           "role": "programs"
-        },
-        {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
         },
         {
           "orgId": "national-center-for-youth-development",
@@ -3022,14 +2798,6 @@
           "role": "programs"
         },
         {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
-        },
-        {
           "orgId": "national-center-for-youth-development",
           "role": "advocates"
         },
@@ -3081,14 +2849,6 @@
         {
           "orgId": "harbortown-rotary",
           "role": "programs"
-        },
-        {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
         },
         {
           "orgId": "national-center-for-youth-development",
@@ -3144,14 +2904,6 @@
           "role": "programs"
         },
         {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
-        },
-        {
           "orgId": "national-center-for-youth-development",
           "role": "advocates"
         },
@@ -3203,14 +2955,6 @@
         {
           "orgId": "harbortown-rotary",
           "role": "programs"
-        },
-        {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
         },
         {
           "orgId": "national-center-for-youth-development",
@@ -3266,14 +3010,6 @@
           "role": "programs"
         },
         {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
-        },
-        {
           "orgId": "national-center-for-youth-development",
           "role": "advocates"
         },
@@ -3325,14 +3061,6 @@
         {
           "orgId": "harbortown-rotary",
           "role": "programs"
-        },
-        {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
         },
         {
           "orgId": "national-center-for-youth-development",
@@ -3388,14 +3116,6 @@
           "role": "programs"
         },
         {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
-        },
-        {
           "orgId": "national-center-for-youth-development",
           "role": "advocates"
         },
@@ -3447,14 +3167,6 @@
         {
           "orgId": "harbortown-rotary",
           "role": "programs"
-        },
-        {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
         },
         {
           "orgId": "national-center-for-youth-development",
@@ -3510,14 +3222,6 @@
           "role": "programs"
         },
         {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
-        },
-        {
           "orgId": "national-center-for-youth-development",
           "role": "advocates"
         },
@@ -3571,14 +3275,6 @@
           "role": "programs"
         },
         {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
-        },
-        {
           "orgId": "national-center-for-youth-development",
           "role": "advocates"
         },
@@ -3619,10 +3315,6 @@
         {
           "orgId": "city-of-duluth-parks-and-recreation",
           "role": "maintains"
-        },
-        {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -3674,14 +3366,6 @@
           "role": "programs"
         },
         {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
-        },
-        {
           "orgId": "national-center-for-youth-development",
           "role": "advocates"
         },
@@ -3724,10 +3408,6 @@
           "role": "maintains"
         },
         {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
-        },
-        {
           "orgId": "spirit-mountain-recreation-area-authority",
           "role": "operates"
         },
@@ -3764,10 +3444,6 @@
         {
           "orgId": "city-of-duluth-parks-and-recreation",
           "role": "maintains"
-        },
-        {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -3808,10 +3484,6 @@
           "role": "maintains"
         },
         {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
-        },
-        {
           "orgId": "spirit-mountain-recreation-area-authority",
           "role": "operates"
         },
@@ -3850,20 +3522,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -3900,20 +3564,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -3950,20 +3606,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -4000,20 +3648,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -4050,20 +3690,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -4100,20 +3732,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -4150,20 +3774,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -4200,20 +3816,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -4250,20 +3858,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -4300,20 +3900,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -4350,20 +3942,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -4400,20 +3984,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -4450,20 +4026,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -4500,20 +4068,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -4550,20 +4110,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -4600,20 +4152,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -4650,20 +4194,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -4700,20 +4236,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -4750,20 +4278,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -4800,20 +4320,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -4848,10 +4360,6 @@
         {
           "orgId": "city-of-duluth-parks-and-recreation",
           "role": "maintains"
-        },
-        {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -4892,10 +4400,6 @@
           "role": "maintains"
         },
         {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
-        },
-        {
           "orgId": "spirit-mountain-recreation-area-authority",
           "role": "operates"
         },
@@ -4932,10 +4436,6 @@
         {
           "orgId": "city-of-duluth-parks-and-recreation",
           "role": "maintains"
-        },
-        {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -4987,14 +4487,6 @@
           "role": "programs"
         },
         {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
-        },
-        {
           "orgId": "national-center-for-youth-development",
           "role": "advocates"
         },
@@ -5035,10 +4527,6 @@
         {
           "orgId": "city-of-duluth-parks-and-recreation",
           "role": "maintains"
-        },
-        {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -5181,20 +4669,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -5231,20 +4711,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -5281,20 +4753,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -5331,20 +4795,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -5381,20 +4837,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -5431,20 +4879,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -5481,20 +4921,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -5531,20 +4963,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -5581,20 +5005,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -5631,20 +5047,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -5681,20 +5089,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -5799,14 +5199,6 @@
           "role": "programs"
         },
         {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
-        },
-        {
           "orgId": "national-center-for-youth-development",
           "role": "advocates"
         },
@@ -5858,14 +5250,6 @@
         {
           "orgId": "harbortown-rotary",
           "role": "programs"
-        },
-        {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
         },
         {
           "orgId": "national-center-for-youth-development",
@@ -5921,14 +5305,6 @@
           "role": "programs"
         },
         {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
-        },
-        {
           "orgId": "national-center-for-youth-development",
           "role": "advocates"
         },
@@ -5971,10 +5347,6 @@
           "role": "maintains"
         },
         {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
-        },
-        {
           "orgId": "spirit-mountain-recreation-area-authority",
           "role": "operates"
         },
@@ -6011,10 +5383,6 @@
         {
           "orgId": "city-of-duluth-parks-and-recreation",
           "role": "maintains"
-        },
-        {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -6055,10 +5423,6 @@
           "role": "maintains"
         },
         {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
-        },
-        {
           "orgId": "spirit-mountain-recreation-area-authority",
           "role": "operates"
         },
@@ -6095,10 +5459,6 @@
         {
           "orgId": "city-of-duluth-parks-and-recreation",
           "role": "maintains"
-        },
-        {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -6148,14 +5508,6 @@
         {
           "orgId": "harbortown-rotary",
           "role": "programs"
-        },
-        {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
         },
         {
           "orgId": "national-center-for-youth-development",
@@ -6211,14 +5563,6 @@
           "role": "programs"
         },
         {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
-        },
-        {
           "orgId": "national-center-for-youth-development",
           "role": "advocates"
         },
@@ -6261,10 +5605,6 @@
           "role": "maintains"
         },
         {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
-        },
-        {
           "orgId": "spirit-mountain-recreation-area-authority",
           "role": "operates"
         },
@@ -6303,10 +5643,6 @@
           "role": "maintains"
         },
         {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
-        },
-        {
           "orgId": "spirit-mountain-recreation-area-authority",
           "role": "operates"
         },
@@ -6343,10 +5679,6 @@
         {
           "orgId": "city-of-duluth-parks-and-recreation",
           "role": "maintains"
-        },
-        {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -6398,14 +5730,6 @@
           "role": "programs"
         },
         {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
-        },
-        {
           "orgId": "national-center-for-youth-development",
           "role": "advocates"
         },
@@ -6448,10 +5772,6 @@
           "role": "maintains"
         },
         {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
-        },
-        {
           "orgId": "spirit-mountain-recreation-area-authority",
           "role": "operates"
         },
@@ -6488,10 +5808,6 @@
         {
           "orgId": "city-of-duluth-parks-and-recreation",
           "role": "maintains"
-        },
-        {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -6532,10 +5848,6 @@
           "role": "maintains"
         },
         {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
-        },
-        {
           "orgId": "spirit-mountain-recreation-area-authority",
           "role": "operates"
         },
@@ -6572,10 +5884,6 @@
         {
           "orgId": "city-of-duluth-parks-and-recreation",
           "role": "maintains"
-        },
-        {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -6616,10 +5924,6 @@
           "role": "maintains"
         },
         {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
-        },
-        {
           "orgId": "spirit-mountain-recreation-area-authority",
           "role": "operates"
         },
@@ -6656,10 +5960,6 @@
         {
           "orgId": "city-of-duluth-parks-and-recreation",
           "role": "maintains"
-        },
-        {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -6700,20 +6000,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -6750,20 +6042,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -6809,14 +6093,6 @@
         {
           "orgId": "harbortown-rotary",
           "role": "programs"
-        },
-        {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
         },
         {
           "orgId": "national-center-for-youth-development",
@@ -6872,14 +6148,6 @@
           "role": "programs"
         },
         {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
-        },
-        {
           "orgId": "national-center-for-youth-development",
           "role": "advocates"
         },
@@ -6922,10 +6190,6 @@
           "role": "maintains"
         },
         {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
-        },
-        {
           "orgId": "spirit-mountain-recreation-area-authority",
           "role": "operates"
         },
@@ -6962,10 +6226,6 @@
         {
           "orgId": "city-of-duluth-parks-and-recreation",
           "role": "maintains"
-        },
-        {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -7006,10 +6266,6 @@
           "role": "maintains"
         },
         {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
-        },
-        {
           "orgId": "spirit-mountain-recreation-area-authority",
           "role": "operates"
         },
@@ -7046,10 +6302,6 @@
         {
           "orgId": "city-of-duluth-parks-and-recreation",
           "role": "maintains"
-        },
-        {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -7099,14 +6351,6 @@
         {
           "orgId": "harbortown-rotary",
           "role": "programs"
-        },
-        {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
         },
         {
           "orgId": "national-center-for-youth-development",
@@ -7162,14 +6406,6 @@
           "role": "programs"
         },
         {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
-        },
-        {
           "orgId": "national-center-for-youth-development",
           "role": "advocates"
         },
@@ -7221,14 +6457,6 @@
         {
           "orgId": "harbortown-rotary",
           "role": "programs"
-        },
-        {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
         },
         {
           "orgId": "national-center-for-youth-development",
@@ -7284,14 +6512,6 @@
           "role": "programs"
         },
         {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
-        },
-        {
           "orgId": "national-center-for-youth-development",
           "role": "advocates"
         },
@@ -7345,14 +6565,6 @@
           "role": "programs"
         },
         {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
-        },
-        {
           "orgId": "national-center-for-youth-development",
           "role": "advocates"
         },
@@ -7395,10 +6607,6 @@
           "role": "maintains"
         },
         {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
-        },
-        {
           "orgId": "spirit-mountain-recreation-area-authority",
           "role": "operates"
         },
@@ -7437,20 +6645,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -7487,20 +6687,12 @@
           "role": "programs"
         },
         {
-          "orgId": "duluth-nordic",
-          "role": "programs"
-        },
-        {
           "orgId": "greater-minnesota-regional-parks-and-trails-commission",
           "role": "maintains"
         },
         {
           "orgId": "minnesota-dnr",
           "role": "maintains"
-        },
-        {
-          "orgId": "minnesota-youth-ski-league",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -7535,10 +6727,6 @@
         {
           "orgId": "city-of-duluth-parks-and-recreation",
           "role": "maintains"
-        },
-        {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -7579,10 +6767,6 @@
           "role": "maintains"
         },
         {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
-        },
-        {
           "orgId": "spirit-mountain-recreation-area-authority",
           "role": "operates"
         },
@@ -7619,10 +6803,6 @@
         {
           "orgId": "city-of-duluth-parks-and-recreation",
           "role": "maintains"
-        },
-        {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -7663,10 +6843,6 @@
           "role": "maintains"
         },
         {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
-        },
-        {
           "orgId": "spirit-mountain-recreation-area-authority",
           "role": "operates"
         },
@@ -7703,10 +6879,6 @@
         {
           "orgId": "city-of-duluth-parks-and-recreation",
           "role": "maintains"
-        },
-        {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -7756,14 +6928,6 @@
         {
           "orgId": "harbortown-rotary",
           "role": "programs"
-        },
-        {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
         },
         {
           "orgId": "national-center-for-youth-development",
@@ -7819,14 +6983,6 @@
           "role": "programs"
         },
         {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
-        },
-        {
           "orgId": "national-center-for-youth-development",
           "role": "advocates"
         },
@@ -7869,10 +7025,6 @@
           "role": "maintains"
         },
         {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
-        },
-        {
           "orgId": "spirit-mountain-recreation-area-authority",
           "role": "operates"
         },
@@ -7909,10 +7061,6 @@
         {
           "orgId": "city-of-duluth-parks-and-recreation",
           "role": "maintains"
-        },
-        {
-          "orgId": "lake-superior-zoo",
-          "role": "advocates"
         },
         {
           "orgId": "spirit-mountain-recreation-area-authority",
@@ -7962,14 +7110,6 @@
         {
           "orgId": "harbortown-rotary",
           "role": "programs"
-        },
-        {
-          "orgId": "kraus-anderson-community-foundation",
-          "role": "advocates"
-        },
-        {
-          "orgId": "minnesota-high-school-cycling-league",
-          "role": "advocates"
         },
         {
           "orgId": "national-center-for-youth-development",
