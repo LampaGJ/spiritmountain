@@ -23,14 +23,13 @@ export function isFilterActive(filter: Filter): boolean {
 /**
  * Decides whether one area is visible under a filter.
  *
- * Rules: no active filter shows everything; lifts are always visible (terrain and lifts
- * remain visible, spec:332-333); otherwise at least ONE annotation entry must satisfy the
+ * Rules: lifts are always visible (terrain and lifts remain visible, spec:332-333); with no
+ * active filter every other area is hidden (#72: the default view shows no trails); otherwise at least ONE annotation entry must satisfy the
  * activity condition and the season condition together (per-entry, not per-set union).
  *
  * Unannotated areas (annotation undefined) and annotations with an empty activities list
- * are HIDDEN while any filter is active and visible otherwise. This is a recorded decision:
- * showing unclassified areas as if they matched would mislead a reviewer. It is reversible
- * in the single `return false` below.
+ * are HIDDEN, filtered or not (#72). This is a recorded decision: showing unclassified areas
+ * as if they matched would mislead a reviewer.
  *
  * An entry with seasons [] never matches an active season filter but matches an
  * activity-only filter.
@@ -40,8 +39,8 @@ export function matchesFilter(
   annotation: Annotation | undefined,
   filter: Filter,
 ): boolean {
-  if (!isFilterActive(filter)) return true;
   if (area.kind === 'lift') return true;
+  if (!isFilterActive(filter)) return false;
   if (annotation === undefined) return false;
   return annotation.activities.some(
     (entry) =>
@@ -179,7 +178,7 @@ export function facetCounts(
   return {
     activities,
     seasons,
-    matching: isFilterActive(filter) ? count(filter) : countTracks(nonLift),
+    matching: count(filter),
     lifts: areas.length - nonLift.length,
     candidates: countTracks(nonLift),
   };

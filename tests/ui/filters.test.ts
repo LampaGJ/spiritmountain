@@ -169,7 +169,7 @@ describe('facet counts and the status line', () => {
 
   it('words the status line for no filter and for an active filter', () => {
     const idle = setupFacets('');
-    expect(idle.host.querySelector('.filter-count')?.textContent).toBe('107 trails · 8 lifts');
+    expect(idle.host.querySelector('.filter-count')?.textContent).toBe('Choose a season · 8 lifts');
     const active = setupFacets('#activity=nordic-classic', 40);
     expect(active.host.querySelector('.filter-count')?.textContent).toBe(
       '40 of 107 trails match · 8 lifts always shown',
@@ -793,7 +793,7 @@ describe('rail markup', () => {
     expect(parts).toEqual(['Clear Filters', 'filter-notice']);
     expect(host.querySelector('.filter-count')).toBeNull();
     expect(document.querySelector('#season-bar > .filter-count')?.textContent).toBe(
-      '0 trails · 0 lifts',
+      'Choose a season · 0 lifts',
     );
   });
 

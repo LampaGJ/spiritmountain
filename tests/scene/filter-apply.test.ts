@@ -58,11 +58,13 @@ describe('applyFilter', () => {
     expect(result.total).toBe(4);
   });
 
-  it('restores every ring when the filter is cleared', () => {
-    const { registry, annotations } = build();
+  it('hides every trail ring but keeps lifts when the filter is cleared (#72 empty default)', () => {
+    const { areas, registry, annotations } = build();
     applyFilter(registry, annotations, winter);
     applyFilter(registry, annotations, none);
-    for (const id of registry.keys()) expect(flags(registry, id).every(Boolean)).toBe(true);
+    for (const area of areas) {
+      expect(flags(registry, area.id).every((v) => v === (area.kind === 'lift'))).toBe(true);
+    }
   });
 
   it('toggles .visible on the Line2 objects themselves, never on a parent group', () => {

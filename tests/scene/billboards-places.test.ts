@@ -2,15 +2,19 @@ import { describe, expect, it } from 'vitest';
 import {
   drawSign,
   CATCHMENT_M,
+  HERO_PLACE_ID,
   PLACE_SIGN_KINDS,
   SPLIT_EXTENT_M,
   SPLIT_TRACKS,
+  planHero,
   planSigns,
   planTrailSigns,
   signTextureKey,
   type SignContext2D,
 } from '../../src/scene/billboards';
 import type { Activity } from '../../src/scene/sport-routing';
+import { ActivitySchema } from '../../src/schema/annotation';
+import type { Season } from '../../src/ui/filter-predicate';
 import type { Annotation } from '../../src/schema/annotation';
 import type { Area } from '../../src/schema/area';
 import type { Place } from '../../src/schema/places';
@@ -281,5 +285,79 @@ describe('sign texture and drawing with a place', () => {
     drawSign(make(), { ...base, activities: ['hike'], label: 'Peak', family: 'trail' });
     expect(/^bold (\d+)px/.exec(fonts.get('Peak') ?? '')?.[1]).toBe(size);
     expect(fonts.get('3 trails')).toBeUndefined();
+  });
+});
+
+describe('planHero (#72)', () => {
+  const heroPlace = place({
+    id: HERO_PLACE_ID,
+    name: 'Spirit Mountain Adventure Park',
+    kind: 'adventure-park' as Place['kind'],
+    east: 0,
+    north: 0,
+  });
+  const noteSeasons = (
+    areaId: string,
+    entries: ReadonlyArray<readonly [Activity, Season[]]>,
+  ): Annotation =>
+    ({
+      areaId,
+      activities: entries.map(([activity, seasons]) => ({ activity, seasons, notes: '' })),
+      stakeholders: [],
+      notes: '',
+    }) as Annotation;
+  const areas = [
+    trackAt('way/1', 0),
+    trackAt('way/2', 20),
+    trackAt('way/3', 40),
+    trackAt('way/4', 5000),
+  ];
+  const notes = new Map([
+    [
+      'way/1',
+      noteSeasons('way/1', [
+        ['hike', ['summer']],
+        ['mountain-bike', ['summer']],
+      ]),
+    ],
+    [
+      'way/2',
+      noteSeasons('way/2', [
+        ['alpine-ski', ['winter']],
+        ['snowboard', ['winter']],
+      ]),
+    ],
+    ['way/3', noteSeasons('way/3', [['alpine-ski', ['winter']]])],
+    ['way/4', noteSeasons('way/4', [['nordic-classic', ['winter']]])],
+  ]);
+  const hero = (seasons: Season[]) => planHero(areas, notes, new Set(seasons), [heroPlace]);
+
+  it('counts the union over all seasons when no season is selected', () => {
+    const plan = hero([]);
+    expect(plan?.activities).toEqual(
+      ActivitySchema.options.filter((a) =>
+        ['hike', 'mountain-bike', 'alpine-ski', 'snowboard', 'nordic-classic'].includes(a),
+      ),
+    );
+    expect(plan?.trackCount).toBe(4);
+    expect(plan?.label).toBe('5 activities · 4 trails');
+  });
+
+  it('counts only the selected season, whatever activities are toggled', () => {
+    expect(hero(['winter'])?.label).toBe('3 activities · 3 trails');
+    expect(hero(['summer'])?.label).toBe('2 activities · 1 trail');
+  });
+
+  it('uses real plurals for one activity and one trail', () => {
+    const one = planHero([trackAt('way/3', 40)], notes, new Set(['winter']), [heroPlace]);
+    expect(one?.label).toBe('1 activity · 1 trail');
+  });
+
+  it('ignores lifts and returns null without the hero place or any track in scope', () => {
+    const lifted = [{ ...trackAt('way/4', 0), kind: 'lift' } as Area];
+    const liftNotes = new Map([['way/4', noteSeasons('way/4', [['lift-ride', []]])]]);
+    expect(planHero(lifted, liftNotes, new Set(), [heroPlace])).toBeNull();
+    expect(hero(['spring'])).toBeNull();
+    expect(planHero(areas, notes, new Set(), [])).toBeNull();
   });
 });
