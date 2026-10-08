@@ -16,10 +16,126 @@ import { ARCHETYPE_COUNT, type TreeRecord } from '../../scripts/ingest/trees-sch
 import type { LoadedTrees } from '../data/load-trees';
 import { applyRadialFade, type RadialFadeOptions } from './fade';
 import { toScene } from './frame';
-import { buildAllArchetypes } from './tree-archetypes';
+import { ARCHETYPE_CROWN_RADIUS, buildAllArchetypes } from './tree-archetypes';
 
 /** Trees stand this far above the bare-earth sample, so the trunk base is hidden in the (lifted) ground mesh. */
 export const TREE_BASE_LIFT_M = 0.5;
+
+/** Cell size of the uniform grid the wall segments are bucketed in for the tree cull, in metres. */
+export const WALL_GRID_CELL_M = 50;
+
+/** A trail wall set for the cull: its plan centreline and the half-width of the full set (areas.ts wallLines). */
+export interface CullWall {
+  readonly points: readonly (readonly [number, number])[];
+  readonly halfWidthM: number;
+}
+
+/** Wall segments bucketed by grid cell: each segment is x0, y0, x1, y1, halfWidth in `segments`. */
+export interface WallGrid {
+  readonly cellM: number;
+  readonly segments: Float64Array;
+  readonly cells: ReadonlyMap<string, readonly number[]>;
+  /** Largest half-width of any wall, so a query knows how many cells to look in. */
+  readonly maxHalfM: number;
+}
+
+const cellKey = (ix: number, iy: number): string => `${ix},${iy}`;
+
+/** Buckets every wall segment into each grid cell its plan bounding box touches. Pure. */
+export function buildWallGrid(walls: readonly CullWall[], cellM = WALL_GRID_CELL_M): WallGrid {
+  const flat: number[] = [];
+  const cells = new Map<string, number[]>();
+  let maxHalfM = 0;
+  for (const wall of walls) {
+    maxHalfM = Math.max(maxHalfM, wall.halfWidthM);
+    for (let i = 0; i + 1 < wall.points.length; i += 1) {
+      const a = wall.points[i] as readonly [number, number];
+      const b = wall.points[i + 1] as readonly [number, number];
+      const id = flat.length / 5;
+      flat.push(a[0], a[1], b[0], b[1], wall.halfWidthM);
+      const x0 = Math.floor(Math.min(a[0], b[0]) / cellM);
+      const x1 = Math.floor(Math.max(a[0], b[0]) / cellM);
+      const y0 = Math.floor(Math.min(a[1], b[1]) / cellM);
+      const y1 = Math.floor(Math.max(a[1], b[1]) / cellM);
+      for (let ix = x0; ix <= x1; ix += 1) {
+        for (let iy = y0; iy <= y1; iy += 1) {
+          const key = cellKey(ix, iy);
+          const list = cells.get(key);
+          if (list) list.push(id);
+          else cells.set(key, [id]);
+        }
+      }
+    }
+  }
+  return { cellM, segments: Float64Array.from(flat), cells, maxHalfM };
+}
+
+/** Plan distance from a point to a segment, its ends included. */
+export function distanceToSegment(
+  px: number,
+  py: number,
+  x0: number,
+  y0: number,
+  x1: number,
+  y1: number,
+): number {
+  const dx = x1 - x0;
+  const dy = y1 - y0;
+  const len2 = dx * dx + dy * dy;
+  const t = len2 === 0 ? 0 : Math.min(Math.max(((px - x0) * dx + (py - y0) * dy) / len2, 0), 1);
+  return Math.hypot(px - (x0 + t * dx), py - (y0 + t * dy));
+}
+
+/** Crown radius of a tree in metres: its height (the uniform instance scale) times its archetype's unit crown reach. */
+export function crownRadiusM(tree: TreeRecord): number {
+  return tree.height * (ARCHETYPE_CROWN_RADIUS[tree.type] ?? 0);
+}
+
+/**
+ * @displayName Tree cull at trail walls
+ * @strategicPurpose Stops the forest at a trail wall's face, so no crown pokes into or through a wall (#67).
+ * @tacticalObjective Drops every tree whose trunk lies within its wall set's half-width plus its own crown radius of any
+ *   wall centreline segment, looking only in the grid cells that reach covers. Pure and deterministic: records keep
+ *   their order, and the data files are untouched (a scene-time filter, not an ingest).
+ */
+export function cullTreesAtWalls(
+  records: readonly TreeRecord[],
+  grid: WallGrid,
+): { kept: TreeRecord[]; culled: number } {
+  if (grid.segments.length === 0) return { kept: [...records], culled: 0 };
+  const kept: TreeRecord[] = [];
+  const s = grid.segments;
+  for (const tree of records) {
+    const crown = crownRadiusM(tree);
+    const reach = grid.maxHalfM + crown;
+    const x0 = Math.floor((tree.east - reach) / grid.cellM);
+    const x1 = Math.floor((tree.east + reach) / grid.cellM);
+    const y0 = Math.floor((tree.north - reach) / grid.cellM);
+    const y1 = Math.floor((tree.north + reach) / grid.cellM);
+    let hit = false;
+    for (let ix = x0; ix <= x1 && !hit; ix += 1) {
+      for (let iy = y0; iy <= y1 && !hit; iy += 1) {
+        for (const id of grid.cells.get(cellKey(ix, iy)) ?? []) {
+          const o = id * 5;
+          const d = distanceToSegment(
+            tree.east,
+            tree.north,
+            s[o] as number,
+            s[o + 1] as number,
+            s[o + 2] as number,
+            s[o + 3] as number,
+          );
+          if (d < (s[o + 4] as number) + crown) {
+            hit = true;
+            break;
+          }
+        }
+      }
+    }
+    if (!hit) kept.push(tree);
+  }
+  return { kept, culled: records.length - kept.length };
+}
 
 const UP = new Vector3(0, 1, 0);
 
@@ -86,6 +202,8 @@ export interface InstallTreesOptions {
   /** Radial fade radii in metres; default to the shared fade constants. */
   readonly fadeInnerM?: number;
   readonly fadeOuterM?: number;
+  /** Trail walls (#67): every tree whose crown would reach into one is dropped. Default none. */
+  readonly walls?: readonly CullWall[];
 }
 
 export interface TreesHandle {
@@ -94,7 +212,10 @@ export interface TreesHandle {
   readonly meshes: readonly InstancedMesh[];
   /** The one material the six meshes share (fade patched; the caller applies the horizon blend to it). */
   readonly material: MeshStandardMaterial;
+  /** Trees drawn, after the wall cull. */
   readonly count: number;
+  /** Trees dropped by the wall cull. */
+  readonly culled: number;
   setVisible(on: boolean): void;
   /** Removes the group and frees the geometries, material and instance buffers. */
   dispose(): void;
@@ -127,7 +248,11 @@ export function installTrees(
   };
   material.customProgramCacheKey = () => 'radial-fade-instanced';
   const geometries: BufferGeometry[] = buildAllArchetypes();
-  const instances = buildInstances(trees.records);
+  const { kept, culled } = cullTreesAtWalls(trees.records, buildWallGrid(options.walls ?? []));
+  if (options.walls !== undefined) {
+    console.info(`${name}: culled ${culled} of ${trees.records.length} trees at trail walls`);
+  }
+  const instances = buildInstances(kept);
   const meshes: InstancedMesh[] = [];
   instances.forEach((inst, id) => {
     if (inst.count === 0) return;
@@ -146,7 +271,8 @@ export function installTrees(
     group,
     meshes,
     material,
-    count: trees.records.length,
+    count: kept.length,
+    culled,
     setVisible(on) {
       group.visible = on;
     },
