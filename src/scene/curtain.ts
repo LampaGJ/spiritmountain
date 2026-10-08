@@ -21,7 +21,7 @@ export const CURTAIN_OPACITY = 0.85;
 /** Width of the moving maximum over the canopy samples along a line, in vertices (about 25 m at the 5 m resample). */
 export const CURTAIN_SMOOTH_VERTICES = 5;
 
-/** Canopy height above bare earth at a plan point, in metres; NaN where no first-return layer covers it. */
+/** Canopy height above bare earth at a plan point, in metres; NaN where the canopy summary (load-canopy.ts, #65) does not cover it. */
 export type CanopyAt = (east: number, north: number) => number;
 
 const clampCanopy = (h: number): number =>
@@ -52,7 +52,7 @@ export function canopyProfile(
 }
 
 /**
- * Canopy height from the first-return surface: the core layer where it covers the point, else the square, minus the
+ * Not used by the app since #65 (curtains read the canopy summary); kept for tooling. Canopy height from the first-return surface: the core layer where it covers the point, else the square, minus the
  * bare earth the curtain stands on. Null when neither layer loaded. Reads the full-resolution heightfields, so the
  * surface meshes need not be built.
  */

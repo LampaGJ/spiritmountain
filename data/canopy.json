@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "width": 348,
+  "height": 337,
+  "originX": -3472.112256,
+  "originY": 3372.516441,
+  "originCorner": "top-left-of-top-left-cell",
+  "cellSizeM": 20,
+  "rowOrder": "north-to-south",
+  "columnOrder": "west-to-east",
+  "dtype": "uint8",
+  "scaleM": 0.2,
+  "maxM": 40,
+  "reduction": "block-max",
+  "byteLength": 117276,
+  "u8Sha256": "82b94bea198e4bb8e51ed1b676f3a6a2dcc55d5cc726101fd3fadfb33251559b",
+  "sources": {
+    "surfaceHeader": {
+      "path": "data/surface/square.json",
+      "sha256": "c91cfe3b82f9a00226d2b33b22f543416c12d60c9b214ed280b1fbc98ad36b7a"
+    },
+    "surface": {
+      "path": "data/surface/square.f32",
+      "sha256": "ed54ee678fcbc338971228355555e9105d0eb179351c787064c3d73b60ed36c1"
+    },
+    "terrainHeader": {
+      "path": "data/terrain.json",
+      "sha256": "7cd948867991e8550cc69e22a2e0f8867cd6ec2f1f45cd67547987b567c502b4"
+    },
+    "terrain": {
+      "path": "data/terrain.f32",
+      "sha256": "3d1609966e718d740816037da56233223fcbe22b4da67161a8e58d4c797bd484"
+    }
+  }
+}

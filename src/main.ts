@@ -49,7 +49,7 @@ import { loadImageryStats } from './data/load-imagery-stats';
 import { loadTreeStats } from './data/load-tree-stats';
 import { loadSky } from './data/load-sky';
 import { loadSurface, type SurfaceLoad } from './data/load-surface';
-import { canopyFromSurface } from './scene/curtain';
+import { loadCanopy } from './data/load-canopy';
 import type { MeshSurface } from './scene/heightfield';
 import {
   loadContextTrees,
@@ -395,7 +395,7 @@ const yieldToBrowser = (): Promise<void> =>
 
 let surfaceWanted = decodeHash(location.hash).filter.surface === true;
 let surfaceRequest: Promise<void> | null = null;
-/** The first-return heightfields, fetched once and shared by the Surface layer and the trail curtains (#64). */
+/** The first-return heightfields, fetched once, only when the Surface layer is first wanted (curtains use data/canopy.u8, #65). */
 let surfaceData: Promise<SurfaceLoad> | null = null;
 const loadSurfaceOnce = (): Promise<SurfaceLoad> => (surfaceData ??= loadSurface({ frameUrl }));
 /** The surface lines drape on: the drawn composite while Surface is visible, else bare earth. */
@@ -453,24 +453,19 @@ export const setSurfaceWanted = (on: boolean): void => {
 };
 if (surfaceWanted) readiness.register('surface', requestSurface());
 
-// Trail curtains (#64): the canopy height comes from the first-return raster, read lazily after first paint whether or
-// not Surface is on. Until it lands (or when it is absent) every curtain is CURTAIN_MIN_M.
+// Trail curtains (#64, #65): the canopy height comes from the 20 m canopy summary (data/canopy.u8, about 100 kB), loaded
+// with the areas and registered with readiness so curtains are at full height on first reveal. The 18 MB first-return
+// raster is never fetched for curtains. Without the summary (or when it fails) every curtain is CURTAIN_MIN_M.
 if (!('error' in areaLayerResult)) {
   const lines = areaLayerResult;
-  void loadSurfaceOnce()
-    .then((result) => {
-      const canopy = canopyFromSurface(result, (e, n) => meshSurface.sample(e, n).height);
-      if (canopy === null) {
-        console.info(
-          'curtains: no first-return surface in the build; curtains stay at the minimum',
-        );
-        return;
-      }
+  readiness.register(
+    'canopy',
+    loadCanopy().then((canopy) => {
+      if (canopy === null) return;
       lines.setCanopy(canopy);
       billboardLayer?.redrape(activeSurface());
-      console.info('curtains: canopy applied');
-    })
-    .catch((error: unknown) => console.error('curtains:', error));
+    }),
+  );
 }
 
 /**
