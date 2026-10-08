@@ -78,4 +78,5 @@ Run as `npm run ingest:<name>`. Each needs the ones above it that it names.
 
 - Spec, with the Deviations log and Non-goals: `docs/superpowers/specs/2026-10-06-spirit-mountain-gis-scene-design.md`.
 - Place names for the concentration signs, with sources and gaps: `docs/place-names.md`.
+- Activity rules and their original sources, with gaps: `docs/activity-audit.md`.
 - Stakeholder research: `docs/stakeholder-orgs.md`. Machine-readable seed: `scripts/ingest/organizations.seed.json`.

@@ -8,7 +8,8 @@
 #reveal {
   position: fixed;
   inset: 0;
-  z-index: 4;
+  /* Above every UI layer (rail 5, bar 5, popouts 6, panel 20) so nothing shows until the vignette opens. */
+  z-index: 100;
   pointer-events: auto;
   --reveal-r: -12vmax;
   background: radial-gradient(

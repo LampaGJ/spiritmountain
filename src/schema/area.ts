@@ -3,16 +3,16 @@ import { z } from 'zod';
 /**
  * @displayName Area id
  * @strategicPurpose One id pattern shared by areas and by annotation keys, so a malformed key fails at parse instead of at lookup.
- * @tacticalObjective Validates an OSM element id of the form node/N, way/N or relation/N.
+ * @tacticalObjective Validates an OSM element id of the form node/N, way/N or relation/N, or a derived id "derived/tubing-run/" followed by the OSM id of the lift it derives from.
  */
-export const AreaIdSchema = z
-  .string()
-  .regex(/^(node|way|relation)\/\d+$/, { error: 'id must be "<osm type>/<number>"' });
+export const AreaIdSchema = z.string().regex(/^(derived\/tubing-run\/)?(node|way|relation)\/\d+$/, {
+  error: 'id must be "<osm type>/<number>", optionally prefixed "derived/tubing-run/"',
+});
 
 /**
  * @displayName Area kind
  * @strategicPurpose Names the recreational categories the scene colours and filters by.
- * @tacticalObjective Closed enum of the six kinds the OSM transform may emit.
+ * @tacticalObjective Closed enum of the seven OSM kinds plus tubing-run, which the areas transform derives beside a tubing tow.
  */
 export const AreaKindSchema = z.enum([
   'downhill-run',
@@ -22,6 +22,7 @@ export const AreaKindSchema = z.enum([
   'snow-park',
   'mtb-route',
   'hiking-trail',
+  'tubing-run',
 ]);
 export type AreaKind = z.infer<typeof AreaKindSchema>;
 
