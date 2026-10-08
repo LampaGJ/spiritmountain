@@ -1,7 +1,7 @@
 {
   "inputHash": "b354ed670b0df2aa64a28a934ae007e1b3852387f8754ea85da1474ffcc27d27",
-  "codeCommit": "4c927e1d433bc6ffec7ee254f14713b6080b61fa",
-  "outputHash": "aab57d0510baf5f2eb6acbdde9201ed00f0e7f3f256f41de8f2fbcd238e1e33a",
+  "codeCommit": "a2c7e0a67b63d6570fabbe44a79c1b9cd9aa75ed",
+  "outputHash": "868d60a8d24d19a1edd8416a00637063428afef2661cf8a3521578477fa1da1b",
   "effect": "reduces",
   "toolVersions": {
     "osmtogeojson": "3.0.0-beta.5",
@@ -15,7 +15,8 @@
     "mtb-route": 29,
     "mtb-trail": 15,
     "nordic-trail": 40,
-    "snow-park": 2
+    "snow-park": 2,
+    "tubing-run": 1
   },
   "droppedCounts": {
     "duplicate-member": 41,
