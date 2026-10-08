@@ -264,6 +264,7 @@ export function createRevealOverlay(doc: Document): RevealOverlay {
   let stepTimer: ReturnType<typeof setTimeout> | undefined;
   let openPending = false;
   const api = {} as RevealOverlay;
+  let baseHeightPx = 0;
   const showStep = (entry: { words: string; fraction: number }): void => {
     labelEl.textContent = entry.words;
     labelEl.classList.remove('pop');
@@ -272,10 +273,11 @@ export function createRevealOverlay(doc: Document): RevealOverlay {
     const long = Math.max(window.innerWidth, window.innerHeight);
     // The logo starts about 2em tall and the last step covers the long axis; each step is a proportional,
     // one-way jump toward it (fraction = settled / total, which never decreases).
-    const base = logoEl.offsetHeight || LOGO_BASE_FALLBACK_PX; // layout box: unaffected by the scale transform
-    const maxScale = Math.max(1, long / base);
-    const scale = 1 + (maxScale - 1) * entry.fraction;
-    logoEl.style.setProperty('--logo-scale', scale.toFixed(4));
+    // Animate the layout height, never a transform: an <img> of an SVG re-rasterises at each size, so it stays
+    // sharp at the largest step, whereas a scale() transform enlarges the 2em bitmap and blurs.
+    if (baseHeightPx === 0) baseHeightPx = logoEl.offsetHeight || LOGO_BASE_FALLBACK_PX;
+    const target = baseHeightPx + (long - baseHeightPx) * entry.fraction;
+    logoEl.style.height = `${Math.round(target)}px`;
   };
   const pump = (): void => {
     if (stepTimer !== undefined) return;
