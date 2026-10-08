@@ -102,7 +102,7 @@ export function mountFilters(deps: MountFiltersDeps): FilterStrip {
     apply: (filter) => {
       const result = applyFilter(registry, annotations, filter);
       routeSport?.(annotations, filter.activities);
-      billboards?.applyFilter(annotations, filter.activities, result.visibleIds);
+      billboards?.applyFilter(annotations, filter.activities, result.visibleIds, filter.seasons);
       handle.onFilterApplied(result.visibleIds);
       return {
         ...result,

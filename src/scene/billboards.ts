@@ -22,6 +22,7 @@ import { fadeAlpha } from '../../scripts/ingest/context-tiles';
 import { ActivitySchema, type Annotation } from '../schema/annotation';
 import type { Area } from '../schema/area';
 import type { Place } from '../schema/places';
+import type { Season } from '../ui/filter-predicate';
 import { signGlyph } from '../ui/icons';
 import { trailTopHeight, type SceneMapper } from './areas';
 import { effectiveScale } from './elevated';
@@ -442,6 +443,52 @@ export interface SignPlan {
 
 /** The place whose sign is the MAIN sign: a sprite HERO_SCALE x as wide, floating HERO_OFFSET_M above the resort, never decluttered (#70). */
 export const HERO_PLACE_ID = 'spirit-mountain-adventure-park';
+
+/** `1 activity`, `14 activities`; `1 trail`, `71 trails`. */
+const plural = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;
+
+/**
+ * The hero sign's plan (#72): the resort's MAIN sign, so it reads the whole dataset for the scope, never the filtered
+ * subset and never only the tracks near it. With no season the scope is every season (every non-lift-ride activity
+ * entry); with seasons it is the entries listing one of them. Chips are the activities any non-lift track carries in
+ * scope (ActivitySchema order), the count is distinct tracks (trackKey), and the label reads `X activities · N trails`.
+ * It sits at the hero place. Null when the hero place is absent or unpositioned, or no track is in scope.
+ */
+export function planHero(
+  areas: readonly TrackArea[],
+  annotations: ReadonlyMap<string, Annotation>,
+  seasons: ReadonlySet<Season>,
+  places: readonly Place[],
+): SignPlan | null {
+  const place = places.find(
+    (p) => p.id === HERO_PLACE_ID && p.verified && p.east !== null && p.north !== null,
+  );
+  if (place === undefined) return null;
+  const found = new Set<Activity>();
+  const tracks = new Set<string>();
+  for (const area of areas) {
+    if (area.kind === 'lift') continue;
+    const entries = (annotations.get(area.id)?.activities ?? []).filter(
+      (e) =>
+        e.activity !== 'lift-ride' && (seasons.size === 0 || e.seasons.some((s) => seasons.has(s))),
+    );
+    if (entries.length === 0) continue;
+    tracks.add(trackKey(area));
+    for (const e of entries) found.add(e.activity);
+  }
+  if (tracks.size === 0) return null;
+  const activities = ActivitySchema.options.filter((a) => found.has(a));
+  return {
+    east: place.east as number,
+    north: place.north as number,
+    family: 'concentration',
+    activities,
+    label: `${plural(activities.length, 'activity', 'activities')} · ${plural(tracks.size, 'trail', 'trails')}`,
+    trackCount: tracks.size,
+    place: place.name,
+    placeId: place.id,
+  };
+}
 
 /**
  * Activities of one track: the union over its segments of annotation activities that are in `selected` (every
@@ -1291,6 +1338,8 @@ export interface BillboardLayer {
     annotations: ReadonlyMap<string, Annotation>,
     selected: ReadonlySet<Activity>,
     visibleIds: ReadonlySet<string>,
+    /** The selected seasons (#72): the scope of the hero sign's counts. Absent or empty means every season. */
+    seasons?: ReadonlySet<Season>,
   ): void;
   /** Re-heights every sign from another surface. */
   redrape(active: MeshSurface): void;
@@ -1420,7 +1469,8 @@ export function buildBillboardLayer(
     annotations: ReadonlyMap<string, Annotation>;
     selected: ReadonlySet<Activity>;
     visibleIds: ReadonlySet<string>;
-  } = { annotations: new Map(), selected: new Set(), visibleIds: new Set() };
+    seasons: ReadonlySet<Season>;
+  } = { annotations: new Map(), selected: new Set(), visibleIds: new Set(), seasons: new Set() };
   let lastPlans: SignPlan[] = [];
   let shownCount = 0;
   const heightAt = (east: number, north: number): number =>
@@ -1438,9 +1488,17 @@ export function buildBillboardLayer(
 
   const rebuild = (): void => {
     planDirty = true;
-    const { annotations, selected, visibleIds } = lastArgs;
+    const { annotations, selected, visibleIds, seasons } = lastArgs;
     // Concentration signs first: they win declutter ties and keep their pool slots across trail-sign changes.
-    const concentrations = planSigns(areas, annotations, selected, visibleIds, deps.places ?? []);
+    // The hero (#72) is planned apart from visibility: it reads the resort offering for the season scope.
+    const places = deps.places ?? [];
+    const heroPlan = planHero(areas, annotations, seasons, places);
+    const concentrations = [
+      ...planSigns(areas, annotations, selected, visibleIds, places).filter(
+        (plan) => plan.placeId !== HERO_PLACE_ID,
+      ),
+      ...(heroPlan === null ? [] : [heroPlan]),
+    ];
     lastPlans = [...concentrations, ...planTrailSigns(areas, annotations, selected, visibleIds)];
     lastPlans.forEach((plan, i) => {
       const sign = pool[i] ?? makeSign(plan);
@@ -1478,8 +1536,9 @@ export function buildBillboardLayer(
     annotations: ReadonlyMap<string, Annotation>,
     selected: ReadonlySet<Activity>,
     visibleIds: ReadonlySet<string>,
+    seasons: ReadonlySet<Season> = new Set(),
   ): void => {
-    lastArgs = { annotations, selected, visibleIds };
+    lastArgs = { annotations, selected, visibleIds, seasons };
     rebuild();
   };
 

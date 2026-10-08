@@ -110,7 +110,7 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
     } else if (state.activity.length > 0 || state.season.length > 0) {
       count.textContent = `${facets.matching} of ${facets.candidates} trails match · ${facets.lifts} lifts always shown`;
     } else {
-      count.textContent = `${facets.candidates} trails · ${facets.lifts} lifts`;
+      count.textContent = `Choose a season · ${facets.lifts} lifts`;
     }
     if (imageryButton) {
       const on = state.imagery !== false;

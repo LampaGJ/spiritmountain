@@ -1038,6 +1038,25 @@ describe('buildBillboardLayer', () => {
     expect(trailSprites(layer.group)).toHaveLength(0);
   });
 
+  it('keeps the hero reading the resort offering when nothing is visible or an activity is toggled (#72)', () => {
+    // A second track far outside the hero's catchment still counts: the hero is the resort's main sign.
+    const far = lineArea('way/10', 'hiking-trail', 5000, 5000, 'Far Loop');
+    const notes = new Map([...FOUR_NOTES, ['way/10', note('way/10', ['alpine-ski'])]]);
+    const layer = buildBillboardLayer([...FOUR_SPORT, far], surface, mapper, {
+      host: makeHost(),
+      fadeCentre: { east: 0, north: 0 },
+      createCanvas: fakeCanvas,
+      fonts: undefined,
+      warn: () => {},
+      places: [HERO_PLACE],
+    });
+    layer.applyFilter(notes, new Set(), new Set());
+    expect(heroSprite(layer.group).userData['label']).toBe('5 activities · 2 trails');
+    expect(trailSprites(layer.group)).toHaveLength(0);
+    layer.applyFilter(notes, new Set(['hike']), new Set(['way/9']));
+    expect(heroSprite(layer.group).userData['label']).toBe('5 activities · 2 trails');
+  });
+
   it('sizes each canvas to its content: layoutSign height, plus TAIL_PX for a trail sign (#70)', () => {
     const canvases: { width: number; height: number }[] = [];
     const host = makeHost();

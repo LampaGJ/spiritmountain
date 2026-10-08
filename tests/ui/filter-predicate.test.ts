@@ -26,9 +26,17 @@ const liftNote = makeAnnotation('way/2', [entry('lift-ride', [])]);
 const plain = makeArea('way/3', 'nordic-trail');
 
 describe('matchesFilter', () => {
-  it('shows everything when no filter is active', () => {
-    expect(matchesFilter(twoEntryArea, twoEntryNote, EMPTY_FILTER)).toBe(true);
-    expect(matchesFilter(plain, undefined, EMPTY_FILTER)).toBe(true);
+  it('shows no trail when no filter is active, only lifts (#72 empty default)', () => {
+    expect(matchesFilter(twoEntryArea, twoEntryNote, EMPTY_FILTER)).toBe(false);
+    expect(matchesFilter(plain, undefined, EMPTY_FILTER)).toBe(false);
+    expect(matchesFilter(lift, liftNote, EMPTY_FILTER)).toBe(true);
+    expect(matchesFilter(lift, undefined, EMPTY_FILTER)).toBe(true);
+  });
+
+  it("shows a season's trails when selected and returns to empty on clear (#72)", () => {
+    expect(matchesFilter(twoEntryArea, twoEntryNote, filterOf([], ['winter']))).toBe(true);
+    expect(matchesFilter(twoEntryArea, twoEntryNote, filterOf([], ['spring']))).toBe(false);
+    expect(matchesFilter(twoEntryArea, twoEntryNote, EMPTY_FILTER)).toBe(false);
   });
 
   it('matches per entry, not per set union', () => {
@@ -46,12 +54,12 @@ describe('matchesFilter', () => {
     expect(matchesFilter(lift, undefined, filterOf([], ['winter']))).toBe(true);
   });
 
-  it('hides unannotated and empty-activities areas while filtered, shows them otherwise', () => {
+  it('hides unannotated and empty-activities areas while filtered, hides them with no filter too (#72)', () => {
     const emptyNote = makeAnnotation('way/3', []);
     expect(matchesFilter(plain, undefined, filterOf([], ['winter']))).toBe(false);
     expect(matchesFilter(plain, emptyNote, filterOf([], ['winter']))).toBe(false);
-    expect(matchesFilter(plain, undefined, EMPTY_FILTER)).toBe(true);
-    expect(matchesFilter(plain, emptyNote, EMPTY_FILTER)).toBe(true);
+    expect(matchesFilter(plain, undefined, EMPTY_FILTER)).toBe(false);
+    expect(matchesFilter(plain, emptyNote, EMPTY_FILTER)).toBe(false);
   });
 
   it('lets an entry with seasons [] match activity-only but not season filters', () => {
@@ -110,7 +118,7 @@ describe('facetCounts', () => {
     );
     expect(c.candidates).toBe(2);
     expect(c.lifts).toBe(1);
-    expect(c.matching).toBe(2);
+    expect(c.matching).toBe(0);
     expect(c.activities.get('alpine-ski')).toBe(1);
     expect(c.activities.get('hike')).toBe(0);
     expect(c.seasons.get('summer')).toBe(1);
@@ -172,7 +180,7 @@ describe('track counts (#50)', () => {
     expect(c.activities.get('mountain-bike')).toBe(3);
     expect(c.seasons.get('summer')).toBe(4);
     expect(c.candidates).toBe(4);
-    expect(c.matching).toBe(4);
+    expect(c.matching).toBe(0);
     expect(c.lifts).toBe(1);
   });
 
