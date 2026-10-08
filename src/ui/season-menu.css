@@ -158,9 +158,9 @@
 #season-bar .sm-popout > .cl-key button[aria-expanded='true'] .sm-chevron {
   transform: rotate(180deg);
 }
-/* Row keys keep the engine's label-length width, with room for the glyph, the swatch and the gaps of the left-aligned face. */
-#season-bar .sm-season-row .cl-key.has-icon {
-  --cl-extra: 3.9em;
+/* Every key in a group is the same width, never sized to its label (Graham, 2026-10-08): row keys match the popout keys at 14em. */
+#season-bar .sm-season-row .cl-key .btn-scale {
+  width: 16em;
 }
 #season-bar .cl-key .btn-face {
   justify-content: flex-start;
@@ -267,5 +267,52 @@
     pointer-events: auto;
     background: rgb(14 18 22 / 0.92);
     border-bottom: 1px solid var(--sm-line);
+  }
+}
+
+/* Graham, 2026-10-08: season keys carry no counts; View and Layers are icon-only and narrow; season type is set
+   explicitly at desktop size with a line box tall enough that descenders are never clipped by the face's overflow. */
+#season-bar .sm-season-keys .cl-key .btn-count,
+#season-bar .sm-popout > .cl-key .btn-count {
+  display: none;
+}
+#season-bar .sm-popout > .cl-key .btn-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+#season-bar .sm-popout > .cl-key .btn-face {
+  justify-content: center;
+  gap: 4px;
+  padding: 0 8px;
+}
+#season-bar .sm-popout > .cl-key .btn-scale {
+  width: 6em;
+}
+@media (min-width: 720px) {
+  #season-bar .sm-season-keys .cl-key .btn-face,
+  #season-bar .sm-popout > .cl-key .btn-face {
+    font-size: 22px;
+    line-height: 1.35;
+  }
+  /* The label carries its own 13 px size from the engine; set it here so the type grows with the key. */
+  #season-bar .sm-season-keys .cl-key .btn-label {
+    font-size: 22px;
+    line-height: 1.35;
+    overflow: visible;
+    padding-bottom: 0.08em;
+  }
+  #season-bar .sm-season-keys .cl-key .btn-face .ms {
+    font-size: 28px;
+  }
+  #season-bar .sm-season-keys .cl-key .btn-scale {
+    width: 9em;
+  }
+  #season-bar .sm-popout > .cl-key .btn-scale {
+    width: 4.2em;
   }
 }
