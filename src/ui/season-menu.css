@@ -372,3 +372,20 @@
     width: var(--cl-h);
   }
 }
+
+/* Mid widths (tablet, narrow desktop): the four even keys cannot fit "Summer" at 22 px beside the circles, so the
+   seasons go icon-only here too; the label stays in the DOM for assistive tech. */
+@media (min-width: 720px) and (max-width: 1099px) {
+  #season-bar .sm-season-keys .cl-key .btn-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+  #season-bar .sm-season-keys .cl-key .btn-face .ms {
+    font-size: 34px;
+  }
+}
