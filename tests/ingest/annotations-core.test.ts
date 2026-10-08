@@ -66,13 +66,14 @@ describe('gate: the real seed file parses through #6 OrganizationSchema, unchang
 });
 
 describe('kind defaults (one case per kind)', () => {
-  const cases: [string, string, { activity: string; seasons: string[] }[]][] = [
+  const cases: [string, string, { activity: string; seasons: string[]; sourced?: boolean }[]][] = [
     [
       'downhill-run',
       'way/999',
       [
         { activity: 'alpine-ski', seasons: ['winter', 'spring'] },
         { activity: 'snowboard', seasons: ['winter', 'spring'] },
+        { activity: 'adaptive', seasons: ['winter', 'spring'], sourced: true },
       ],
     ],
     [
@@ -81,6 +82,7 @@ describe('kind defaults (one case per kind)', () => {
       [
         { activity: 'alpine-ski', seasons: ['winter', 'spring'] },
         { activity: 'snowboard', seasons: ['winter', 'spring'] },
+        { activity: 'adaptive', seasons: ['winter', 'spring'], sourced: true },
       ],
     ],
     [
@@ -89,15 +91,30 @@ describe('kind defaults (one case per kind)', () => {
       [
         { activity: 'nordic-classic', seasons: ['winter'] },
         { activity: 'nordic-skate', seasons: ['winter'] },
+        { activity: 'snowshoe', seasons: ['winter'], sourced: true },
       ],
     ],
-    ['mtb-trail', 'way/20', [{ activity: 'mountain-bike', seasons: ['spring', 'summer', 'fall'] }]],
+    [
+      'mtb-trail',
+      'way/20',
+      [
+        { activity: 'mountain-bike', seasons: ['spring', 'summer', 'fall'] },
+        { activity: 'hike', seasons: ['spring', 'summer', 'fall'], sourced: true },
+        { activity: 'trail-run', seasons: ['spring', 'summer', 'fall'], sourced: true },
+        { activity: 'fat-bike', seasons: ['winter'], sourced: true },
+      ],
+    ],
     [
       'mtb-route',
       'relation/5',
-      [{ activity: 'mountain-bike', seasons: ['spring', 'summer', 'fall'] }],
+      [
+        { activity: 'mountain-bike', seasons: ['spring', 'summer', 'fall'] },
+        { activity: 'hike', seasons: ['spring', 'summer', 'fall'], sourced: true },
+        { activity: 'trail-run', seasons: ['spring', 'summer', 'fall'], sourced: true },
+        { activity: 'fat-bike', seasons: ['winter'], sourced: true },
+      ],
     ],
-    ['lift', 'way/7', [{ activity: 'lift-ride', seasons: [] }]],
+    ['lift', 'way/7', [{ activity: 'lift-ride', seasons: ['winter'] }]],
     [
       'hiking-trail',
       'way/40',
@@ -109,11 +126,17 @@ describe('kind defaults (one case per kind)', () => {
   ];
   it.each(cases)('%s', (_kind, id, expected) => {
     const annotation = built.annotations.find((a) => a.areaId === id);
-    expect(annotation?.activities).toEqual(
-      expected.map((e) => ({ ...e, notes: 'derived from OSM kind' })),
+    expect(annotation?.activities.map(({ activity, seasons }) => ({ activity, seasons }))).toEqual(
+      expected.map(({ activity, seasons }) => ({ activity, seasons })),
     );
+    expected.forEach((e, i) => {
+      const notes = annotation?.activities[i]?.notes ?? '';
+      if (e.sourced === true) expect(notes).toMatch(/ \(https:\/\/\S+\)$/);
+      else expect(notes).toBe('derived from OSM kind');
+      expect(notes).not.toMatch(/inferred/i);
+    });
   });
-  it('the fixture covers all seven kinds', () => {
+  it('the fixture covers seven of the eight kinds (tubing-run is derived)', () => {
     expect(new Set(AREA_ROWS.map((r) => r.kind)).size).toBe(7);
   });
   it('every annotation has empty notes', () => {
@@ -386,5 +409,102 @@ describe('stakeholder rule', () => {
     const roles = new Set(built.annotations.flatMap((a) => a.stakeholders.map((s) => s.role)));
     for (const role of roles)
       expect(['maintains', 'operates', 'programs', 'funds', 'advocates']).toContain(role);
+  });
+});
+
+describe('activity audit rules (#69)', () => {
+  const rows = [
+    { id: 'way/501', kind: 'lift', name: 'Tubing Hill Handle Tow' },
+    { id: 'way/502', kind: 'lift', name: 'Spirit Express II' },
+    { id: 'way/503', kind: 'lift', name: 'Summit Chair' },
+    { id: 'way/504', kind: 'lift', name: null },
+    { id: 'derived/tubing-run/way/501', kind: 'tubing-run', name: 'Tubing Hill' },
+  ] as const;
+  const result = buildAnnotations(rows, seed);
+  const activitiesOf = (id: string) => result.annotations.find((a) => a.areaId === id)?.activities;
+
+  it('a lift named like tubing carries lift-ride and tubing, both winter, with a sourced note on tubing', () => {
+    const entries = activitiesOf('way/501');
+    expect(entries?.map((e) => [e.activity, e.seasons])).toEqual([
+      ['lift-ride', ['winter']],
+      ['tubing', ['winter']],
+    ]);
+    expect(entries?.[1]?.notes).toMatch(/ \(https:\/\/\S+\)$/);
+  });
+  it('Spirit Express II carries lift-ride in winter and summer with a sourced note; other lifts are winter only', () => {
+    const express = activitiesOf('way/502');
+    expect(express).toHaveLength(1);
+    expect(express?.[0]?.seasons).toEqual(['winter', 'summer']);
+    expect(express?.[0]?.notes).toMatch(/ \(https:\/\/\S+\)$/);
+    expect(activitiesOf('way/503')).toEqual([
+      { activity: 'lift-ride', seasons: ['winter'], notes: 'derived from OSM kind' },
+    ]);
+    expect(activitiesOf('way/504')?.[0]?.seasons).toEqual(['winter']);
+  });
+  it('a tubing-run carries tubing in winter', () => {
+    expect(activitiesOf('derived/tubing-run/way/501')?.map((e) => [e.activity, e.seasons])).toEqual(
+      [['tubing', ['winter']]],
+    );
+  });
+  it('accepts the derived id through the whole generator (areas file parse, emitter gate)', () => {
+    const out = generateAnnotations({
+      areasBytes: areasBytes([
+        { id: 'way/501', kind: 'lift' },
+        { id: 'derived/tubing-run/way/501', kind: 'tubing-run' },
+      ]),
+      seedBytes: realSeedBytes(),
+      codeCommit: FAKE_COMMIT,
+    });
+    expect(out.file.annotations.map((a) => a.areaId)).toEqual([
+      'derived/tubing-run/way/501',
+      'way/501',
+    ]);
+  });
+  it('all twelve activities are carried by some rule', () => {
+    const file = generateAnnotations({
+      areasBytes: areasBytes([
+        ...AREA_ROWS,
+        { id: 'way/501', kind: 'lift' },
+        { id: 'derived/tubing-run/way/501', kind: 'tubing-run' },
+      ]),
+      seedBytes: realSeedBytes(),
+      codeCommit: FAKE_COMMIT,
+    }).file;
+    const carried = new Set(file.annotations.flatMap((a) => a.activities.map((e) => e.activity)));
+    expect(carried.size).toBe(12);
+  });
+  it('no note says inferred', () => {
+    const all = result.annotations.flatMap((a) => a.activities.map((e) => e.notes));
+    expect(all.some((note) => /inferred/i.test(note))).toBe(false);
+  });
+});
+
+describe('each sourced rule cites its original page (#69)', () => {
+  const rows = [
+    { id: 'way/1', kind: 'downhill-run', name: null },
+    { id: 'way/2', kind: 'nordic-trail', name: null },
+    { id: 'way/3', kind: 'mtb-trail', name: null },
+    { id: 'way/4', kind: 'lift', name: 'Spirit Express II' },
+    { id: 'way/5', kind: 'lift', name: 'Tubing Hill Handle Tow' },
+  ] as const;
+  const result = buildAnnotations(rows, seed);
+  const noteOf = (id: string, activity: string): string =>
+    result.annotations.find((a) => a.areaId === id)?.activities.find((e) => e.activity === activity)
+      ?.notes ?? '';
+  it.each([
+    ['way/1', 'adaptive', 'https://spiritmt.com/?p=34'],
+    ['way/2', 'snowshoe', 'https://spiritmt.com/winter/nordic/'],
+    ['way/3', 'fat-bike', 'https://spiritmt.com/winter/downhill/'],
+    ['way/3', 'hike', 'https://coggs.com/'],
+    ['way/3', 'trail-run', 'https://coggs.com/'],
+    ['way/4', 'lift-ride', 'https://spiritmt.com/summer/adventure-park/'],
+    ['way/5', 'tubing', 'https://spiritmt.com/winter/tubing/'],
+  ])('%s %s', (id, activity, url) => {
+    expect(noteOf(id, activity).endsWith(`(${url})`)).toBe(true);
+  });
+  it('states the gaps on the page: months not stated, trails not specified', () => {
+    expect(noteOf('way/4', 'lift-ride')).toContain('months not stated');
+    expect(noteOf('way/2', 'snowshoe')).toContain('trails not specified on the page');
+    expect(noteOf('way/3', 'fat-bike')).toContain('trails not specified on the page');
   });
 });

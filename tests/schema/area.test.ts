@@ -28,7 +28,7 @@ describe('AreaSchema', () => {
   it('rejects an extra unknown key', () => {
     expect(AreaSchema.safeParse(withExtraKey(validArea)).success).toBe(false);
   });
-  it('accepts exactly the seven kinds', () => {
+  it('accepts exactly the eight kinds', () => {
     expect(AreaKindSchema.options).toEqual([
       'downhill-run',
       'nordic-trail',
@@ -37,6 +37,7 @@ describe('AreaSchema', () => {
       'snow-park',
       'mtb-route',
       'hiking-trail',
+      'tubing-run',
     ]);
   });
   it('rejects a numeric osmTags value', () => {
@@ -45,6 +46,9 @@ describe('AreaSchema', () => {
   it('rejects a malformed id', () => {
     expect(AreaIdSchema.safeParse('way/').success).toBe(false);
     expect(AreaIdSchema.safeParse('way/123').success).toBe(true);
+    expect(AreaIdSchema.safeParse('derived/tubing-run/way/123').success).toBe(true);
+    expect(AreaIdSchema.safeParse('derived/tubing-run/').success).toBe(false);
+    expect(AreaIdSchema.safeParse('derived/other/way/123').success).toBe(false);
   });
 });
 

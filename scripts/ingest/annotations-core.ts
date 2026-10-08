@@ -18,40 +18,108 @@ export class AnnotationsError extends Error {
   }
 }
 
+/** What the seed rule reads of an area: id and kind, plus the OSM name for the lift rules. */
+export type AreaRef = Pick<Area, 'id' | 'kind'> & { readonly name?: string | null };
+
 export const DERIVED_NOTE = 'derived from OSM kind';
 
 type ActivityEntry = Annotation['activities'][number];
+/** An original source for one rule: where the claim comes from and what the page says. Written into the annotation notes. */
+export type RuleSource = { readonly url: string; readonly note: string };
+
 type KindRule = readonly {
   readonly activity: ActivityEntry['activity'];
   readonly seasons: ActivityEntry['seasons'];
+  /** Absent only for the structural defaults noted DERIVED_NOTE. Every added activity cites a source. */
+  readonly source?: RuleSource;
 }[];
+
+const WARM: ActivityEntry['seasons'] = ['spring', 'summer', 'fall'];
+
+const TUBING_SOURCE: RuleSource = {
+  url: 'https://spiritmt.com/winter/tubing/',
+  note: 'Tubing Hill served by a tubing lift; season ends mid March',
+};
+const SNOWSHOE_SOURCE: RuleSource = {
+  url: 'https://spiritmt.com/winter/nordic/',
+  note: 'rental snowshoes at the Upper Nordic Building on weekends; trails not specified on the page',
+};
+const FAT_BIKE_SOURCE: RuleSource = {
+  url: 'https://spiritmt.com/winter/downhill/',
+  note: 'fat bikes acknowledged with a rider-responsibility statement; trails not specified on the page',
+};
+const ADAPTIVE_SOURCE: RuleSource = {
+  url: 'https://spiritmt.com/?p=34',
+  note: 'lessons page lists Northland Adaptive',
+};
+const MTB_HUMAN_POWERED_SOURCE: RuleSource = {
+  url: 'https://coggs.com/',
+  note: 'all COGGS trails open to human-powered, non-motorized use',
+};
+const SUMMER_LIFT_SOURCE: RuleSource = {
+  url: 'https://spiritmt.com/summer/adventure-park/',
+  note: 'scenic chairlift; months not stated',
+};
+
+/** The text written into an annotation's notes: the structural default, or the source note followed by its URL. */
+export function noteFor(source: RuleSource | undefined): string {
+  return source === undefined ? DERIVED_NOTE : `${source.note} (${source.url})`;
+}
 
 /**
  * Decision record: these season defaults are structural (a downhill run is a winter facility by definition), not world facts.
- * Nothing is inferred from OSM tags, and every derived entry carries the note "derived from OSM kind" so a human can tell a default from a confirmed fact.
+ * Nothing is read from OSM tags beyond the kind and the name. An entry with no note says "derived from OSM kind"; an entry that adds an activity OSM does not state carries a source (url and note) written into its notes (docs/activity-audit.md).
  * Typed as Record<AreaKind, ...> so the compiler fails when the area schema gains a kind.
  */
 const KIND_RULES: Record<AreaKind, KindRule> = {
   'downhill-run': [
     { activity: 'alpine-ski', seasons: ['winter', 'spring'] },
     { activity: 'snowboard', seasons: ['winter', 'spring'] },
+    { activity: 'adaptive', seasons: ['winter', 'spring'], source: ADAPTIVE_SOURCE },
   ],
   'snow-park': [
     { activity: 'alpine-ski', seasons: ['winter', 'spring'] },
     { activity: 'snowboard', seasons: ['winter', 'spring'] },
+    { activity: 'adaptive', seasons: ['winter', 'spring'], source: ADAPTIVE_SOURCE },
   ],
   'nordic-trail': [
     { activity: 'nordic-classic', seasons: ['winter'] },
     { activity: 'nordic-skate', seasons: ['winter'] },
+    { activity: 'snowshoe', seasons: ['winter'], source: SNOWSHOE_SOURCE },
   ],
-  'mtb-trail': [{ activity: 'mountain-bike', seasons: ['spring', 'summer', 'fall'] }],
-  'mtb-route': [{ activity: 'mountain-bike', seasons: ['spring', 'summer', 'fall'] }],
-  lift: [{ activity: 'lift-ride', seasons: [] }],
+  'mtb-trail': [
+    { activity: 'mountain-bike', seasons: WARM },
+    { activity: 'hike', seasons: WARM, source: MTB_HUMAN_POWERED_SOURCE },
+    { activity: 'trail-run', seasons: WARM, source: MTB_HUMAN_POWERED_SOURCE },
+    { activity: 'fat-bike', seasons: ['winter'], source: FAT_BIKE_SOURCE },
+  ],
+  'mtb-route': [
+    { activity: 'mountain-bike', seasons: WARM },
+    { activity: 'hike', seasons: WARM, source: MTB_HUMAN_POWERED_SOURCE },
+    { activity: 'trail-run', seasons: WARM, source: MTB_HUMAN_POWERED_SOURCE },
+    { activity: 'fat-bike', seasons: ['winter'], source: FAT_BIKE_SOURCE },
+  ],
+  lift: [{ activity: 'lift-ride', seasons: ['winter'] }],
   'hiking-trail': [
-    { activity: 'hike', seasons: ['spring', 'summer', 'fall'] },
-    { activity: 'trail-run', seasons: ['spring', 'summer', 'fall'] },
+    { activity: 'hike', seasons: WARM },
+    { activity: 'trail-run', seasons: WARM },
   ],
+  'tubing-run': [{ activity: 'tubing', seasons: ['winter'], source: TUBING_SOURCE }],
 };
+
+/**
+ * Lift rules that depend on the OSM name, applied on top of KIND_RULES.lift: Spirit Express II also runs in summer,
+ * and a tubing tow carries the tubing activity.
+ */
+function liftRule(name: string | null | undefined): KindRule {
+  const base: KindRule = [{ activity: 'lift-ride', seasons: ['winter'] }];
+  if (name === null || name === undefined) return base;
+  if (/tubing/i.test(name))
+    return [...base, { activity: 'tubing', seasons: ['winter'], source: TUBING_SOURCE }];
+  if (/^spirit express ii$/i.test(name))
+    return [{ activity: 'lift-ride', seasons: ['winter', 'summer'], source: SUMMER_LIFT_SOURCE }];
+  return base;
+}
 
 /** Code-unit string order. Never a locale-sensitive comparison: it must give the same answer on every machine. */
 export function compareCodeUnit(a: string, b: string): number {
@@ -118,9 +186,9 @@ function decodeJson(bytes: Uint8Array, label: string, code: string): unknown {
 /**
  * @displayName Areas boundary parse
  * @strategicPurpose Parses the foreign file data/areas.geojson where it enters, so a renamed field or an empty file is an error and never an empty annotations list.
- * @tacticalObjective Decodes the bytes once, rejects zero features as NoAreas, parses the rest with AreaFeatureCollectionSchema, and returns each feature's properties (id and kind are all this transform reads).
+ * @tacticalObjective Decodes the bytes once, rejects zero features as NoAreas, parses the rest with AreaFeatureCollectionSchema, and returns each feature's id, kind and name (all this transform reads).
  */
-export function parseAreas(bytes: Uint8Array): Pick<Area, 'id' | 'kind'>[] {
+export function parseAreas(bytes: Uint8Array): AreaRef[] {
   const raw = decodeJson(bytes, 'areas file', 'AreasNotJson');
   const features = (raw as { features?: unknown } | null)?.features;
   if (Array.isArray(features) && features.length === 0) {
@@ -132,7 +200,11 @@ export function parseAreas(bytes: Uint8Array): Pick<Area, 'id' | 'kind'>[] {
   const result = AreaFeatureCollectionSchema.safeParse(raw);
   if (!result.success)
     throw new AnnotationsError('AreasInvalid', formatIssues(result.error.issues));
-  return result.data.features.map((feature) => feature.properties);
+  return result.data.features.map(({ properties }) => ({
+    id: properties.id,
+    kind: properties.kind,
+    name: properties.name,
+  }));
 }
 
 // A plain array wrapper around #6's OrganizationSchema; the min(1) makes an empty seed an error.
@@ -178,7 +250,7 @@ type BuiltAnnotations = { organizations: Organization[]; annotations: Annotation
  * @tacticalObjective Pure function: one annotation per area with kind-derived activities (each noted "derived from OSM kind"), rule-derived stakeholders and empty notes, sorted by areaId; organizations copied field by field in seed order of keys, sorted by id. Declared effect is expands.
  */
 export function buildAnnotations(
-  areas: readonly Pick<Area, 'id' | 'kind'>[],
+  areas: readonly AreaRef[],
   organizations: readonly Organization[],
 ): BuiltAnnotations {
   const areaIds = new Set<string>();
@@ -196,13 +268,14 @@ export function buildAnnotations(
   const annotations: Annotation[] = [...areas]
     .sort((a, b) => compareCodeUnit(a.id, b.id))
     .map((area) => {
-      const rule = (KIND_RULES as Partial<Record<string, KindRule>>)[area.kind];
+      const kindRule = (KIND_RULES as Partial<Record<string, KindRule>>)[area.kind];
+      const rule = area.kind === 'lift' ? liftRule(area.name) : kindRule;
       if (rule === undefined)
         throw new AnnotationsError('UnmappedKind', `no activity rule for kind ${area.kind}`);
       const activities = rule.map((entry) => ({
         activity: entry.activity,
         seasons: [...entry.seasons],
-        notes: DERIVED_NOTE,
+        notes: noteFor(entry.source),
       }));
       return {
         areaId: area.id,
