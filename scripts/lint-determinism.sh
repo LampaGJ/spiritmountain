@@ -34,7 +34,7 @@ files=()
 for f in ${extras[@]+"${extras[@]}"}; do
   if [ -f "$f" ]; then files+=("$f"); fi
 done
-grep -rnE -f "$patterns" --include='*.ts' --exclude='fetch.ts' --exclude='imagery.ts' --exclude='context.ts' --exclude='sky.ts' --exclude='fetch-buildings.ts' "$dir"
+grep -rnE -f "$patterns" --include='*.ts' --exclude='fetch.ts' --exclude='imagery.ts' --exclude='imagery-inset.ts' --exclude='context.ts' --exclude='sky.ts' --exclude='fetch-buildings.ts' "$dir"
 dir_status=$?
 file_status=1
 if [ "${#files[@]}" -gt 0 ]; then

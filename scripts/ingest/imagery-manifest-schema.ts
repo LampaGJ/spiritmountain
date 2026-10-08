@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const GridBboxSchema = z
+export const GridBboxSchema = z
   .strictObject({
     xmin: z.number(),
     ymin: z.number(),
