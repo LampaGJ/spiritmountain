@@ -35,6 +35,7 @@ Run as `npm run ingest:<name>`. Each needs the ones above it that it names.
 - `surface`: pins the first-return raster through PDAL (`brew install pdal`). Refuses without `--force`. `surface-terrain` decodes it with no PDAL.
 - Square window: `npm run ingest:surface -- --window square`, then `npm run ingest:surface-terrain -- --window square`.
 - `trees` (#30): simulated trees and `core-nocanopy` from the surface, NAIP and footprints. Not committed yet; check `git log` before relying on it.
+- `places` (#61): needs `fetch`, `areas`. Reads the hand-authored `scripts/ingest/places.seed.json` (primary-source input, like the organizations seed), projects it through the frame, resolves anchors against `areas.geojson`, writes `data/places.json`. Refuses without `--force`. A place with `verified: false` never labels a sign. The loader (`src/data/load-places.ts`) tolerates a missing file with one `console.info`.
 
 ## Scene conventions
 
@@ -76,4 +77,5 @@ Run as `npm run ingest:<name>`. Each needs the ones above it that it names.
 ## Pointers
 
 - Spec, with the Deviations log and Non-goals: `docs/superpowers/specs/2026-10-06-spirit-mountain-gis-scene-design.md`.
+- Place names for the concentration signs, with sources and gaps: `docs/place-names.md`.
 - Stakeholder research: `docs/stakeholder-orgs.md`. Machine-readable seed: `scripts/ingest/organizations.seed.json`.

@@ -335,16 +335,16 @@ describe('planSigns', () => {
       ]),
     );
 
-  it('splits a 13-track, 2400 m concentration in two, deterministically, and not 12 tracks or 1200 m', () => {
+  it('splits a 13-track, 2400 m concentration in two, deterministically, and not 8 tracks or 840 m', () => {
     const wide = row(13, 200);
     const first = planSigns(wide, new Map(), new Set(), all(wide));
     expect(first).toHaveLength(2);
     expect(first.reduce((s, p) => s + p.trackCount, 0)).toBeGreaterThanOrEqual(13);
     expect(planSigns(wide.slice().reverse(), new Map(), new Set(), all(wide))).toEqual(first);
     expect(first[0]?.east).toBeLessThan(first[1]?.east as number);
-    const twelve = row(12, 200);
-    expect(planSigns(twelve, new Map(), new Set(), all(twelve))).toHaveLength(1);
-    const tight = row(13, 100);
+    const eight = row(8, 200);
+    expect(planSigns(eight, new Map(), new Set(), all(eight))).toHaveLength(1);
+    const tight = row(13, 70);
     expect(planSigns(tight, new Map(), new Set(), all(tight))).toHaveLength(1);
   });
 
@@ -497,6 +497,23 @@ describe('declutter', () => {
       { x: 50, y: 0, w: 100, h: 25, distance: 300, priority: 1 },
     ]);
     expect(concentrationFirst).toEqual([true, false]);
+  });
+
+  it('places every concentration rect before any trail rect, even a farther one over a nearer one', () => {
+    const shown = declutter([
+      { x: 0, y: 0, w: 100, h: 25, distance: 100, priority: 1 },
+      { x: 50, y: 0, w: 100, h: 25, distance: 900, priority: 0 },
+      { x: 400, y: 0, w: 100, h: 25, distance: 50, priority: 1 },
+    ]);
+    expect(shown).toEqual([false, true, true]);
+  });
+
+  it('keeps the nearest of two overlapping rects of the same priority', () => {
+    const shown = declutter([
+      { x: 0, y: 0, w: 100, h: 25, distance: 500, priority: 0 },
+      { x: 50, y: 0, w: 100, h: 25, distance: 300, priority: 0 },
+    ]);
+    expect(shown).toEqual([false, true]);
   });
 
   it('lets a hidden rect occlude nothing', () => {

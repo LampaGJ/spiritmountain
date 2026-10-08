@@ -141,6 +141,8 @@ if (imageryWanted) readiness.register('imagery-inset', insetLoad);
 
 import areasUrl from '../data/areas.geojson?url';
 import { loadAreas } from './data/load-areas';
+import { loadPlaces } from './data/load-places';
+import type { Place } from './schema/places';
 import { installAreas, type AreaLayer } from './scene/areas';
 import { buildBillboardLayer, type BillboardLayer } from './scene/billboards';
 import { createMeshSurface } from './scene/heightfield';
@@ -199,6 +201,11 @@ handle.setFadeCentre(fadeCentre);
 let billboardLayer: BillboardLayer | null = null;
 if (!('error' in areaLayerResult)) {
   try {
+    // Named places (#61) are optional: a missing file logs one line, a bad one only loses the names.
+    const places: readonly Place[] = await loadPlaces({ frameUrl }).catch((error: unknown) => {
+      console.error('places:', error);
+      return [];
+    });
     billboardLayer = buildBillboardLayer(
       [...areaLayerResult.registry.values()].map((entry) => entry.area),
       meshSurface,
@@ -209,6 +216,7 @@ if (!('error' in areaLayerResult)) {
       {
         host: handle,
         fadeCentre: { east: fadeCentre.east, north: fadeCentre.north },
+        places,
       },
     );
     handle.elevated.add(billboardLayer.group);

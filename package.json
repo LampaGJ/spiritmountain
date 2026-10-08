@@ -34,7 +34,8 @@
     "ingest:sky": "tsx scripts/ingest/sky.ts",
     "ingest:imagery-stats": "tsx scripts/ingest/imagery-stats.ts",
     "ingest:trees": "tsx scripts/ingest/trees.ts",
-    "ingest:context-trees": "tsx scripts/ingest/context-trees.ts"
+    "ingest:context-trees": "tsx scripts/ingest/context-trees.ts",
+    "ingest:places": "tsx scripts/ingest/places.ts"
   },
   "dependencies": {
     "geotiff": "3.0.5",
