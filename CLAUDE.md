@@ -52,6 +52,7 @@ Run as `npm run ingest:<name>`. Each needs the ones above it that it names.
 - The rail is generated from `scripts/ui/clicky.config.json` with the clicky-button engine at `~/Projects/clicky-button` (override with `CLICKY_BUTTON_DIR`).
 - Icons come only from `src/ui/icons.json`, parsed at `src/ui/icons.ts:19`. Names are verified Material Symbols; never invent one. `iconFor` throws on an unknown id.
 - No `innerHTML`, `outerHTML`, `insertAdjacentHTML` or `document.write` in `src/` (`tests/lint/no-inner-html.test.ts`). Build DOM with `createElement` and `textContent`.
+- Tuning controls go through `registerDebugControl` / `registerDebugToggle` in `src/ui/debug-panel.ts` (the collapsed DEBUG panel, top right, `sm-debug-open` in localStorage). No hash key: it is not state of record. Sport strands shift on screen by the `uStrandShift` uniform patched in `src/scene/areas.ts` (`patchStrandShader`); `AreaLayer.strandMode` says whether the patch landed.
 - The hash codec lives in `src/ui/filter-hash.ts`; a new hash key goes through its Zod schema, never ad hoc parsing.
 
 ## Git and tracker

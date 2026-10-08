@@ -1,0 +1,55 @@
+/*
+ * The DEBUG panel (#54): a small tuning panel at the top right, collapsed by default. Above the canvas (z 4) and below
+ * the season bar (z 5). Phone: the season bar is a full-width surface at the top, so the panel sits under it and never
+ * covers the first season button.
+ */
+#debug-panel {
+  position: fixed;
+  z-index: 4;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  right: calc(12px + env(safe-area-inset-right, 0px));
+  min-width: 11em;
+  color: var(--sm-ink, #fff);
+  font: var(--sm-font, 12px/1.3 system-ui, sans-serif);
+  text-shadow: var(--sm-halo, 0 0 3px rgba(0, 0, 0, 0.9));
+}
+#debug-panel > button {
+  display: block;
+  margin-left: auto;
+  padding: 2px 8px;
+  font: inherit;
+  letter-spacing: 0.08em;
+  color: inherit;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 4px;
+  cursor: pointer;
+}
+#debug-panel .sm-debug-body {
+  margin-top: 4px;
+  padding: 6px 8px;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 4px;
+}
+#debug-panel .sm-debug-body[hidden] {
+  display: none;
+}
+#debug-panel label {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 8px;
+  align-items: center;
+  padding: 3px 0;
+}
+#debug-panel label input[type='range'] {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+#debug-panel label:has(input[type='checkbox']) {
+  grid-template-columns: auto 1fr;
+}
+@media (max-width: 719px) {
+  #debug-panel {
+    top: calc(12px + env(safe-area-inset-top, 0px) + var(--sm-season-h, 0px));
+  }
+}
