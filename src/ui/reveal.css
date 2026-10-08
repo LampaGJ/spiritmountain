@@ -58,10 +58,20 @@
   }
 }
 
-/* The loading text fills the whole screen: viewport-relative size, wrapping anywhere, so the black cover reads as a title card and not a blank. */
+/* The mark sits in the top third; the loading text fills the rest. */
+#reveal-logo {
+  position: absolute;
+  top: 4vh;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 34vh;
+  width: auto;
+}
+
+/* The loading text fills the rest of the screen: viewport-relative size, wrapping anywhere, so the black cover reads as a title card and not a blank. */
 #reveal-label {
   position: absolute;
-  inset: 0;
+  inset: 40vh 0 0 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -79,6 +89,7 @@
   opacity: 0.9;
 }
 
-#reveal-label[hidden] {
+#reveal-label[hidden],
+#reveal-logo[hidden] {
   display: none;
 }
