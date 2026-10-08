@@ -58,7 +58,7 @@ import {
   type LoadedTrees,
 } from './data/load-trees';
 import type { LoadedTerrain } from './data/load-terrain';
-import { installTrees, type TreesHandle } from './scene/trees';
+import { installTrees, type CullWall, type TreesHandle } from './scene/trees';
 
 /** Failure channel for the imagery layer: one line in its own element, and the terrain keeps its slope shading. */
 function reportImageryFailure(message: string): void {
@@ -179,7 +179,7 @@ try {
       const p = toScene(east, north, elevation);
       return [p.x, p.y, p.z];
     },
-    { curtains: true },
+    { walls: true },
   );
 } catch (error) {
   areaLayerResult = reportAreasFailure(error instanceof Error ? error.message : String(error));
@@ -206,10 +206,10 @@ if (!('error' in areaLayerResult)) {
 }
 readiness.register('areas', Promise.resolve());
 handle.setFadeCentre(fadeCentre);
-// Trail curtains (#64) are ground-side: radial fade first (applied at build), then the horizon blend.
+// Trail walls (#64, #67) are ground-side: radial fade first (applied at build), then the horizon blend.
 if (!('error' in areaLayerResult)) {
-  areaLayerResult.setCurtainFadeCentre(fadeCentre);
-  for (const material of areaLayerResult.curtainMaterials) handle.applyHorizon(material);
+  areaLayerResult.setWallFadeCentre(fadeCentre);
+  for (const material of areaLayerResult.wallMaterials) handle.applyHorizon(material);
 }
 
 // Sport billboards (#43): one sign per same-sport cluster, inside the elevated group. A failure only loses the signs.
@@ -479,10 +479,21 @@ const CONTEXT_TREES_FADE_INNER_M = 9000;
  * core mesh swaps to the core-nocanopy heightfield, so the LiDAR canopy blobs give way to the simulated trees. Trees off:
  * the trees are disposed and the normal core returns. Lines re-drape onto whichever composite is drawn.
  */
+/** Trail walls (#67) for the tree cull: trees stop at a wall face. Read at each tree build. */
+const treeWalls = (): { walls?: CullWall[] } =>
+  'error' in areaLayerResult ? {} : { walls: areaLayerResult.wallLines() };
+/** Rebuilds the trees against the current walls (wall thickness, or the full wall sets once annotations load). */
+function recullTrees(): void {
+  treesHandle?.dispose();
+  treesHandle = null;
+  contextTreesHandle?.dispose();
+  contextTreesHandle = null;
+  applyTreesMode();
+}
 function applyTreesMode(): void {
   const showTrees = treesWanted && treesData !== null;
   if (showTrees && treesData && !treesHandle) {
-    treesHandle = installTrees(handle.elevated, treesData, { fadeCentre });
+    treesHandle = installTrees(handle.elevated, treesData, { fadeCentre, ...treeWalls() });
     handle.applyHorizon(treesHandle.material);
   }
   if (!showTrees && treesHandle) {
@@ -497,6 +508,7 @@ function applyTreesMode(): void {
       name: 'context-trees',
       fadeInnerM: CONTEXT_TREES_FADE_INNER_M,
       fadeOuterM: FADE_OUTER_M,
+      ...treeWalls(),
     });
     handle.applyHorizon(contextTreesHandle.material);
   }
@@ -606,6 +618,7 @@ export const areaLayer: AreaLayer | { error: string } = areaLayerResult;
 
 // DEBUG panel (#54): live tuning of the trail lines. Not state of record, so no hash key.
 import { DEFAULT_LINE_WIDTH_PX } from './scene/areas';
+import { WALL_THICKNESS_M } from './scene/walls';
 import { registerDebugControl, registerDebugToggle } from './ui/debug-panel';
 if (!('error' in areaLayer)) {
   const lines = areaLayer;
@@ -624,26 +637,39 @@ if (!('error' in areaLayer)) {
     value: true,
     onChange: (on) => lines.setSmooth(on),
   });
-  // Trail curtains (#64): the sign anchors follow the curtain top, so they re-height too.
+  // Trail walls (#64, #67): the sign anchors follow the wall top, so they re-height too.
   registerDebugToggle({
-    id: 'curtains',
-    label: 'Curtains',
+    id: 'walls',
+    label: 'Walls',
     value: true,
     onChange: (on) => {
-      lines.setCurtainsOn(on);
+      lines.setWallsOn(on);
       billboardLayer?.redrape(activeSurface());
     },
   });
   registerDebugControl({
-    id: 'curtain-height',
-    label: 'Curtain height x',
+    id: 'wall-height',
+    label: 'Wall height x',
     min: 0,
     max: 2,
     step: 0.1,
     value: 1,
     onChange: (k) => {
-      lines.setCurtainScale(k);
+      lines.setWallScale(k);
       billboardLayer?.redrape(activeSurface());
+    },
+  });
+  // A thicker wall clears more forest, so the trees re-cull against it.
+  registerDebugControl({
+    id: 'wall-thickness',
+    label: 'Wall thickness (m)',
+    min: 1,
+    max: 10,
+    step: 0.5,
+    value: WALL_THICKNESS_M,
+    onChange: (m) => {
+      lines.setWallThickness(m);
+      recullTrees();
     },
   });
   // Only the world-space fallback has a metre spacing; screen strands are one band width apart.
@@ -725,6 +751,8 @@ readiness.register(
       ...('error' in areaLayer ? {} : { routeSport: areaLayer.route }),
       ...(billboardLayer ? { billboards: billboardLayer } : {}),
     });
+    // The first route sized every multi-sport wall set (#67); trees built before it re-cull against the full sets.
+    if (treesHandle || contextTreesHandle) recullTrees();
   }),
 );
 readiness.seal();

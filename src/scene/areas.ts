@@ -5,15 +5,16 @@ import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
 import type { Annotation } from '../schema/annotation';
 import type { Area } from '../schema/area';
 import {
-  buildCurtain,
+  buildTrailWalls,
   canopyProfile,
-  createCurtainMaterial,
-  createCurtainMesh,
-  curtainStripes,
-  mergeCurtains,
+  createWallMaterial,
+  createWallMesh,
+  mergeWalls,
+  wallSports,
+  WALL_THICKNESS_M,
   type CanopyAt,
-  type Curtain,
-} from './curtain';
+  type TrailWalls,
+} from './walls';
 import {
   cableLine,
   DRAPE_LIFT_M,
@@ -30,6 +31,7 @@ import { applyRadialFade, setFadeCentre, type RadialFadeUniforms } from './fade'
 import type { MeshSurface } from './heightfield';
 import { SPORT_COLOR } from './palette';
 import { sportForArea, type Activity } from './sport-routing';
+import type { CullWall } from './trees';
 
 /** Default width of one sport band in px (#54); the DEBUG slider changes it live. Strands sit one band-width apart. */
 export const DEFAULT_LINE_WIDTH_PX = 6;
@@ -107,7 +109,7 @@ export interface BuildOptions {
   readonly smooth?: boolean;
   /**
    * Lift above the surface per vertex of a non-lift LineString's (resampled) centreline, for every strand (#64: the
-   * curtain top). Default DRAPE_LIFT_M everywhere. Polygons and lifts ignore it.
+   * wall top). Default DRAPE_LIFT_M everywhere. Polygons and lifts ignore it.
    */
   readonly liftsFor?: (centre: ReadonlyArray<ReadonlyArray<number>>) => readonly number[];
 }
@@ -174,8 +176,8 @@ export interface AreaEntry {
   readonly area: Area;
   /** Mutable in place: applyStrands appends the extra strands of a multi-sport trail to the same array. */
   readonly lines: readonly Line2[];
-  /** The wall under a non-lift LineString when the layer was built with curtains (#64); never picked. */
-  readonly curtain?: Curtain;
+  /** The walls along a non-lift LineString when the layer was built with walls (#64, #67); never picked. */
+  readonly walls?: TrailWalls;
 }
 
 export interface AreaLayerStats {
@@ -219,41 +221,45 @@ export interface AreaLayer {
   setStrandSpacing(metres: number): void;
   /** Turns Catmull-Rom smoothing of non-lift LineStrings on or off and re-drapes them. On by default. */
   setSmooth(on: boolean): void;
-  /** The radial-faded curtain material (#64), for the caller's horizon blend; empty without curtains. */
-  readonly curtainMaterials: readonly Material[];
-  /** The one mesh every visible curtain is merged into; null without curtains. */
-  readonly curtainMesh: Mesh | null;
-  /** Moves the radial fade centre of the curtain material. */
-  setCurtainFadeCentre(centre: { readonly east: number; readonly north: number }): void;
-  /** Sets the canopy height source (null: CURTAIN_MIN_M everywhere) and re-drapes the trails onto the new curtain tops. */
+  /** The radial-faded wall material (#64, #67), for the caller's horizon blend; empty without walls. */
+  readonly wallMaterials: readonly Material[];
+  /** The one mesh every visible wall is merged into; null without walls. */
+  readonly wallMesh: Mesh | null;
+  /** Moves the radial fade centre of the wall material. */
+  setWallFadeCentre(centre: { readonly east: number; readonly north: number }): void;
+  /** Sets the canopy height source (null: WALL_MIN_M everywhere) and re-drapes the trails onto the new wall tops. */
   setCanopy(canopyAt: CanopyAt | null): void;
-  /** DEBUG: scales the curtain height (0 to 2, default 1) and re-drapes. */
-  setCurtainScale(k: number): void;
-  /** DEBUG: curtains off hides the walls and drapes the lines back onto the surface. */
-  setCurtainsOn(on: boolean): void;
-  /** Height of the curtain top at a plan point (bare earth plus canopy), or -Infinity with curtains off or absent. */
+  /** DEBUG: scales the wall height (0 to 2, default 1) and re-drapes. */
+  setWallScale(k: number): void;
+  /** DEBUG: walls off hides the walls and drapes the lines back onto the surface. */
+  setWallsOn(on: boolean): void;
+  /** DEBUG: thickness of one sport's wall in metres (1 to 10, default WALL_THICKNESS_M); rebuilds every wall. */
+  setWallThickness(metres: number): void;
+  /** Every trail's wall centreline and full-set half-width, for the tree cull. Empty without walls. */
+  wallLines(): CullWall[];
+  /** Height of the wall top at a plan point (bare earth plus canopy), or -Infinity with walls off or absent. */
   trailTopHeight(east: number, north: number): number;
 }
 
 export interface AreaLayerOptions {
-  /** Build a curtain under every non-lift LineString and drape its lines on the curtain top (#64). Default off. */
-  readonly curtains?: boolean;
+  /** Build walls along every non-lift LineString and drape its lines on the wall top (#64, #67). Default off. */
+  readonly walls?: boolean;
 }
 
-/** The curtain-top source of the last layer built with curtains; billboards.ts anchors trail signs on it. */
+/** The wall-top source of the last layer built with walls; billboards.ts anchors trail signs on it. */
 let activeTrailTop: ((east: number, north: number) => number) | null = null;
 
 /**
- * Height of the trail curtain top (bare earth plus canopy) at a plan point, from the last area layer built with
- * curtains, or -Infinity when there is none or its curtains are off. The trail sign anchor takes the larger of this and
- * the active surface, so its tail lands on the top edge of the curtain.
+ * Height of the trail wall top (bare earth plus canopy) at a plan point, from the last area layer built with
+ * walls, or -Infinity when there is none or its walls are off. The trail sign anchor takes the larger of this and
+ * the active surface, so its tail lands on the top edge of the wall.
  */
 export function trailTopHeight(east: number, north: number): number {
   return activeTrailTop === null ? Number.NEGATIVE_INFINITY : activeTrailTop(east, north);
 }
 
 /**
- * The plan offsets a point's canopy is sampled at for trailTopHeight: a cross of the CURTAIN_SMOOTH_VERTICES window at
+ * The plan offsets a point's canopy is sampled at for trailTopHeight: a cross of the WALL_SMOOTH_VERTICES window at
  * the 5 m resample (plus or minus 10 m), standing in for the moving maximum along a line the point is not tied to.
  */
 const TOP_PROBE_M: readonly (readonly [number, number])[] = [
@@ -328,29 +334,29 @@ export function buildAreaLayer(
   let clampedVertexCount = 0;
   let liftMinClearanceM: number | null = null;
 
-  // ---- curtains (#64) ----
-  const curtainsBuilt = layerOptions.curtains === true;
-  let curtainsOn = curtainsBuilt;
+  // ---- trail walls (#64, #67) ----
+  const wallsBuilt = layerOptions.walls === true;
+  let wallsOn = wallsBuilt;
   let canopyAt: CanopyAt | null = null;
-  let curtainScale = 1;
-  /** Curtains stand on the bare earth the layer was built on, whatever surface the lines are re-draped onto. */
+  let wallScale = 1;
+  /** Walls stand on the bare earth the layer was built on, whatever surface the lines are re-draped onto. */
   const bareAt = (east: number, north: number): number => surface.sample(east, north).height;
-  const curtainMaterial = curtainsBuilt ? createCurtainMaterial() : null;
-  const curtainFades: RadialFadeUniforms[] = [];
-  const curtainMaterials: Material[] = [];
-  if (curtainMaterial) {
+  const wallMaterial = wallsBuilt ? createWallMaterial() : null;
+  const wallFades: RadialFadeUniforms[] = [];
+  const wallMaterials: Material[] = [];
+  if (wallMaterial) {
     const centre = { east: surface.extent.centreEast, north: surface.extent.centreNorth };
-    curtainFades.push(applyRadialFade(curtainMaterial, { centre }));
-    curtainMaterials.push(curtainMaterial);
+    wallFades.push(applyRadialFade(wallMaterial, { centre }));
+    wallMaterials.push(wallMaterial);
   }
-  /** Every curtain drawn in one call: the merge of the visible areas' walls, rebuilt on each change. */
-  const curtainMesh = curtainMaterial ? createCurtainMesh(curtainMaterial) : null;
+  /** Every wall drawn in one call: the merge of the visible trails' walls, rebuilt on each change. */
+  const wallMesh = wallMaterial ? createWallMesh(wallMaterial) : null;
   /**
-   * Lift per centreline vertex: the curtain top (bare earth plus canopy) above whatever surface the line is draped on,
+   * Lift per centreline vertex: the wall top (bare earth plus canopy) above whatever surface the line is draped on,
    * never below that surface, plus DRAPE_LIFT_M. On bare earth that is canopy plus DRAPE_LIFT_M.
    */
   const liftsFor = (centre: ReadonlyArray<ReadonlyArray<number>>): number[] => {
-    const profile = canopyProfile(centre, canopyAt, curtainScale);
+    const profile = canopyProfile(centre, canopyAt, wallScale);
     return centre.map((p, i) => {
       const east = p[0] as number;
       const north = p[1] as number;
@@ -359,16 +365,16 @@ export function buildAreaLayer(
     });
   };
   const trailTop = (east: number, north: number): number => {
-    if (!curtainsOn) return Number.NEGATIVE_INFINITY;
+    if (!wallsOn) return Number.NEGATIVE_INFINITY;
     const probes = TOP_PROBE_M.map(([de, dn]) => [east + de, north + dn]);
-    return bareAt(east, north) + Math.max(...canopyProfile(probes, canopyAt, curtainScale));
+    return bareAt(east, north) + Math.max(...canopyProfile(probes, canopyAt, wallScale));
   };
-  if (curtainsBuilt) activeTrailTop = trailTop;
+  if (wallsBuilt) activeTrailTop = trailTop;
 
   /** Areas drawn as k >= 2 strands, with the activity of each strand in order. */
   const strandPlan = new Map<string, readonly Activity[]>();
   const optionsFor = (area: Area): BuildOptions => {
-    const lift = curtainsOn ? { liftsFor } : {};
+    const lift = wallsOn ? { liftsFor } : {};
     const plan = strandPlan.get(area.id);
     if (plan === undefined) return { smooth, ...lift };
     const offsets = plan.map((_, i) =>
@@ -376,16 +382,18 @@ export function buildAreaLayer(
     );
     return { smooth, strandOffsetsM: offsets, ...lift };
   };
-  /** A curtain for a non-lift LineString, one stripe in the kind default until the first route. */
-  const curtainFor = (area: Area, built: AreaPolylines): Curtain | undefined => {
-    if (!curtainMesh || area.kind === 'lift' || area.geometry.type !== 'LineString') {
+  /** Wall thickness of one sport in metres (DEBUG slider). */
+  let wallThicknessM = WALL_THICKNESS_M;
+  /** Walls for a non-lift LineString, one wall in the kind default until the first route. */
+  const wallsFor = (area: Area, built: AreaPolylines): TrailWalls | undefined => {
+    if (!wallMesh || area.kind === 'lift' || area.geometry.type !== 'LineString') {
       return undefined;
     }
     const world = built.world[0];
     if (world === undefined) return undefined;
-    const curtain = buildCurtain(area.id, world, bareAt, toScene);
-    curtain.setStripes([sportForArea(area, undefined, new Set())]);
-    return curtain;
+    const walls = buildTrailWalls(area.id, world, bareAt, toScene, wallThicknessM);
+    walls.setSports([sportForArea(area, undefined, new Set())]);
+    return walls;
   };
   const makeLine = (area: Area, positions: number[], sport: Activity): Line2 => {
     const geometry = new LineGeometry();
@@ -420,8 +428,8 @@ export function buildAreaLayer(
     // First paint uses the kind default: annotations load after the layer, and the first filter apply re-routes.
     const sport = sportForArea(area, undefined, new Set());
     const lines = built.scene.map((positions) => makeLine(area, positions, sport));
-    const curtain = curtainFor(area, built);
-    registry.set(area.id, curtain ? { area, lines, curtain } : { area, lines });
+    const walls = wallsFor(area, built);
+    registry.set(area.id, walls ? { area, lines, walls } : { area, lines });
     lineCount += lines.length;
     clampedVertexCount += built.clampedCount;
     if (built.liftMinClearanceM !== null) {
@@ -431,22 +439,22 @@ export function buildAreaLayer(
       );
     }
   }
-  /** Re-merges the visible curtains into the one drawn mesh, and shows it only while curtains are on. */
-  const refreshCurtains = (): void => {
-    if (!curtainMesh) return;
-    curtainMesh.geometry.dispose();
-    const curtains = [...registry.values()].flatMap((e) => (e.curtain ? [e.curtain] : []));
-    curtainMesh.geometry = mergeCurtains(curtains);
-    curtainMesh.visible = curtainsOn;
+  /** Re-merges the visible walls into the one drawn mesh, and shows it only while walls are on. */
+  const refreshWalls = (): void => {
+    if (!wallMesh) return;
+    wallMesh.geometry.dispose();
+    const sets = [...registry.values()].flatMap((e) => (e.walls ? [e.walls] : []));
+    wallMesh.geometry = mergeWalls(sets);
+    wallMesh.visible = wallsOn;
   };
-  if (curtainMesh) {
-    group.add(curtainMesh);
-    refreshCurtains();
+  if (wallMesh) {
+    group.add(wallMesh);
+    refreshWalls();
   }
-  /** Re-shapes an area's curtain under its first (centre) line. */
-  const syncCurtain = (entry: AreaEntry, built: AreaPolylines): void => {
+  /** Re-shapes an area's walls under its first (centre) line. */
+  const syncWalls = (entry: AreaEntry, built: AreaPolylines): void => {
     const world = built.world[0];
-    if (entry.curtain && world !== undefined) entry.curtain.setLine(world, bareAt);
+    if (entry.walls && world !== undefined) entry.walls.setLine(world, bareAt);
   };
   const rebuildAll = (): void => {
     for (const entry of registry.values()) {
@@ -456,9 +464,9 @@ export function buildAreaLayer(
       built.scene.forEach((positions, i) => {
         (lines[i] as Line2).geometry.setPositions(positions);
       });
-      if (curtainsOn) syncCurtain(entry, built);
+      if (wallsOn) syncWalls(entry, built);
     }
-    refreshCurtains();
+    refreshWalls();
   };
   const redrape = (next: MeshSurface): void => {
     currentSurface = next;
@@ -495,9 +503,9 @@ export function buildAreaLayer(
         line.userData['strandFactor'] = factor;
         setStrandMaterials(line, activity, factor);
       });
-      if (curtainsOn) syncCurtain(entry, built);
+      if (wallsOn) syncWalls(entry, built);
     }
-    refreshCurtains();
+    refreshWalls();
   };
   const setLineWidth = (px: number): void => {
     widthPx = px;
@@ -519,13 +527,14 @@ export function buildAreaLayer(
     annotations: ReadonlyMap<string, Annotation>,
     selected: ReadonlySet<Activity>,
   ): void => {
-    for (const [areaId, { area, lines, curtain }] of registry) {
+    for (const [areaId, { area, lines, walls }] of registry) {
       const sport = sportForArea(area, annotations.get(areaId), selected);
-      if (curtain) {
+      if (walls) {
         // applyFilter has just set every line of the area to the area's visibility; read it before strands hide below.
-        curtain.visible = lines.some((line) => line.visible);
+        walls.visible = lines.some((line) => line.visible);
         const carried = (annotations.get(areaId)?.activities ?? []).map((a) => a.activity);
-        curtain.setStripes(curtainStripes(carried, selected, sport));
+        // The full set (every annotated sport) sizes the tree cull; the filter only removes walls from the drawing.
+        walls.setSports(wallSports(carried, selected, sport), new Set(carried).size);
       }
       for (const line of lines) {
         const strand = line.userData['activity'] as Activity | undefined;
@@ -540,10 +549,10 @@ export function buildAreaLayer(
         line.userData['baseMaterial'] = materials[sport];
       }
     }
-    refreshCurtains();
+    refreshWalls();
   };
-  const setCurtainsOn = (on: boolean): void => {
-    curtainsOn = curtainsBuilt && on;
+  const setWallsOn = (on: boolean): void => {
+    wallsOn = wallsBuilt && on;
     rebuildAll();
   };
   return {
@@ -558,20 +567,32 @@ export function buildAreaLayer(
     setLineWidth,
     setStrandSpacing,
     setSmooth,
-    curtainMaterials,
-    curtainMesh,
-    setCurtainFadeCentre(centre) {
-      for (const fade of curtainFades) setFadeCentre(fade, centre);
+    wallMaterials,
+    wallMesh,
+    setWallFadeCentre(centre) {
+      for (const fade of wallFades) setFadeCentre(fade, centre);
     },
     setCanopy(next) {
       canopyAt = next;
       rebuildAll();
     },
-    setCurtainScale(k) {
-      curtainScale = k;
+    setWallScale(k) {
+      wallScale = k;
       rebuildAll();
     },
-    setCurtainsOn,
+    setWallsOn,
+    setWallThickness(metres) {
+      wallThicknessM = metres;
+      for (const entry of registry.values()) entry.walls?.setThickness(metres);
+      refreshWalls();
+    },
+    wallLines() {
+      return [...registry.values()].flatMap((entry) =>
+        entry.walls
+          ? [{ points: entry.walls.centreline, halfWidthM: entry.walls.setHalfWidthM }]
+          : [],
+      );
+    },
     trailTopHeight: trailTop,
   };
 }

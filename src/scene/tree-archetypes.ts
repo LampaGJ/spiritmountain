@@ -98,6 +98,17 @@ export const ARCHETYPES: readonly ArchetypeSpec[] = [
   },
 ];
 
+/**
+ * Horizontal crown reach of each archetype at unit height, by id: the widest lobe's centre offset plus its larger
+ * horizontal radius, grown by the vertex noise. Times the tree height (its uniform instance scale) it is the crown
+ * radius in metres; trees.ts culls a tree whose crown would reach into a trail wall (#67).
+ */
+export const ARCHETYPE_CROWN_RADIUS: readonly number[] = ARCHETYPES.map(
+  (spec) =>
+    Math.max(...spec.lobes.map((l) => Math.hypot(l.c[0], l.c[2]) + Math.max(l.r[0], l.r[2]))) *
+    (1 + spec.noise),
+);
+
 /** Hard cap on triangles per archetype after noise (the issue says under 120). */
 export const ARCHETYPE_MAX_TRIANGLES = 119;
 
