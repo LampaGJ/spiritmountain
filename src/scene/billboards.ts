@@ -21,7 +21,7 @@ import { fadeAlpha } from '../../scripts/ingest/context-tiles';
 import { ActivitySchema, type Annotation } from '../schema/annotation';
 import type { Area } from '../schema/area';
 import { signGlyph } from '../ui/icons';
-import { GHOST_RENDER_ORDER, type SceneMapper } from './areas';
+import type { SceneMapper } from './areas';
 import { effectiveScale } from './elevated';
 import type { MeshSurface } from './heightfield';
 import { SPORT_COLOR } from './palette';
@@ -29,6 +29,8 @@ import type { FrameCallback } from './scene';
 import { KIND_DEFAULT_ACTIVITY, sportForArea, type Activity } from './sport-routing';
 import { trackKey, trackName } from './track-key';
 
+/** Signs draw after every default-order object; the panel has no depth test so it stays readable. */
+export const SIGN_RENDER_ORDER = 2;
 /** Same-sport area centroids closer than this (single linkage, transitive) share one sign. */
 export const SIGN_CLUSTER_RADIUS_M = 150;
 /** The sign base floats this far above the active surface, in world metres before exaggeration. */
@@ -991,7 +993,7 @@ export function buildBillboardLayer(
     const sprite = new Sprite(material);
     // Anchor at the bottom centre: the panel floats centred over its place and extends up from it.
     sprite.center.set(0.5, 0);
-    sprite.renderOrder = GHOST_RENDER_ORDER + 1;
+    sprite.renderOrder = SIGN_RENDER_ORDER;
     sprite.raycast = () => {};
     group.add(sprite);
     return { sprite, material, priority: 0, active: false };

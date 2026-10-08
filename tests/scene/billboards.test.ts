@@ -1,7 +1,7 @@
 import { PerspectiveCamera, Sprite, Vector3 } from 'three';
 import { describe, expect, it, vi } from 'vitest';
 import { fadeAlpha } from '../../scripts/ingest/context-tiles';
-import { GHOST_RENDER_ORDER, type SceneMapper } from '../../src/scene/areas';
+import type { SceneMapper } from '../../src/scene/areas';
 import {
   areaCentroid,
   areaVertices,
@@ -23,6 +23,7 @@ import {
   signWidthPx,
   LABEL_LIGHT,
   SIGN_OFFSET_M,
+  SIGN_RENDER_ORDER,
   SIGN_PANEL_COLOR,
   type BillboardFrameHost,
   type ClusterInput,
@@ -776,12 +777,12 @@ describe('buildBillboardLayer', () => {
     expect(layer.group.children.every((c) => c instanceof Sprite)).toBe(true);
   });
 
-  it('draws the panel with no depth test above the ghost pass', () => {
+  it('draws the panel with no depth test after every default-order object', () => {
     const { layer } = build();
     const sprite = visibleSprites(layer.group)[0] as Sprite;
     expect(sprite.material.depthTest).toBe(false);
     expect(sprite.material.depthWrite).toBe(false);
-    expect(sprite.renderOrder).toBe(GHOST_RENDER_ORDER + 1);
+    expect(sprite.renderOrder).toBe(SIGN_RENDER_ORDER);
   });
 
   it('yields zero visible signs for an empty visibleIds', () => {
