@@ -1,23 +1,25 @@
 /**
  * Sport billboards (#43): a flat, camera-facing sign in the sport colour floats above each cluster of same-sport areas,
- * showing the rail button's Material Symbols glyph and title-case label, on a thin pole down to the ground.
+ * showing the rail button's Material Symbols glyph and title-case label, on a tapered pointer down to the ground.
  *
  * The first half of this file is pure (no three object is created), so clustering, contrast, sizing and the canvas
  * drawing test in node with a recording fake context. The second half builds the three layer.
  */
 import {
+  BufferAttribute,
+  BufferGeometry,
   CanvasTexture,
+  DoubleSide,
   Group,
   LinearFilter,
+  Mesh,
+  MeshBasicMaterial,
   type PerspectiveCamera,
   Sprite,
   SpriteMaterial,
   SRGBColorSpace,
   Vector3,
 } from 'three';
-import { Line2 } from 'three/addons/lines/Line2.js';
-import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
-import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
 import { fadeAlpha } from '../../scripts/ingest/context-tiles';
 import type { Annotation } from '../schema/annotation';
 import type { Area } from '../schema/area';
@@ -45,8 +47,11 @@ export const LABEL_DARK = 0x111111;
 /** Canvas size of one sign texture in device pixels (aspect 4:1). */
 export const SIGN_CANVAS_WIDTH = 512;
 export const SIGN_CANVAS_HEIGHT = 128;
-/** Pole width in CSS pixels. */
-export const POLE_WIDTH_PX = 2;
+/**
+ * The pointer under a sign is a camera-facing triangle: this fraction of the panel width at the sign's bottom edge,
+ * tapering to a point on the ground (Graham, 2026-10-08: "a tapered line from n width to 0 width at point").
+ */
+export const POINTER_WIDTH_FRACTION = 0.35;
 const SYMBOL_FONT_FAMILY = '"Material Symbols Outlined"';
 const LABEL_FONT_FAMILY = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
 
@@ -415,8 +420,6 @@ export interface BillboardDeps {
   readonly fonts?: SignFontSet | undefined;
   /** Defaults to console.warn. */
   readonly warn?: (message: string) => void;
-  /** Initial LineMaterial resolution; Line2 overwrites it from the renderer on every draw. */
-  readonly resolution?: { readonly width: number; readonly height: number };
 }
 
 export interface BillboardStats {
@@ -438,7 +441,7 @@ export interface BillboardLayer {
     selected: ReadonlySet<Activity>,
     visibleIds: ReadonlySet<string>,
   ): void;
-  /** Re-heights every sign and pole from another surface (composite while Surface is on, bare earth otherwise). */
+  /** Re-heights every sign and pointer from another surface (composite while Surface is on, bare earth otherwise). */
   redrape(active: MeshSurface): void;
   setVisible(on: boolean): void;
   stats(): BillboardStats;
@@ -448,9 +451,12 @@ export interface BillboardLayer {
 interface Sign {
   readonly sprite: Sprite;
   readonly material: SpriteMaterial;
-  readonly pole: Line2;
-  readonly poleGeometry: LineGeometry;
-  readonly poleMaterial: LineMaterial;
+  readonly pointer: Mesh;
+  readonly pointerGeometry: BufferGeometry;
+  readonly pointerMaterial: MeshBasicMaterial;
+  /** Ground point (triangle apex) and sign bottom centre (triangle base midpoint), scene coordinates. */
+  readonly base: Vector3;
+  readonly top: Vector3;
   active: boolean;
   east: number;
   north: number;
@@ -461,7 +467,7 @@ interface Sign {
  * @strategicPurpose Lets a viewer see which sport lives where on the mountain at a glance, using the same glyph, label
  *   and colour as the rail button, without hovering or reading the lines.
  * @tacticalObjective Clusters visible routed areas per sport and draws one pooled, camera-facing, screen-sized sprite
- *   with a pole per cluster inside the ElevatedGroup, compensating the group's y-scale each frame.
+ *   with a pointer per cluster inside the ElevatedGroup, compensating the group's y-scale each frame.
  */
 export function buildBillboardLayer(
   areas: readonly Area[],
@@ -479,7 +485,6 @@ export function buildBillboardLayer(
       : typeof document === 'undefined'
         ? undefined
         : (document.fonts as SignFontSet | undefined);
-  const resolution = deps.resolution ?? { width: 1, height: 1 };
 
   const group = new Group();
   group.name = 'billboards';
@@ -534,31 +539,33 @@ export function buildBillboardLayer(
       depthWrite: false,
     });
     const sprite = new Sprite(material);
-    // Anchor at the bottom centre, so the sign rests on its pole.
+    // Anchor at the bottom centre, so the sign rests on its pointer.
     sprite.center.set(0.5, 0);
     sprite.renderOrder = GHOST_RENDER_ORDER + 1;
     sprite.raycast = () => {};
     sprite.name = `billboard:${sport}`;
     sprite.userData['sport'] = sport;
-    const poleGeometry = new LineGeometry();
-    poleGeometry.setPositions([0, 0, 0, 0, 1, 0]);
-    const poleMaterial = new LineMaterial({
+    const pointerGeometry = new BufferGeometry();
+    pointerGeometry.setAttribute('position', new BufferAttribute(new Float32Array(9), 3));
+    const pointerMaterial = new MeshBasicMaterial({
       color: SPORT_COLOR[sport],
-      linewidth: POLE_WIDTH_PX,
       transparent: true,
+      side: DoubleSide,
     });
-    poleMaterial.resolution.set(resolution.width, resolution.height);
-    const pole = new Line2(poleGeometry, poleMaterial);
-    pole.name = `billboard-pole:${sport}`;
-    pole.raycast = () => {};
-    group.add(pole, sprite);
+    const pointer = new Mesh(pointerGeometry, pointerMaterial);
+    pointer.name = `billboard-pointer:${sport}`;
+    pointer.raycast = () => {};
+    pointer.frustumCulled = false;
+    group.add(pointer, sprite);
     pooledSigns += 1;
     return {
       sprite,
       material,
-      pole,
-      poleGeometry,
-      poleMaterial,
+      pointer,
+      pointerGeometry,
+      pointerMaterial,
+      base: new Vector3(),
+      top: new Vector3(),
       active: false,
       east: 0,
       north: 0,
@@ -570,7 +577,8 @@ export function buildBillboardLayer(
     const [bx, by, bz] = toScene(sign.east, sign.north, ground);
     const [tx, ty, tz] = toScene(sign.east, sign.north, ground + SIGN_OFFSET_M);
     sign.sprite.position.set(tx, ty, tz);
-    sign.poleGeometry.setPositions([bx, by, bz, tx, ty, tz]);
+    sign.base.set(bx, by, bz);
+    sign.top.set(tx, ty, tz);
   };
 
   let lastClusters: SignCluster[] = [];
@@ -607,7 +615,7 @@ export function buildBillboardLayer(
       sign.east = cluster.east;
       sign.north = cluster.north;
       sign.sprite.visible = true;
-      sign.pole.visible = true;
+      sign.pointer.visible = true;
       place(sign);
     }
     for (const [sport, pool] of pools) {
@@ -615,7 +623,7 @@ export function buildBillboardLayer(
         const sign = pool[i] as Sign;
         sign.active = false;
         sign.sprite.visible = false;
-        sign.pole.visible = false;
+        sign.pointer.visible = false;
       }
     }
   };
@@ -628,6 +636,7 @@ export function buildBillboardLayer(
   };
 
   const world = new Vector3();
+  const right = new Vector3();
   const ndc = new Vector3();
   const view = new Vector3();
   const onFrame = (): void => {
@@ -639,6 +648,11 @@ export function buildBillboardLayer(
     const widthPx = signWidthPx(viewportW);
     const heightPx = (widthPx * SIGN_CANVAS_HEIGHT) / SIGN_CANVAS_WIDTH;
     const ys = effectiveScale(host.exaggeration);
+    // Camera right, projected level: the pointer base always faces the camera like the sprite above it.
+    right.set(1, 0, 0).applyQuaternion(camera.quaternion);
+    right.y = 0;
+    if (right.lengthSq() < 1e-9) right.set(1, 0, 0);
+    right.normalize();
     const candidates: Sign[] = [];
     const rects: ScreenRect[] = [];
     for (const pool of pools.values()) {
@@ -648,10 +662,10 @@ export function buildBillboardLayer(
         const horizontal = Math.hypot(world.x - fadeCentre.east, world.z + fadeCentre.north);
         const alpha = fadeAlpha(horizontal);
         sign.sprite.visible = false;
-        sign.pole.visible = false;
+        sign.pointer.visible = false;
         if (alpha <= 0) continue;
         sign.material.opacity = alpha;
-        sign.poleMaterial.opacity = alpha;
+        sign.pointerMaterial.opacity = alpha;
         // View-space depth sets the pixel size of a point at any screen position; Euclidean distance overstates it off-axis.
         const d = Math.max(
           -view.copy(world).applyMatrix4(camera.matrixWorldInverse).z,
@@ -659,6 +673,13 @@ export function buildBillboardLayer(
         );
         const w = widthPx * ((2 * d * tanHalf) / viewportH);
         sign.sprite.scale.set(w, (w * heightPx) / widthPx / ys, 1);
+        // Pointer: base across the sign's bottom edge (camera right, kept level), apex on the ground.
+        const hw = (POINTER_WIDTH_FRACTION * w) / 2;
+        const pos = sign.pointerGeometry.getAttribute('position') as BufferAttribute;
+        pos.setXYZ(0, sign.base.x, sign.base.y, sign.base.z);
+        pos.setXYZ(1, sign.top.x - right.x * hw, sign.top.y, sign.top.z - right.z * hw);
+        pos.setXYZ(2, sign.top.x + right.x * hw, sign.top.y, sign.top.z + right.z * hw);
+        pos.needsUpdate = true;
         ndc.copy(world).project(camera);
         // Behind the camera or outside the clip range: never drawn, so it occupies no screen space.
         if (ndc.z < -1 || ndc.z > 1) continue;
@@ -678,7 +699,7 @@ export function buildBillboardLayer(
     candidates.forEach((sign, i) => {
       const on = shown[i] === true;
       sign.sprite.visible = on;
-      sign.pole.visible = on;
+      sign.pointer.visible = on;
     });
     shownCount = shown.filter(Boolean).length;
   };
@@ -718,8 +739,8 @@ export function buildBillboardLayer(
       for (const pool of pools.values()) {
         for (const sign of pool) {
           sign.material.dispose();
-          sign.poleMaterial.dispose();
-          sign.poleGeometry.dispose();
+          sign.pointerMaterial.dispose();
+          sign.pointerGeometry.dispose();
         }
       }
       for (const { texture } of textures.values()) texture.dispose();

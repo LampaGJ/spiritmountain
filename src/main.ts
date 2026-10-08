@@ -179,7 +179,6 @@ if (!('error' in areaLayerResult)) {
       {
         host: handle,
         fadeCentre: { east: fadeCentre.east, north: fadeCentre.north },
-        resolution: { width: window.innerWidth, height: window.innerHeight },
       },
     );
     handle.elevated.add(billboardLayer.group);
