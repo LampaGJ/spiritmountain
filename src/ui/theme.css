@@ -98,8 +98,9 @@
  */
 .ms {
   flex: 0 0 auto;
-  width: 24px;
-  height: 24px;
+  /* The box follows the glyph size (1em) so a larger icon is never clipped; 24px is only the default font-size. */
+  width: 1em;
+  height: 1em;
   overflow: hidden;
   font-family: 'Material Symbols Outlined';
   font-size: 24px;

@@ -281,6 +281,6 @@ describe('reveal.css', () => {
     expect(css).toContain('cubic-bezier(0, 0, 0.2, 1)');
     expect(css).toContain('prefers-reduced-motion: reduce');
     expect(css).toContain('200ms');
-    expect(css).toContain('z-index: 4');
+    expect(css).toContain('z-index: 100');
   });
 });
