@@ -9,6 +9,7 @@ import {
   parseAreas,
   parseSeed,
   serialize,
+  stakeholdersFor,
 } from '../../scripts/ingest/annotations-core';
 import { sha256Hex } from '../../scripts/ingest/replay';
 import { AnnotationsFileSchema } from '../../src/schema/annotations-file';
@@ -70,16 +71,16 @@ describe('kind defaults (one case per kind)', () => {
       'downhill-run',
       'way/999',
       [
-        { activity: 'alpine-ski', seasons: ['winter'] },
-        { activity: 'snowboard', seasons: ['winter'] },
+        { activity: 'alpine-ski', seasons: ['winter', 'spring'] },
+        { activity: 'snowboard', seasons: ['winter', 'spring'] },
       ],
     ],
     [
       'snow-park',
       'way/30',
       [
-        { activity: 'alpine-ski', seasons: ['winter'] },
-        { activity: 'snowboard', seasons: ['winter'] },
+        { activity: 'alpine-ski', seasons: ['winter', 'spring'] },
+        { activity: 'snowboard', seasons: ['winter', 'spring'] },
       ],
     ],
     [
@@ -90,8 +91,12 @@ describe('kind defaults (one case per kind)', () => {
         { activity: 'nordic-skate', seasons: ['winter'] },
       ],
     ],
-    ['mtb-trail', 'way/20', [{ activity: 'mountain-bike', seasons: ['summer', 'fall'] }]],
-    ['mtb-route', 'relation/5', [{ activity: 'mountain-bike', seasons: ['summer', 'fall'] }]],
+    ['mtb-trail', 'way/20', [{ activity: 'mountain-bike', seasons: ['spring', 'summer', 'fall'] }]],
+    [
+      'mtb-route',
+      'relation/5',
+      [{ activity: 'mountain-bike', seasons: ['spring', 'summer', 'fall'] }],
+    ],
     ['lift', 'way/7', [{ activity: 'lift-ride', seasons: [] }]],
   ];
   it.each(cases)('%s', (_kind, id, expected) => {
@@ -103,10 +108,8 @@ describe('kind defaults (one case per kind)', () => {
   it('the fixture covers all six kinds', () => {
     expect(new Set(AREA_ROWS.map((r) => r.kind)).size).toBe(6);
   });
-  it('every annotation has empty stakeholders and empty notes', () => {
-    expect(built.annotations.every((a) => a.stakeholders.length === 0 && a.notes === '')).toBe(
-      true,
-    );
+  it('every annotation has empty notes', () => {
+    expect(built.annotations.every((a) => a.notes === '')).toBe(true);
   });
   it('rejects a kind with no rule (reachable only through a cast, since the area schema already rejects unknown kinds)', () => {
     const bad = [{ id: 'way/1', kind: 'ski-jump' }] as unknown as Parameters<
@@ -124,7 +127,7 @@ describe('ordering and byte-stable shape', () => {
   });
   it('lists activities and seasons in rule order, not sorted', () => {
     const mtb = built.annotations.find((a) => a.areaId === 'way/20');
-    expect(mtb?.activities[0]?.seasons).toEqual(['summer', 'fall']);
+    expect(mtb?.activities[0]?.seasons).toEqual(['spring', 'summer', 'fall']);
   });
   it('serializes every object kind with a literal key order', () => {
     const file = generateAnnotations({
@@ -311,5 +314,47 @@ describe('generateAnnotations: replay record and generatedFrom', () => {
     const keys = keysAtAnyDepth(JSON.parse(run.fileText));
     for (const banned of ['runAt', 'fetchedAt', 'toolVersions'])
       expect(keys.has(banned)).toBe(false);
+  });
+});
+
+describe('stakeholder rule', () => {
+  const entry = (activity: string) => ({ activity, seasons: [], notes: '' }) as never;
+  const ids = (links: { orgId: string }[]) => links.map((l) => l.orgId);
+  const AUTHORITY = 'spirit-mountain-recreation-area-authority';
+
+  it('a lift gets only the Authority, as operator', () => {
+    const lift = built.annotations.find((a) => a.areaId === 'way/7');
+    expect(lift?.stakeholders).toEqual([{ orgId: AUTHORITY, role: 'operates' }]);
+  });
+  it('a mountain-bike area gets COGGS, the DEVO program, the high-school league and the City', () => {
+    const mtb = built.annotations.find((a) => a.areaId === 'way/20');
+    const got = ids(mtb?.stakeholders ?? []);
+    for (const id of [
+      'cyclists-of-gitchee-gumee-shores',
+      'duluth-devo-mountain-bike-program',
+      'minnesota-high-school-cycling-league',
+      'city-of-duluth-parks-and-recreation',
+      AUTHORITY,
+    ])
+      expect(got).toContain(id);
+    expect(got).not.toContain('duluth-cross-country-ski-club');
+  });
+  it('sorts by org id in code-unit order, one link per org', () => {
+    for (const annotation of built.annotations) {
+      const got = ids(annotation.stakeholders);
+      expect(got).toEqual([...got].sort(compareCodeUnit));
+      expect(new Set(got).size).toBe(got.length);
+      expect(got).toContain(AUTHORITY);
+    }
+  });
+  it('is deterministic and independent of seed order', () => {
+    const forward = stakeholdersFor([entry('mountain-bike')], seed);
+    const reversed = stakeholdersFor([entry('mountain-bike')], [...seed].reverse());
+    expect(reversed).toEqual(forward);
+  });
+  it('uses only roles the schema allows', () => {
+    const roles = new Set(built.annotations.flatMap((a) => a.stakeholders.map((s) => s.role)));
+    for (const role of roles)
+      expect(['maintains', 'operates', 'programs', 'funds', 'advocates']).toContain(role);
   });
 });

@@ -33,25 +33,58 @@ type KindRule = readonly {
  */
 const KIND_RULES: Record<AreaKind, KindRule> = {
   'downhill-run': [
-    { activity: 'alpine-ski', seasons: ['winter'] },
-    { activity: 'snowboard', seasons: ['winter'] },
+    { activity: 'alpine-ski', seasons: ['winter', 'spring'] },
+    { activity: 'snowboard', seasons: ['winter', 'spring'] },
   ],
   'snow-park': [
-    { activity: 'alpine-ski', seasons: ['winter'] },
-    { activity: 'snowboard', seasons: ['winter'] },
+    { activity: 'alpine-ski', seasons: ['winter', 'spring'] },
+    { activity: 'snowboard', seasons: ['winter', 'spring'] },
   ],
   'nordic-trail': [
     { activity: 'nordic-classic', seasons: ['winter'] },
     { activity: 'nordic-skate', seasons: ['winter'] },
   ],
-  'mtb-trail': [{ activity: 'mountain-bike', seasons: ['summer', 'fall'] }],
-  'mtb-route': [{ activity: 'mountain-bike', seasons: ['summer', 'fall'] }],
+  'mtb-trail': [{ activity: 'mountain-bike', seasons: ['spring', 'summer', 'fall'] }],
+  'mtb-route': [{ activity: 'mountain-bike', seasons: ['spring', 'summer', 'fall'] }],
   lift: [{ activity: 'lift-ride', seasons: [] }],
 };
 
 /** Code-unit string order. Never a locale-sensitive comparison: it must give the same answer on every machine. */
 export function compareCodeUnit(a: string, b: string): number {
   return a < b ? -1 : a > b ? 1 : 0;
+}
+
+export const AUTHORITY_ORG_ID = 'spirit-mountain-recreation-area-authority';
+
+type StakeholderLink = Annotation['stakeholders'][number];
+
+/**
+ * Decision record: the role follows the organization's type, because the seed holds no per-area fact about what an organization does there.
+ * The Authority operates the hill; public bodies maintain; clubs run programs; nonprofits advocate; businesses fund.
+ */
+const ROLE_BY_ORG_TYPE: Record<Organization['type'], StakeholderLink['role']> = {
+  authority: 'operates',
+  municipal: 'maintains',
+  'state-agency': 'maintains',
+  club: 'programs',
+  nonprofit: 'advocates',
+  business: 'funds',
+};
+
+/**
+ * @displayName Stakeholder rule
+ * @strategicPurpose Attaches related organizations to each area without hand-editing, so the stakeholder panel shows who is connected to what.
+ * @tacticalObjective Pure function: every organization whose activities intersect the area's activities, plus the Recreation Authority on every area (a lift gets only the Authority), one link per org, role by org type, sorted by org id in code-unit order.
+ */
+export function stakeholdersFor(
+  activities: readonly ActivityEntry[],
+  organizations: readonly Organization[],
+): StakeholderLink[] {
+  const present = new Set(activities.map((entry) => entry.activity));
+  return organizations
+    .filter((org) => org.id === AUTHORITY_ORG_ID || org.activities.some((a) => present.has(a)))
+    .sort((a, b) => compareCodeUnit(a.id, b.id))
+    .map((org) => ({ orgId: org.id, role: ROLE_BY_ORG_TYPE[org.type] }));
 }
 
 /** The canonical serialization of every output file: 2-space JSON, LF, one trailing newline. */
@@ -137,7 +170,7 @@ type BuiltAnnotations = { organizations: Organization[]; annotations: Annotation
 /**
  * @displayName Seed annotations builder
  * @strategicPurpose Gives every area a schema-valid annotation from day one without inventing any world fact, and carries every seed organization through unchanged.
- * @tacticalObjective Pure function: one annotation per area with kind-derived activities (each noted "derived from OSM kind"), empty stakeholders and notes, sorted by areaId; organizations copied field by field in seed order of keys, sorted by id. Declared effect is expands.
+ * @tacticalObjective Pure function: one annotation per area with kind-derived activities (each noted "derived from OSM kind"), rule-derived stakeholders and empty notes, sorted by areaId; organizations copied field by field in seed order of keys, sorted by id. Declared effect is expands.
  */
 export function buildAnnotations(
   areas: readonly Pick<Area, 'id' | 'kind'>[],
@@ -161,14 +194,15 @@ export function buildAnnotations(
       const rule = (KIND_RULES as Partial<Record<string, KindRule>>)[area.kind];
       if (rule === undefined)
         throw new AnnotationsError('UnmappedKind', `no activity rule for kind ${area.kind}`);
+      const activities = rule.map((entry) => ({
+        activity: entry.activity,
+        seasons: [...entry.seasons],
+        notes: DERIVED_NOTE,
+      }));
       return {
         areaId: area.id,
-        activities: rule.map((entry) => ({
-          activity: entry.activity,
-          seasons: [...entry.seasons],
-          notes: DERIVED_NOTE,
-        })),
-        stakeholders: [],
+        activities,
+        stakeholders: stakeholdersFor(activities, organizations),
         notes: '',
       };
     });
