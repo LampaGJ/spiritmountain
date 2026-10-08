@@ -89,10 +89,16 @@
   text-align: center;
   text-transform: uppercase;
   overflow-wrap: anywhere;
+  /* Type scales with the device: phones 15vmin, tablets 19vmin, desktop 24vmin (see the media rules below). */
   font:
-    900 24vmin/0.88 system-ui,
+    900 var(--reveal-type, 24vmin) / 0.88 system-ui,
     sans-serif;
   letter-spacing: -0.04em;
+  /* Feathered edges: a soft alpha falloff on every glyph so the words blend over the mark instead of cutting it. */
+  text-shadow:
+    0 0 0.02em rgb(255 255 255 / 0.9),
+    0 0 0.06em rgb(255 255 255 / 0.5);
+  filter: blur(0.35px);
   color: #fff;
   opacity: 0.9;
 }
@@ -119,5 +125,16 @@
   }
   #reveal-label.pop {
     animation: none;
+  }
+}
+
+@media (max-width: 719px) {
+  #reveal-label {
+    --reveal-type: 15vmin;
+  }
+}
+@media (min-width: 720px) and (max-width: 1099px) {
+  #reveal-label {
+    --reveal-type: 19vmin;
   }
 }

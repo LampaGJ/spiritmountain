@@ -17,6 +17,8 @@ export const STEP_MS = 520;
 export const INTRO_TAIL_MS = 900;
 /** ... and never go faster than this per step, so each pulse still registers. */
 export const FAST_STEP_MS = 140;
+/** The settle step (1-based) that shows the easter egg instead of the layer list. */
+export const EASTER_EGG_STEP = 3;
 /** A late load shorter than this never re-covers the scene. */
 const RECOVER_GRACE_MS = 300;
 /** Frames that must run after the last settle before the scene counts as rendered. */
@@ -268,6 +270,7 @@ export function createRevealOverlay(doc: Document): RevealOverlay {
   let stepTimer: ReturnType<typeof setTimeout> | undefined;
   let openPending = false;
   let lastSettled = 0;
+  let stepIndex = 0;
   let lastFraction = 0;
   const api = {} as RevealOverlay;
   let baseHeightPx = 0;
@@ -322,7 +325,14 @@ export function createRevealOverlay(doc: Document): RevealOverlay {
       const fraction =
         total > 0 ? Math.min(1, Math.max(lastFraction, settled / total)) : lastFraction;
       lastFraction = fraction;
-      const words = unsettled.length > 0 ? `loading ${unsettled.join(', ')}` : 'loading';
+      // One step in the middle of the run is the easter egg; every other step names what is still loading.
+      stepIndex += 1;
+      const words =
+        stepIndex === EASTER_EGG_STEP
+          ? 'reticulating splines'
+          : unsettled.length > 0
+            ? `loading ${unsettled.join(', ')}`
+            : 'loading';
       queue.push({ words, fraction });
       pump();
     },
