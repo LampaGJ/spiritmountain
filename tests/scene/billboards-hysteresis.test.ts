@@ -56,6 +56,25 @@ describe('declutterStep', () => {
     expect(next.map((s) => s.visible)).toEqual([true, true]);
   });
 
+  it('a fixed hero rect hides an overlapping visible sign and leaves a clear one (#66)', () => {
+    const hero: ScreenRect = { x: 0, y: 0, w: 100, h: 40, distance: 0, priority: -1 };
+    const next = declutterStep([rect(10), rect(300)], [visibleState, visibleState], 150, hero);
+    expect(next.map((s) => s.visible)).toEqual([false, true]);
+  });
+
+  it('a fixed hero rect keeps a hidden sign hidden past the show hold (#66)', () => {
+    const hero: ScreenRect = { x: 0, y: 0, w: 100, h: 40, distance: 0, priority: -1 };
+    const next = declutterStep([rect(10)], [initialDeclutterState()], DECLUTTER_SHOW_HOLD_MS, hero);
+    expect(next[0]?.visible).toBe(false);
+  });
+
+  it('a null hero rect changes nothing (#66)', () => {
+    const rects = [rect(10), rect(300)];
+    const states = [visibleState, visibleState];
+    expect(declutterStep(rects, states, 150, null)).toEqual(declutterStep(rects, states, 150));
+    expect(declutterStep(rects, states, 150, null).map((s) => s.visible)).toEqual([true, true]);
+  });
+
   it('keeps a visible sign while the overlap is at most 25 percent of its area', () => {
     // Sign 1 overlaps sign 0 by 25 px of 100: exactly 25 percent, not more.
     const next = declutterStep([rect(0), rect(75)], [visibleState, visibleState], 150);

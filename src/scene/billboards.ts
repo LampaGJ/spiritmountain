@@ -840,11 +840,14 @@ const overlapArea = (a: ScreenRect, b: ScreenRect, gap: number): number => {
  * A visible sign hides only when a higher-ranked visible sign overlaps more than DECLUTTER_HIDE_OVERLAP of its area; a
  * hidden sign banks `dtMs` of clear time per pass that finds no higher-ranked visible sign within SIGN_GAP_PX of it and
  * shows once the bank reaches DECLUTTER_SHOW_HOLD_MS; any overlap empties the bank. Pure: returns new states.
+ * `fixed` (#66) is the hero sign's screen rect: an occupied rect ranked above every sprite, so it hides an overlapping
+ * visible sign by the same threshold and holds back a hidden one; null or absent changes nothing.
  */
 export function declutterStep(
   rects: readonly ScreenRect[],
   states: readonly DeclutterState[],
   dtMs: number,
+  fixed: ScreenRect | null = null,
 ): DeclutterState[] {
   const order = rects
     .map((_, i) => i)
@@ -854,7 +857,7 @@ export function declutterStep(
       return (ra.priority ?? 0) - (rb.priority ?? 0) || ra.distance - rb.distance || a - b;
     });
   const next: DeclutterState[] = states.map((st) => st);
-  const kept: ScreenRect[] = [];
+  const kept: ScreenRect[] = fixed === null ? [] : [fixed];
   for (const i of order) {
     const r = rects[i] as ScreenRect;
     const st = states[i] as DeclutterState;
@@ -1139,6 +1142,8 @@ export interface BillboardDeps {
    * no sprite: src/ui/hero-sign.ts renders it from this plan, and a place with no member trail is absent from it.
    */
   readonly onPlan?: (places: readonly PlacePlan[]) => void;
+  /** The hero sign's current screen rect in CSS pixels, or null when it is hidden (#66); sprites never sit under it. */
+  readonly heroRect?: () => ScreenRect | null;
 }
 
 export interface BillboardStats {
@@ -1428,6 +1433,7 @@ export function buildBillboardLayer(
         rects,
         onScreen.map((sign) => sign.dc),
         sinceMs,
+        deps.heroRect?.() ?? null,
       );
       onScreen.forEach((sign, i) => {
         sign.dc = next[i] as DeclutterState;
