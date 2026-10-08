@@ -1,4 +1,4 @@
-import { Mesh, type MeshBasicMaterial, PerspectiveCamera, Sprite, Vector3 } from 'three';
+import { PerspectiveCamera, Sprite, Vector3 } from 'three';
 import { describe, expect, it, vi } from 'vitest';
 import { fadeAlpha } from '../../scripts/ingest/context-tiles';
 import type { SceneMapper } from '../../src/scene/areas';
@@ -17,18 +17,23 @@ import {
   mergeTrackPath,
   planSigns,
   planTrailSigns,
-  pointerVertices,
   pointAlong,
   polygonCentroid,
   signTextureKey,
   signWidthPx,
+  HERO_PLACE_ID,
   LABEL_LIGHT,
   POINTER_ANGLE_DEG,
   SIGN_OFFSET_M,
+  SIGN_CANVAS_HEIGHT,
+  SIGN_CANVAS_WIDTH,
   SIGN_RENDER_ORDER,
   SIGN_PANEL_COLOR,
+  TAIL_PX,
+  TAIL_X_FRACTION,
   type BillboardFrameHost,
   type ClusterInput,
+  type PlacePlan,
   type SignCanvas,
   type SignContext2D,
   type TrackPoints,
@@ -39,6 +44,7 @@ import { SPORT_COLOR } from '../../src/scene/palette';
 import type { Activity } from '../../src/scene/sport-routing';
 import { ActivitySchema, type Annotation } from '../../src/schema/annotation';
 import type { Area } from '../../src/schema/area';
+import type { Place } from '../../src/schema/places';
 import { signGlyph } from '../../src/ui/icons';
 import { makeFixtureField } from '../fixtures/make-field';
 
@@ -439,31 +445,6 @@ describe('mergeTrackPath and pointAlong', () => {
   });
 });
 
-describe('pointerVertices', () => {
-  const deg = (a: { x: number; y: number }, b: { x: number; y: number }): number =>
-    (Math.atan2(b.x - a.x, b.y - a.y) * 180) / Math.PI;
-
-  it.each([0.1, 1, 3, 10])(
-    'has a vertical leg 1 and a leg 2 at 15 degrees at exaggeration %s',
-    (k) => {
-      const v = pointerVertices(SIGN_OFFSET_M, POINTER_ANGLE_DEG, k);
-      expect(v.slice(0, 3)).toEqual([0, 0, 0]);
-      // World vertices: the ElevatedGroup scales y by k and leaves x alone.
-      const apex = { x: v[0], y: v[1] * k };
-      const top = { x: v[3], y: v[4] * k };
-      const far = { x: v[6], y: v[7] * k };
-      expect(deg(apex, top)).toBeCloseTo(0, 9);
-      expect(deg(apex, far)).toBeCloseTo(15, 6);
-    },
-  );
-
-  it('has a top edge of length h * tan(15 degrees) at true scale', () => {
-    const v = pointerVertices(25, 15, 1);
-    expect(v[6]).toBeCloseTo(25 * Math.tan((15 * Math.PI) / 180), 9);
-    expect(v[7]).toBe(25);
-  });
-});
-
 describe('labelColorFor', () => {
   it('picks the higher-contrast of white and near-black', () => {
     expect(labelColorFor(0x000000)).toBe(0xffffff);
@@ -549,6 +530,7 @@ interface Call {
   readonly font: string;
   readonly text?: string;
   readonly y?: number;
+  readonly x?: number;
 }
 
 function recordingContext(): SignContext2D & { calls: Call[] } {
@@ -560,7 +542,7 @@ function recordingContext(): SignContext2D & { calls: Call[] } {
     font: '',
     textAlign: 'left' as CanvasTextAlign,
     textBaseline: 'alphabetic' as CanvasTextBaseline,
-    record(op: string, text?: string, y?: number) {
+    record(op: string, text?: string, y?: number, x?: number) {
       calls.push({
         op,
         fillStyle: String(ctx.fillStyle),
@@ -568,13 +550,19 @@ function recordingContext(): SignContext2D & { calls: Call[] } {
         font: ctx.font,
         ...(text === undefined ? {} : { text }),
         ...(y === undefined ? {} : { y }),
+        ...(x === undefined ? {} : { x }),
       });
     },
     clearRect() {},
-    beginPath() {},
+    beginPath() {
+      ctx.record('beginPath');
+    },
     moveTo() {},
     arc() {},
     arcTo() {},
+    lineTo(x: number, y: number) {
+      ctx.record('lineTo', undefined, y, x);
+    },
     closePath() {},
     fill() {
       ctx.record('fill');
@@ -662,6 +650,50 @@ describe('drawSign', () => {
     expect(texts[0]?.font).toContain('bold');
     expect(texts[0]?.fillStyle).toBe(hex(LABEL_LIGHT));
     expect(texts[1]?.font).toContain('Material Symbols');
+  });
+
+  it('draws a trail sign panel and tail as one path: one panel fill, leg 1 vertical at TAIL_X_FRACTION, apex below the panel', () => {
+    const ctx = recordingContext();
+    drawSign(ctx, {
+      activities: ['hike'],
+      label: 'Birch',
+      family: 'trail',
+      glyph: false,
+      width: SIGN_CANVAS_WIDTH,
+      height: SIGN_CANVAS_HEIGHT,
+    });
+    // Everything up to the first fill is the panel path: exactly one beginPath, and the tail lineTos sit inside it.
+    const firstFill = ctx.calls.findIndex((c) => c.op === 'fill');
+    const panelPath = ctx.calls.slice(0, firstFill);
+    expect(panelPath.filter((c) => c.op === 'beginPath')).toHaveLength(1);
+    const legs = panelPath.filter((c) => c.op === 'lineTo');
+    expect(legs).toHaveLength(3);
+    const [leg2Top, apex, leg1Top] = legs;
+    const legX = TAIL_X_FRACTION * SIGN_CANVAS_WIDTH;
+    expect(leg1Top?.x).toBeCloseTo(legX, 9);
+    expect(leg1Top?.y).toBe(SIGN_CANVAS_HEIGHT);
+    expect(apex?.x).toBeCloseTo(legX, 9);
+    expect(apex?.y).toBe(SIGN_CANVAS_HEIGHT + TAIL_PX);
+    expect(leg2Top?.x).toBeCloseTo(
+      legX + TAIL_PX * Math.tan((POINTER_ANGLE_DEG * Math.PI) / 180),
+      9,
+    );
+    expect(leg2Top?.y).toBe(SIGN_CANVAS_HEIGHT);
+    // The tail joins well inside the bottom edge, past the corner radius.
+    expect(legX).toBeGreaterThan(SIGN_CANVAS_HEIGHT * 0.22 * 2);
+  });
+
+  it('draws no tail on a concentration sign', () => {
+    const ctx = recordingContext();
+    drawSign(ctx, {
+      activities: ['hike'],
+      label: 'x',
+      family: 'concentration',
+      glyph: false,
+      width: SIGN_CANVAS_WIDTH,
+      height: SIGN_CANVAS_HEIGHT,
+    });
+    expect(ctx.calls.filter((c) => c.op === 'lineTo')).toHaveLength(0);
   });
 
   it('keeps the trail name above the chip row', () => {
@@ -933,28 +965,67 @@ describe('buildBillboardLayer', () => {
       ),
     );
     expect(sprite.userData['label']).toBe('Birch Loop');
-    // Bottom-left anchored, lifted SIGN_OFFSET_M above the trail point at (400, 0) on the surface.
-    expect(sprite.center.x).toBe(0);
+    // Anchored at the tail apex, which sits exactly on the trail point at (400, 0) on the surface: no lift.
+    expect(sprite.center.x).toBe(TAIL_X_FRACTION);
     expect(sprite.center.y).toBe(0);
     const world = sprite.getWorldPosition(new Vector3());
     expect(world.x).toBeCloseTo(400, 6);
-    expect(world.y).toBeCloseTo(surface.sample(400, 0).height + SIGN_OFFSET_M, 6);
+    expect(world.y).toBeCloseTo(surface.sample(400, 0).height, 6);
   });
 
-  it('puts the pointer apex on the trail point and leaves concentration signs without one', () => {
+  it('reports place plans through onPlan and gives the hero place no sprite', () => {
+    const plans: PlacePlan[][] = [];
+    const host = makeHost();
+    const layer = buildBillboardLayer(FOUR_SPORT, surface, mapper, {
+      host,
+      fadeCentre: { east: 0, north: 0 },
+      createCanvas: fakeCanvas,
+      fonts: undefined,
+      warn: () => {},
+      places: [
+        {
+          id: HERO_PLACE_ID,
+          name: 'Spirit Mountain Adventure Park',
+          kind: 'adventure-park',
+          east: 400,
+          north: 0,
+          radiusM: 200,
+          sourceUrl: 'https://example.com/',
+          verified: true,
+          positionNote: 'test',
+          positionSource: 'coordinates',
+        } as unknown as Place,
+      ],
+      onPlan: (p) => plans.push([...p]),
+    });
+    layer.applyFilter(FOUR_NOTES, new Set(), new Set(['way/9']));
+    const last = plans[plans.length - 1] as PlacePlan[];
+    expect(last).toHaveLength(1);
+    expect(last[0]).toMatchObject({
+      id: HERO_PLACE_ID,
+      name: 'Spirit Mountain Adventure Park',
+      trailCount: 1,
+    });
+    expect(last[0]?.activities).toEqual(
+      ActivitySchema.options.filter((a) =>
+        ['hike', 'mountain-bike', 'nordic-classic', 'nordic-skate'].includes(a),
+      ),
+    );
+    // Only the trail sign has a sprite: the hero place's concentration sprite is suppressed.
+    expect(sprites(layer.group).map((x) => x.userData['family'])).toEqual(['trail']);
+    // A filter that leaves the place no track drops it from the plan, which hides the hero.
+    layer.applyFilter(FOUR_NOTES, new Set(), new Set());
+    expect(plans[plans.length - 1]).toEqual([]);
+  });
+
+  it('has no pointer mesh: the sprite alone is the trail sign, and concentration signs stay bottom-centre', () => {
     const { layer } = build(makeHost(), FOUR_SPORT);
     layer.applyFilter(FOUR_NOTES, new Set(), new Set(['way/9']));
-    const pointers: Mesh[] = [];
-    layer.group.traverse((o) => {
-      if (o instanceof Mesh) pointers.push(o);
-    });
-    const visible = pointers.filter((p) => p.visible);
-    expect(visible).toHaveLength(1);
-    const pointer = visible[0] as Mesh;
-    expect((pointer.material as MeshBasicMaterial).color.getHex()).toBe(SIGN_PANEL_COLOR);
-    const apex = pointer.localToWorld(new Vector3(0, 0, 0));
-    expect(apex.x).toBeCloseTo(400, 6);
-    expect(apex.y).toBeCloseTo(surface.sample(400, 0).height, 6);
+    const kinds: string[] = [];
+    layer.group.traverse((o) => kinds.push(o.type));
+    expect(kinds.filter((k) => k !== 'Sprite' && k !== 'Group')).toEqual([]);
+    const trail = trailSprites(layer.group)[0] as Sprite;
+    expect(trail.parent).toBe(layer.group);
     const concentration = sprites(layer.group).find(
       (s) => s.userData['family'] === 'concentration',
     );
@@ -962,30 +1033,24 @@ describe('buildBillboardLayer', () => {
     expect(concentration?.parent).toBe(layer.group);
   });
 
-  it('keeps leg 2 at 15 degrees in the world as the exaggeration changes', () => {
+  it('gives a trail sign a texture TAIL_PX taller than a concentration sign', () => {
+    const canvases: { width: number; height: number }[] = [];
     const host = makeHost();
-    const { layer } = build(host, FOUR_SPORT);
-    layer.applyFilter(FOUR_NOTES, new Set(), new Set(['way/9']));
-    const elevated = new ElevatedGroup();
-    elevated.add(layer.group);
-    const pointer = trailSprites(layer.group)[0]?.parent?.children.find(
-      (c) => c instanceof Mesh,
-    ) as Mesh;
-    for (const k of [0.1, 1, 10]) {
-      host.k = k;
-      elevated.setExaggeration(k, 0);
-      host.callback?.(16);
-      const pos = pointer.geometry.getAttribute('position');
-      const apex = new Vector3().fromBufferAttribute(pos, 0);
-      const top = new Vector3().fromBufferAttribute(pos, 1);
-      const far = new Vector3().fromBufferAttribute(pos, 2);
-      // Local x is unscaled by the group; local y is scaled by effectiveScale(k).
-      expect(top.x - apex.x).toBeCloseTo(0, 9);
-      expect(Math.atan2(far.x - apex.x, (far.y - apex.y) * effectiveScale(k))).toBeCloseTo(
-        (POINTER_ANGLE_DEG * Math.PI) / 180,
-        6,
-      );
-    }
+    buildBillboardLayer(FOUR_SPORT, surface, mapper, {
+      host,
+      fadeCentre: { east: 0, north: 0 },
+      createCanvas: () => {
+        const canvas = fakeCanvas();
+        canvases.push(canvas);
+        return canvas;
+      },
+      fonts: undefined,
+      warn: () => {},
+    });
+    expect(canvases.map((c) => c.height).sort()).toEqual([
+      SIGN_CANVAS_HEIGHT,
+      SIGN_CANVAS_HEIGHT + TAIL_PX,
+    ]);
   });
 
   it('compensates the group exaggeration: scale.y * effectiveScale(k) is constant', () => {

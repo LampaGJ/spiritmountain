@@ -26,7 +26,8 @@
   /* Centred on the viewport (Graham, 2026-10-08): the season keys are the primary control. */
   left: 0;
   right: 0;
-  width: fit-content;
+  /* A wide bar: the season keys share it evenly (flex), nothing is sized to its label. */
+  width: min(96vw, 1280px);
   margin-inline: auto;
   display: flex;
   flex-direction: column;
@@ -245,7 +246,27 @@
     display: none;
   }
   #season-bar .sm-bar-keys {
-    gap: 8px;
+    gap: 6px;
+    overflow-x: visible;
+  }
+  #season-bar .sm-season-keys {
+    gap: 4px;
+  }
+  /* Phone: four even icon-only season keys; the label stays for assistive tech and the pressed key reads by its latched face. */
+  #season-bar .sm-season-keys .cl-key .btn-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+  #season-bar .sm-season-keys .cl-key .btn-face .ms {
+    font-size: 24px;
+  }
+  #season-bar .sm-popout > .cl-key .btn-scale {
+    width: var(--cl-h);
   }
   #season-bar .filter-count {
     padding-bottom: 4px;
@@ -291,7 +312,45 @@
   padding: 0 8px;
 }
 #season-bar .sm-popout > .cl-key .btn-scale {
-  width: 6em;
+  width: var(--cl-h);
+}
+/* View and Layers: circular keys on their own slate face, so they read as a different kind of control from the seasons. */
+#season-bar .sm-popout > .cl-key .btn-scale,
+#season-bar .sm-popout > .cl-key .btn-scale * {
+  border-radius: 50%;
+}
+#season-bar .sm-popout .cl-t,
+#season-bar .sm-popout > .cl-key {
+  --face-color: #4b5d6e;
+  --face-toggled: #6b8198;
+}
+#season-bar .sm-popout > .cl-key .sm-chevron {
+  display: none;
+}
+/* Season keys: even widths from flexbox, never from the label; icons get a one-line box so nothing clips. */
+#season-bar .sm-bar-keys {
+  width: 100%;
+}
+#season-bar .sm-season-keys {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+#season-bar .sm-season-keys .cl-key {
+  flex: 1 1 0;
+  min-width: 0;
+}
+#season-bar .sm-season-keys .cl-key .btn-scale {
+  width: 100%;
+}
+#season-bar .cl-key .btn-face .ms {
+  line-height: 1;
+}
+#season-bar .sm-season-keys .cl-key .btn-face {
+  justify-content: center;
+}
+#season-bar .sm-season-keys .cl-key .btn-label {
+  flex: 0 1 auto;
+  text-align: center;
 }
 @media (min-width: 720px) {
   #season-bar .sm-season-keys .cl-key .btn-face,
@@ -309,10 +368,7 @@
   #season-bar .sm-season-keys .cl-key .btn-face .ms {
     font-size: 28px;
   }
-  #season-bar .sm-season-keys .cl-key .btn-scale {
-    width: 9em;
-  }
   #season-bar .sm-popout > .cl-key .btn-scale {
-    width: 4.2em;
+    width: var(--cl-h);
   }
 }

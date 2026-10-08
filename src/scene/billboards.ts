@@ -2,21 +2,16 @@
  * Track signs (#43, #49, #55, #60). Two families float above the mountain as flat, camera-facing sprites inside the
  * ElevatedGroup. Concentration signs hover over the natural concentrations of visible trails and list every sport
  * there as a coloured glyph chip with a track name or "N trails". Trail signs sit at the length midpoint of each named
- * track, one per track: the track name in bold on top, one sport chip per activity below, on a tapered pointer down to
- * the trail point.
+ * track, one per track: the track name in bold on top, one sport chip per activity below, the panel and its tapered tail
+ * drawn as one shape (#63) whose apex is the trail point.
  *
  * The first half of this file is pure (no three object is created), so track planning, contrast, sizing and the canvas
  * drawing test in node with a recording fake context. The second half builds the three layer.
  */
 import {
-  BufferAttribute,
-  BufferGeometry,
   CanvasTexture,
-  DoubleSide,
   Group,
   LinearFilter,
-  Mesh,
-  MeshBasicMaterial,
   type PerspectiveCamera,
   Sprite,
   SpriteMaterial,
@@ -39,13 +34,23 @@ import { trackKey, trackName } from './track-key';
 /** Signs draw after every default-order object; the panel has no depth test so it stays readable. */
 export const SIGN_RENDER_ORDER = 2;
 /**
- * A trail sign's pointer: leg 1 leaves the trail point straight up, leg 2 leaves it at this angle from leg 1 (Graham,
- * 2026-10-08: "make one side at 90 degrees from level ... going straight UP (leg 1) ... leg 2 ... about a 15 degree angle").
+ * A trail sign's tail: leg 1 is vertical, leg 2 leaves the apex at this angle from leg 1 (Graham, 2026-10-08: "make one
+ * side at 90 degrees from level ... going straight UP (leg 1) ... leg 2 ... about a 15 degree angle").
  */
 export const POINTER_ANGLE_DEG = 15;
+/** Height of a trail sign's tail in canvas pixels at the 512 x 128 panel scale (about 60 screen px at 160 px wide). */
+export const TAIL_PX = 120;
+/**
+ * Where leg 1 leaves the panel's bottom edge, as a fraction of the panel width: well past the corner radius (#63, Graham:
+ * "meet up closer to middle of the sign itself (at least beyond the round rect corner)"). Also the sprite's x centre, so
+ * the apex sits on the trail point.
+ */
+export const TAIL_X_FRACTION = 0.3;
+/** A trail sign's chip radius as a fraction of the panel height: 1.4 x the earlier 0.19 (#63, Graham: "larger encircled icons"). */
+export const TRAIL_CHIP_R_FRACTION = 0.19 * 1.4;
 /** Same-sport area centroids closer than this (single linkage, transitive) share one sign. */
 export const SIGN_CLUSTER_RADIUS_M = 150;
-/** The sign base floats this far above the active surface, in world metres before exaggeration. */
+/** A concentration sign's base floats this far above the active surface, in world metres before exaggeration. */
 export const SIGN_OFFSET_M = 25;
 /** Upper bound on the sign width in CSS pixels. */
 export const SIGN_MAX_WIDTH_PX = 160;
@@ -426,6 +431,29 @@ export interface SignPlan {
   readonly trackCount: number;
   /** Place signs only (#61): the place name, drawn in bold above the trail count. Absent on every other sign. */
   readonly place?: string;
+  /** Place signs only: the seed id of the place, so the hero sign can claim its own. */
+  readonly placeId?: string;
+}
+
+/** The place whose sign is the MAIN sign, rendered as a DOM element by src/ui/hero-sign.ts instead of a sprite (#63). */
+export const HERO_PLACE_ID = 'spirit-mountain-adventure-park';
+
+/** What the hero sign needs to render one planned place sign. */
+export interface PlacePlan {
+  readonly id: string;
+  readonly name: string;
+  readonly trailCount: number;
+  /** In ActivitySchema.options order. */
+  readonly activities: readonly Activity[];
+}
+
+/** The place signs among `plans`, as PlacePlans. Pure. */
+export function placePlans(plans: readonly SignPlan[]): PlacePlan[] {
+  return plans.flatMap((p) =>
+    p.placeId === undefined || p.place === undefined
+      ? []
+      : [{ id: p.placeId, name: p.place, trailCount: p.trackCount, activities: p.activities }],
+  );
 }
 
 /**
@@ -531,6 +559,7 @@ export function planSigns(
       label: `${indices.length} ${indices.length === 1 ? 'trail' : 'trails'}`,
       trackCount: indices.length,
       place: place.name,
+      placeId: place.id,
     });
   });
 
@@ -717,19 +746,9 @@ export function labelColorFor(panelHex: number): number {
     : LABEL_DARK;
 }
 
-/**
- * Local vertices of a trail sign's pointer, a right triangle in the sign group's xy plane: apex at the origin (the trail
- * point), leg 1 straight up by `heightM`, leg 2 from the apex to the top edge's far end. In the ElevatedGroup the y axis
- * is scaled by `yScale` and x is not, so the x of the far end is `heightM * yScale * tan(angle)`: leg 2 then leaves leg 1
- * at `angleDeg` in the world whatever the exaggeration. Returns [x0, y0, z0, x1, y1, z1, x2, y2, z2].
- */
-export function pointerVertices(
-  heightM: number,
-  angleDeg: number,
-  yScale: number,
-): [number, number, number, number, number, number, number, number, number] {
-  const dx = heightM * yScale * Math.tan((angleDeg * Math.PI) / 180);
-  return [0, 0, 0, 0, heightM, 0, dx, heightM, 0];
+/** Full canvas height of a sign texture: the panel, plus the tail for a trail sign. */
+export function signCanvasHeight(family: SignFamily): number {
+  return family === 'trail' ? SIGN_CANVAS_HEIGHT + TAIL_PX : SIGN_CANVAS_HEIGHT;
 }
 
 /** Sign width in CSS pixels: 160, or a fifth of the viewport on narrow screens (78 at 390). */
@@ -783,6 +802,109 @@ export function declutter(rects: readonly ScreenRect[]): boolean[] {
   return shown;
 }
 
+/** The declutter pass runs at most this often. */
+export const DECLUTTER_INTERVAL_MS = 150;
+/** ...and only after the camera moves more than this many degrees... */
+export const DECLUTTER_MOVE_DEG = 0.5;
+/** ...or this many metres (or while a hidden sign is still serving its hold). */
+export const DECLUTTER_MOVE_M = 2;
+/** A visible sign hides only when a higher-ranked visible sign covers more than this fraction of its area. */
+export const DECLUTTER_HIDE_OVERLAP = 0.25;
+/** A hidden sign shows only after this long clear of every higher-ranked visible sign, over consecutive passes. */
+export const DECLUTTER_SHOW_HOLD_MS = 600;
+/** A visibility change fades opacity over this long. */
+export const SIGN_FADE_MS = 220;
+
+/** One sign's hysteresis state across declutter passes. */
+export interface DeclutterState {
+  readonly visible: boolean;
+  /** Consecutive clear time banked while hidden; reset to 0 by any overlap. */
+  readonly clearMs: number;
+}
+
+/** A new sign starts hidden with its hold already served, so the first clear pass shows it. */
+export const initialDeclutterState = (): DeclutterState => ({
+  visible: false,
+  clearMs: DECLUTTER_SHOW_HOLD_MS,
+});
+
+const overlapArea = (a: ScreenRect, b: ScreenRect, gap: number): number => {
+  const w = Math.min(a.x + a.w + gap, b.x + b.w) - Math.max(a.x - gap, b.x);
+  const h = Math.min(a.y + a.h + gap, b.y + b.h) - Math.max(a.y - gap, b.y);
+  return w > 0 && h > 0 ? w * h : 0;
+};
+
+/**
+ * One declutter pass with hysteresis (Graham, 2026-10-08: signs should be "less eager to appear/disappear"). Signs are
+ * ranked as in declutter (priority, then distance, then input order) and `states` is index-aligned with `rects`.
+ * A visible sign hides only when a higher-ranked visible sign overlaps more than DECLUTTER_HIDE_OVERLAP of its area; a
+ * hidden sign banks `dtMs` of clear time per pass that finds no higher-ranked visible sign within SIGN_GAP_PX of it and
+ * shows once the bank reaches DECLUTTER_SHOW_HOLD_MS; any overlap empties the bank. Pure: returns new states.
+ */
+export function declutterStep(
+  rects: readonly ScreenRect[],
+  states: readonly DeclutterState[],
+  dtMs: number,
+): DeclutterState[] {
+  const order = rects
+    .map((_, i) => i)
+    .sort((a, b) => {
+      const ra = rects[a] as ScreenRect;
+      const rb = rects[b] as ScreenRect;
+      return (ra.priority ?? 0) - (rb.priority ?? 0) || ra.distance - rb.distance || a - b;
+    });
+  const next: DeclutterState[] = states.map((st) => st);
+  const kept: ScreenRect[] = [];
+  for (const i of order) {
+    const r = rects[i] as ScreenRect;
+    const st = states[i] as DeclutterState;
+    const own = r.w * r.h;
+    if (st.visible) {
+      const covered = kept.reduce((m, k) => Math.max(m, overlapArea(r, k, 0)), 0);
+      if (own > 0 && covered / own > DECLUTTER_HIDE_OVERLAP) {
+        next[i] = { visible: false, clearMs: 0 };
+      } else {
+        kept.push(r);
+      }
+    } else {
+      const clear = kept.every((k) => overlapArea(r, k, SIGN_GAP_PX) === 0);
+      const banked = clear ? st.clearMs + dtMs : 0;
+      if (clear && banked >= DECLUTTER_SHOW_HOLD_MS) {
+        next[i] = { visible: true, clearMs: 0 };
+        kept.push(r);
+      } else {
+        next[i] = { visible: false, clearMs: banked };
+      }
+    }
+  }
+  return next;
+}
+
+/** Moves `fade` (0 to 1) toward its target by dtMs / SIGN_FADE_MS. */
+export function stepFade(fade: number, visible: boolean, dtMs: number): number {
+  const step = dtMs / SIGN_FADE_MS;
+  return visible ? Math.min(1, fade + step) : Math.max(0, fade - step);
+}
+
+/** Where the camera was at the last declutter pass. */
+export interface CameraPose {
+  readonly x: number;
+  readonly y: number;
+  readonly z: number;
+  /** Unit view direction. */
+  readonly dx: number;
+  readonly dy: number;
+  readonly dz: number;
+}
+
+/** True when the camera moved more than DECLUTTER_MOVE_M metres or turned more than DECLUTTER_MOVE_DEG degrees. */
+export function cameraMoved(prev: CameraPose | null, cur: CameraPose): boolean {
+  if (prev === null) return true;
+  if (Math.hypot(cur.x - prev.x, cur.y - prev.y, cur.z - prev.z) > DECLUTTER_MOVE_M) return true;
+  const dot = Math.min(1, Math.max(-1, cur.dx * prev.dx + cur.dy * prev.dy + cur.dz * prev.dz));
+  return (Math.acos(dot) * 180) / Math.PI > DECLUTTER_MOVE_DEG;
+}
+
 /** The slice of CanvasRenderingContext2D the sign uses; tests pass a recording fake. */
 export interface SignContext2D {
   fillStyle: string | CanvasGradient | CanvasPattern;
@@ -795,6 +917,7 @@ export interface SignContext2D {
   moveTo(x: number, y: number): void;
   arc(x: number, y: number, r: number, start: number, end: number): void;
   arcTo(x1: number, y1: number, x2: number, y2: number, r: number): void;
+  lineTo(x: number, y: number): void;
   closePath(): void;
   fill(): void;
   fillText(text: string, x: number, y: number): void;
@@ -810,6 +933,7 @@ export interface SignSpec {
   readonly place?: string | undefined;
   /** False until the Material Symbols font has loaded (or forever when it fails): chips and label only. */
   readonly glyph: boolean;
+  /** The panel's size; a trail sign's canvas is TAIL_PX taller than `height`. */
   readonly width: number;
   readonly height: number;
 }
@@ -821,7 +945,18 @@ export const signTextureKey = (
   spec: Pick<SignSpec, 'activities' | 'label' | 'family' | 'place'>,
 ): string => `${spec.family}|${spec.activities.join(',')}|${spec.label}|${spec.place ?? ''}`;
 
-function roundedPanel(ctx: SignContext2D, w: number, h: number, colour: number): void {
+/**
+ * The rounded panel as one path. With `tail`, the bottom edge carries the tail's two legs in the same path (single
+ * fill, no seam): leg 1 drops vertically from x = TAIL_X_FRACTION * w to the apex at (that x, h + TAIL_PX), leg 2 climbs
+ * back to the bottom edge TAIL_PX * tan(15 degrees) to the right.
+ */
+function roundedPanel(
+  ctx: SignContext2D,
+  w: number,
+  h: number,
+  colour: number,
+  tail: boolean,
+): void {
   const r = h * 0.22;
   ctx.globalAlpha = SIGN_PANEL_ALPHA;
   ctx.fillStyle = cssHex(colour);
@@ -829,6 +964,12 @@ function roundedPanel(ctx: SignContext2D, w: number, h: number, colour: number):
   ctx.moveTo(r, 0);
   ctx.arcTo(w, 0, w, h, r);
   ctx.arcTo(w, h, 0, h, r);
+  if (tail) {
+    const legX = TAIL_X_FRACTION * w;
+    ctx.lineTo(legX + TAIL_PX * Math.tan((POINTER_ANGLE_DEG * Math.PI) / 180), h);
+    ctx.lineTo(legX, h + TAIL_PX);
+    ctx.lineTo(legX, h);
+  }
   ctx.arcTo(0, h, 0, 0, r);
   ctx.arcTo(0, 0, w, 0, r);
   ctx.closePath();
@@ -860,14 +1001,18 @@ function drawChips(
   maxRadius: number,
   available: number,
   gap: number,
+  centred = false,
 ): void {
   const activities = ActivitySchema.options.filter((a) => spec.activities.includes(a));
   const chipR = Math.min(
     maxRadius,
     (available - gap * Math.max(activities.length - 1, 0)) / (2 * Math.max(activities.length, 1)),
   );
+  const rowWidth = activities.length * 2 * chipR + gap * Math.max(activities.length - 1, 0);
+  // Centred rows sit in the middle of the `available` span that starts at `left`.
+  const start = centred ? left + (available - rowWidth) / 2 : left;
   activities.forEach((activity, i) => {
-    const cx = left + chipR + i * (2 * chipR + gap);
+    const cx = start + chipR + i * (2 * chipR + gap);
     ctx.fillStyle = cssHex(SPORT_COLOR[activity]);
     ctx.beginPath();
     ctx.arc(cx, y, chipR, 0, Math.PI * 2);
@@ -890,21 +1035,22 @@ function drawChips(
  */
 export function drawSign(ctx: SignContext2D, spec: SignSpec): void {
   const { width: w, height: h } = spec;
-  ctx.clearRect(0, 0, w, h);
+  const trail = spec.family === 'trail';
+  ctx.clearRect(0, 0, w, h + (trail ? TAIL_PX : 0));
   const pad = h * 0.12;
-  roundedPanel(ctx, w, h, SIGN_PANEL_COLOR);
+  roundedPanel(ctx, w, h, SIGN_PANEL_COLOR, trail);
   if (spec.family === 'trail') {
     ctx.fillStyle = cssHex(LABEL_LIGHT);
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'left';
     fitLabel(ctx, spec.label, Math.round(h * 0.34), w - 2 * pad, 'bold');
-    ctx.fillText(spec.label, pad, h * 0.3);
-    drawChips(ctx, spec, pad, h * 0.72, h * 0.19, w - 2 * pad, h * 0.06);
+    ctx.fillText(spec.label, pad, h * 0.25);
+    drawChips(ctx, spec, pad, h * 0.7, h * TRAIL_CHIP_R_FRACTION, w - 2 * pad, h * 0.06);
     return;
   }
   if (spec.place !== undefined) {
     // A named place: chips on top, the place name in bold, then the trail count smaller underneath. The name matches a trail sign's name: 0.34 of the height, bold.
-    drawChips(ctx, spec, pad, h * 0.2, h * 0.15, w - 2 * pad, h * 0.05);
+    drawChips(ctx, spec, pad, h * 0.2, h * 0.15, w - 2 * pad, h * 0.05, true);
     ctx.fillStyle = cssHex(LABEL_LIGHT);
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'center';
@@ -914,7 +1060,7 @@ export function drawSign(ctx: SignContext2D, spec: SignSpec): void {
     ctx.fillText(spec.label, w / 2, h * 0.85);
     return;
   }
-  drawChips(ctx, spec, pad, h * 0.28, h * 0.2, w - 2 * pad, h * 0.06);
+  drawChips(ctx, spec, pad, h * 0.28, h * 0.2, w - 2 * pad, h * 0.06, true);
   ctx.fillStyle = cssHex(LABEL_LIGHT);
   ctx.textBaseline = 'middle';
   fitLabel(ctx, spec.label, Math.round(h * 0.32), w - 2 * pad);
@@ -988,6 +1134,11 @@ export interface BillboardDeps {
   readonly places?: readonly Place[];
   /** Defaults to console.warn. */
   readonly warn?: (message: string) => void;
+  /**
+   * Called on every filter change and redrape with the planned place signs (#63). The hero place (HERO_PLACE_ID) gets
+   * no sprite: src/ui/hero-sign.ts renders it from this plan, and a place with no member trail is absent from it.
+   */
+  readonly onPlan?: (places: readonly PlacePlan[]) => void;
 }
 
 export interface BillboardStats {
@@ -1021,15 +1172,15 @@ export interface BillboardLayer {
 }
 
 interface Sign {
-  /** Trail signs: the rigid group at the trail point holding the pointer and the sprite. Always in the layer group. */
-  readonly rigid: Group;
   readonly sprite: Sprite;
   readonly material: SpriteMaterial;
-  readonly pointer: Mesh;
-  readonly pointerMaterial: MeshBasicMaterial;
   family: SignFamily;
   priority: number;
   active: boolean;
+  /** Hysteresis state for the declutter pass. */
+  dc: DeclutterState;
+  /** Opacity multiplier, 0 to 1, easing toward the declutter target. */
+  fade: number;
 }
 
 /**
@@ -1037,8 +1188,8 @@ interface Sign {
  * @strategicPurpose Lets a viewer see where each named track runs and every sport that uses it, and where sports
  *   concentrate, without hovering or reading the lines, with few enough signs that the mountain stays visible.
  * @tacticalObjective Groups visible areas into tracks and concentrations, plans concentration signs plus one sign per
- *   named track, and draws each as a pooled camera-facing, screen-sized sprite inside the ElevatedGroup (trail signs
- *   on a 15 degree rigid pointer to the trail point), compensating the group's y-scale each frame.
+ *   named track, and draws each as a pooled camera-facing, screen-sized sprite inside the ElevatedGroup (a trail
+ *   sign's tail is part of its one drawn shape, apex on the trail point), compensating the group's y-scale each frame.
  */
 export function buildBillboardLayer(
   areas: readonly Area[],
@@ -1088,7 +1239,7 @@ export function buildBillboardLayer(
     if (cached) return cached.texture;
     const canvas = createCanvas();
     canvas.width = SIGN_CANVAS_WIDTH;
-    canvas.height = SIGN_CANVAS_HEIGHT;
+    canvas.height = signCanvasHeight(spec.family);
     const texture = new CanvasTexture(canvas as unknown as HTMLCanvasElement);
     texture.colorSpace = SRGBColorSpace;
     texture.minFilter = LinearFilter;
@@ -1098,19 +1249,6 @@ export function buildBillboardLayer(
     paint(entry);
     return texture;
   };
-
-  // One fixed local shape shared by every pointer; only the far end's x changes, and only with the exaggeration.
-  const pointerGeometry = new BufferGeometry();
-  pointerGeometry.setAttribute('position', new BufferAttribute(new Float32Array(9), 3));
-  let pointerScale = Number.NaN;
-  const shapePointer = (ys: number): void => {
-    if (ys === pointerScale) return;
-    pointerScale = ys;
-    const pos = pointerGeometry.getAttribute('position') as BufferAttribute;
-    pos.array.set(pointerVertices(SIGN_OFFSET_M, POINTER_ANGLE_DEG, ys));
-    pos.needsUpdate = true;
-  };
-  shapePointer(effectiveScale(host.exaggeration));
 
   const pool: Sign[] = [];
   const makeSign = (plan: SignPlan): Sign => {
@@ -1123,48 +1261,23 @@ export function buildBillboardLayer(
     const sprite = new Sprite(material);
     sprite.renderOrder = SIGN_RENDER_ORDER;
     sprite.raycast = () => {};
-    const pointerMaterial = new MeshBasicMaterial({
-      color: SIGN_PANEL_COLOR,
-      transparent: true,
-      opacity: SIGN_PANEL_ALPHA,
-      side: DoubleSide,
-      depthTest: false,
-      depthWrite: false,
-    });
-    const pointer = new Mesh(pointerGeometry, pointerMaterial);
-    pointer.name = 'billboard-pointer';
-    pointer.raycast = () => {};
-    pointer.frustumCulled = false;
-    pointer.renderOrder = SIGN_RENDER_ORDER;
-    const rigid = new Group();
-    rigid.name = 'billboard-sign';
-    rigid.add(pointer);
     return {
-      rigid,
       sprite,
       material,
-      pointer,
-      pointerMaterial,
       family: plan.family,
       priority: 0,
       active: false,
+      dc: initialDeclutterState(),
+      fade: 0,
     };
   };
 
-  /** Concentration: sprite straight in the layer group, bottom-centre anchored. Trail: in the rigid group, bottom-left on leg 1. */
+  /** Concentration: bottom-centre anchored. Trail: the tail's apex, at x = TAIL_X_FRACTION of the full canvas, bottom. */
   const arrange = (sign: Sign, family: SignFamily): void => {
     sign.family = family;
-    if (family === 'trail') {
-      sign.sprite.center.set(0, 0);
-      sign.sprite.position.set(0, SIGN_OFFSET_M, 0);
-      sign.rigid.add(sign.sprite);
-      group.add(sign.rigid);
-    } else {
-      sign.sprite.center.set(0.5, 0);
-      sign.rigid.removeFromParent();
-      group.add(sign.sprite);
-    }
-    sign.pointer.visible = family === 'trail';
+    if (family === 'trail') sign.sprite.center.set(TAIL_X_FRACTION, 0);
+    else sign.sprite.center.set(0.5, 0);
+    group.add(sign.sprite);
   };
 
   let lastArgs: {
@@ -1176,18 +1289,33 @@ export function buildBillboardLayer(
   let shownCount = 0;
   const heightAt = (east: number, north: number): number =>
     activeSurface.sample(east, north).height;
+  /** Where a trail sign's apex sits in scene space. The one place to lift it (#64 trail curtains). */
+  const trailAnchor = (east: number, north: number): readonly [number, number, number] =>
+    toScene(east, north, Math.max(heightAt(east, north), trailTopHeight(east, north)));
+
+  // Declutter pacing (Graham: signs should not flicker as the camera rotates).
+  let sinceMs = DECLUTTER_INTERVAL_MS;
+  let lastPose: CameraPose | null = null;
+  let lastSizeKey = '';
+  let planDirty = true;
+  let holdPending = false;
 
   const rebuild = (): void => {
+    planDirty = true;
     const { annotations, selected, visibleIds } = lastArgs;
     // Concentration signs first: they win declutter ties and keep their pool slots across trail-sign changes.
+    const concentrations = planSigns(areas, annotations, selected, visibleIds, deps.places ?? []);
+    deps.onPlan?.(placePlans(concentrations));
     lastPlans = [
-      ...planSigns(areas, annotations, selected, visibleIds, deps.places ?? []),
+      ...concentrations.filter((p) => p.placeId !== HERO_PLACE_ID),
       ...planTrailSigns(areas, annotations, selected, visibleIds),
     ];
     lastPlans.forEach((plan, i) => {
       const sign = pool[i] ?? makeSign(plan);
       if (pool[i] === undefined) pool.push(sign);
       sign.active = true;
+      sign.dc = initialDeclutterState();
+      sign.fade = 0;
       sign.priority = plan.family === 'concentration' ? 0 : 1;
       sign.material.map = textureFor(plan);
       sign.sprite.name = `billboard:${signTextureKey(plan)}`;
@@ -1196,19 +1324,18 @@ export function buildBillboardLayer(
       sign.sprite.userData['label'] = plan.label;
       sign.sprite.visible = true;
       arrange(sign, plan.family);
-      const ground =
-        plan.family === 'trail'
-          ? Math.max(heightAt(plan.east, plan.north), trailTopHeight(plan.east, plan.north))
-          : heightAt(plan.east, plan.north); // #64: trail tail on the curtain top
-      const [x, y, z] = toScene(plan.east, plan.north, ground);
-      if (plan.family === 'trail') sign.rigid.position.set(x, y, z);
-      else sign.sprite.position.set(x, y + SIGN_OFFSET_M, z);
+      if (plan.family === 'trail') {
+        const [x, y, z] = trailAnchor(plan.east, plan.north);
+        sign.sprite.position.set(x, y, z);
+      } else {
+        const [x, y, z] = toScene(plan.east, plan.north, heightAt(plan.east, plan.north));
+        sign.sprite.position.set(x, y + SIGN_OFFSET_M, z);
+      }
     });
     for (let i = lastPlans.length; i < pool.length; i++) {
       const sign = pool[i] as Sign;
       sign.active = false;
       sign.sprite.visible = false;
-      sign.pointer.visible = false;
     }
   };
 
@@ -1227,52 +1354,53 @@ export function buildBillboardLayer(
   };
 
   const world = new Vector3();
+  const poseDir = new Vector3();
   const ndc = new Vector3();
   const view = new Vector3();
-  const onFrame = (): void => {
+  const onFrame = (deltaMs = 0): void => {
     if (!group.visible) return;
     const { camera, renderer } = host;
     const viewportW = renderer.domElement.clientWidth;
     const viewportH = Math.max(renderer.domElement.clientHeight, 1);
     const tanHalf = Math.tan(((camera.fov / 2) * Math.PI) / 180);
     const widthPx = signWidthPx(viewportW);
-    const heightPx = (widthPx * SIGN_CANVAS_HEIGHT) / SIGN_CANVAS_WIDTH;
+    const heightOf = (family: SignFamily): number =>
+      (widthPx * signCanvasHeight(family)) / SIGN_CANVAS_WIDTH;
     const ys = effectiveScale(host.exaggeration);
-    shapePointer(ys);
-    const candidates: Sign[] = [];
+    // Sign positions never depend on the camera; only the screen-space scale and the rects below do.
+    const onScreen: Sign[] = [];
     const rects: ScreenRect[] = [];
+    const alphas: number[] = [];
     for (const sign of pool) {
       if (!sign.active) continue;
       const trail = sign.family === 'trail';
-      if (trail) {
-        // The elevated group only scales and shifts y, so its x and z are the camera's x and z: yaw the pointer to face it.
-        sign.rigid.rotation.y = Math.atan2(
-          camera.position.x - sign.rigid.position.x,
-          camera.position.z - sign.rigid.position.z,
-        );
-      }
+      const heightPx = heightOf(sign.family);
       sign.sprite.getWorldPosition(world);
       const horizontal = Math.hypot(world.x - fadeCentre.east, world.z + fadeCentre.north);
       const alpha = fadeAlpha(horizontal);
       sign.sprite.visible = false;
-      sign.pointer.visible = false;
-      if (alpha <= 0) continue;
-      sign.material.opacity = alpha;
-      sign.pointerMaterial.opacity = alpha * SIGN_PANEL_ALPHA;
+      if (alpha <= 0) {
+        sign.dc = initialDeclutterState();
+        continue;
+      }
       // View-space depth sets the pixel size of a point at any screen position; Euclidean distance overstates it off-axis.
       const d = Math.max(-view.copy(world).applyMatrix4(camera.matrixWorldInverse).z, camera.near);
       const w = widthPx * ((2 * d * tanHalf) / viewportH);
       sign.sprite.scale.set(w, (w * heightPx) / widthPx / ys, 1);
       ndc.copy(world).project(camera);
       // Behind the camera or outside the clip range: never drawn, so it occupies no screen space.
-      if (ndc.z < -1 || ndc.z > 1) continue;
+      if (ndc.z < -1 || ndc.z > 1) {
+        sign.dc = initialDeclutterState();
+        continue;
+      }
       const cx = ((ndc.x + 1) / 2) * viewportW;
       const baseY = ((1 - ndc.y) / 2) * viewportH;
-      candidates.push(sign);
+      onScreen.push(sign);
+      alphas.push(alpha);
       // Concentration: the bottom-centre is the projected point, so the rect extends half a width each side and up.
-      // Trail: the bottom-left corner is, so it extends right and up.
+      // Trail: the tail apex is, TAIL_X_FRACTION of the width from the left; the rect includes the tail.
       rects.push({
-        x: trail ? cx : cx - widthPx / 2,
+        x: trail ? cx - TAIL_X_FRACTION * widthPx : cx - widthPx / 2,
         y: baseY - heightPx,
         w: widthPx,
         h: heightPx,
@@ -1280,18 +1408,54 @@ export function buildBillboardLayer(
         priority: sign.priority,
       });
     }
-    const shown = declutter(rects);
-    candidates.forEach((sign, i) => {
-      sign.sprite.visible = shown[i] === true;
-      sign.pointer.visible = shown[i] === true && sign.family === 'trail';
+    // The pass runs at most every DECLUTTER_INTERVAL_MS, and only when something could change its answer.
+    sinceMs += deltaMs;
+    const dir = camera.getWorldDirection(poseDir);
+    const pose: CameraPose = {
+      x: camera.position.x,
+      y: camera.position.y,
+      z: camera.position.z,
+      dx: dir.x,
+      dy: dir.y,
+      dz: dir.z,
+    };
+    const sizeKey = `${viewportW}x${viewportH}@${host.exaggeration}`;
+    if (
+      sinceMs >= DECLUTTER_INTERVAL_MS &&
+      (planDirty || holdPending || sizeKey !== lastSizeKey || cameraMoved(lastPose, pose))
+    ) {
+      const next = declutterStep(
+        rects,
+        onScreen.map((sign) => sign.dc),
+        sinceMs,
+      );
+      onScreen.forEach((sign, i) => {
+        sign.dc = next[i] as DeclutterState;
+      });
+      holdPending = next.some(
+        (st) => !st.visible && st.clearMs > 0 && st.clearMs < DECLUTTER_SHOW_HOLD_MS,
+      );
+      sinceMs = 0;
+      lastPose = pose;
+      lastSizeKey = sizeKey;
+      planDirty = false;
+    }
+    let count = 0;
+    onScreen.forEach((sign, i) => {
+      if (sign.dc.visible) count++;
+      sign.fade = stepFade(sign.fade, sign.dc.visible, deltaMs);
+      sign.material.opacity = (alphas[i] as number) * sign.fade;
+      sign.sprite.visible = sign.dc.visible || sign.fade > 0;
     });
-    shownCount = shown.filter(Boolean).length;
+    shownCount = count;
   };
   const unsubscribe = host.onFrame(onFrame);
 
   // First paint: every area visible, kind-default routing. The first filter apply re-routes.
   applyFilter(new Map(), new Set(), new Set(areas.map((a) => a.id)));
   onFrame();
+  // The first real frame may run a pass at once.
+  sinceMs = DECLUTTER_INTERVAL_MS;
 
   void loadSignFont(
     fonts,
@@ -1330,9 +1494,7 @@ export function buildBillboardLayer(
       unsubscribe();
       for (const sign of pool) {
         sign.material.dispose();
-        sign.pointerMaterial.dispose();
       }
-      pointerGeometry.dispose();
       for (const { texture } of textures.values()) texture.dispose();
       pool.length = 0;
       textures.clear();

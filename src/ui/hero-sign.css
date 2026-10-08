@@ -1,0 +1,58 @@
+/*
+ * The hero sign (#63): the Spirit Mountain Adventure Park place sign as the MAIN sign. A DOM element centred under the
+ * season bar (below the activity row while a season is open), 1.8x the sprite sign: 288 px wide against 160 px, in the
+ * same dark panel style (#1b1f24 at 0.9 alpha).
+ */
+#hero-sign {
+  position: fixed;
+  z-index: 4;
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: min(288px, calc(100vw - 2 * var(--rail-inset, 16px)));
+  top: calc(var(--rail-inset, 16px) + env(safe-area-inset-top, 0px) + var(--sm-season-h, 0px));
+  box-sizing: border-box;
+  padding: 10px 16px 12px;
+  border-radius: 16px;
+  background: rgb(27 31 36 / 0.9);
+  color: #fff;
+  font: var(--sm-font, 13px/1.4 system-ui, sans-serif);
+  text-align: center;
+  pointer-events: none;
+}
+body:has(#season-bar[data-open]) #hero-sign {
+  top: calc(var(--rail-inset, 16px) + env(safe-area-inset-top, 0px) + var(--sm-season-open-h, 0px));
+}
+#hero-sign[hidden] {
+  display: none;
+}
+#hero-sign .hero-name {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+#hero-sign .hero-count {
+  margin-top: 2px;
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0.85;
+}
+#hero-sign .hero-chips {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+#hero-sign .hero-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+#hero-sign .hero-chip .ms {
+  width: 24px;
+  height: 24px;
+  font-size: 24px;
+}

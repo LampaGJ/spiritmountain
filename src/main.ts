@@ -46,6 +46,7 @@ import { loadImagery, loadImageryInset } from './data/load-imagery';
 import { decodeHash } from './ui/filter-hash';
 import { Color, type Material, type Texture } from 'three';
 import { loadImageryStats } from './data/load-imagery-stats';
+import { loadTreeStats } from './data/load-tree-stats';
 import { loadSky } from './data/load-sky';
 import { loadSurface, type SurfaceLoad } from './data/load-surface';
 import { canopyFromSurface } from './scene/curtain';
@@ -147,6 +148,7 @@ import { loadPlaces } from './data/load-places';
 import type { Place } from './schema/places';
 import { installAreas, type AreaLayer } from './scene/areas';
 import { buildBillboardLayer, type BillboardLayer } from './scene/billboards';
+import { createHeroSign } from './ui/hero-sign';
 import { createMeshSurface } from './scene/heightfield';
 import { deriveLandmarks } from './scene/landmarks';
 import { focusBoxOf, type FocusBox } from './scene/views';
@@ -219,6 +221,7 @@ if (!('error' in areaLayerResult)) {
       console.error('places:', error);
       return [];
     });
+    const heroSign = createHeroSign(document.body); // #63: the MAIN sign, a DOM element fed by the layer's plan
     billboardLayer = buildBillboardLayer(
       [...areaLayerResult.registry.values()].map((entry) => entry.area),
       meshSurface,
@@ -230,6 +233,7 @@ if (!('error' in areaLayerResult)) {
         host: handle,
         fadeCentre: { east: fadeCentre.east, north: fadeCentre.north },
         places,
+        onPlan: heroSign.render,
       },
     );
     handle.elevated.add(billboardLayer.group);
@@ -258,13 +262,21 @@ function reportSceneFailure(what: string, message: string): void {
 // Not awaited: ground and sky arrive after the terrain is already on screen. Failures keep the flat sky and slope-coloured ground.
 readiness.register(
   'ground-colour',
-  loadImageryStats().then((stats) => {
-    if ('error' in stats) {
+  Promise.all([loadTreeStats(), loadImageryStats()]).then(([trees, stats]) => {
+    // The mean colour of the trees wins; the NAIP mean is the fallback when the tree stats are absent or invalid.
+    if ('error' in trees) reportSceneFailure('tree ground colour', trees.error);
+    else if ('absent' in trees) {
+      console.info('ground: data/tree-stats.json is not in the build, using the imagery mean');
+    }
+    const treeMean = 'meanLinear' in trees ? trees.meanLinear : null;
+    if (treeMean === null && 'error' in stats) {
       reportSceneFailure('ground colour', stats.error);
       handle.setGround(groundSlopeColor(), header.minElev);
       return;
     }
-    groundMean = new Color(stats.meanLinear.r, stats.meanLinear.g, stats.meanLinear.b);
+    const mean = treeMean ?? ('meanLinear' in stats ? stats.meanLinear : null);
+    if (mean === null) return;
+    groundMean = new Color(mean.r, mean.g, mean.b);
     handle.setGround(groundMean, header.minElev);
     handle.setGroundColor(imageryWanted ? groundMean : null);
   }),

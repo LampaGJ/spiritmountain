@@ -13,7 +13,7 @@ export function groundSlopeColor(): Color {
 }
 
 /**
- * Flat plane under and beyond the terrain, in the photo's mean colour, so the faded edge of the terrain and
+ * Flat plane under and beyond the terrain, in the mean colour of the trees (the photo's mean when the tree stats are missing), so the faded edge of the terrain and
  * context ring blends into ground instead of sky. Opaque, drawn first (renderOrder -1), no fade, no shadows.
  */
 export function createGround(
