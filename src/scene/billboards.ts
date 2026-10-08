@@ -23,7 +23,7 @@ import { ActivitySchema, type Annotation } from '../schema/annotation';
 import type { Area } from '../schema/area';
 import type { Place } from '../schema/places';
 import { signGlyph } from '../ui/icons';
-import type { SceneMapper } from './areas';
+import { trailTopHeight, type SceneMapper } from './areas';
 import { effectiveScale } from './elevated';
 import type { MeshSurface } from './heightfield';
 import { SPORT_COLOR } from './palette';
@@ -1291,7 +1291,7 @@ export function buildBillboardLayer(
     activeSurface.sample(east, north).height;
   /** Where a trail sign's apex sits in scene space. The one place to lift it (#64 trail curtains). */
   const trailAnchor = (east: number, north: number): readonly [number, number, number] =>
-    toScene(east, north, heightAt(east, north));
+    toScene(east, north, Math.max(heightAt(east, north), trailTopHeight(east, north)));
 
   // Declutter pacing (Graham: signs should not flicker as the camera rotates).
   let sinceMs = DECLUTTER_INTERVAL_MS;
