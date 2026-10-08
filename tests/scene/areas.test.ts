@@ -170,7 +170,8 @@ describe('buildAreaLayer', () => {
       }
     });
     expect(seen).toBe(layer.stats.lineCount);
-    expect(seen).toBe(areas.length);
+    // A lift is drawn as two rope lines (#68), every other area as one line per ring.
+    expect(seen).toBe(areas.length + areas.filter((a) => a.kind === 'lift').length);
   });
 
   it('shares one material per sport, first painted with the kind default, coloured from the palette, with a resolution set', () => {
@@ -473,7 +474,7 @@ describe('parallel sport strands (#54)', () => {
     expect(strands.map((l) => l.parent)).toEqual([layer.group, layer.group]);
     expect(layer.registry.get('way/1003')?.lines).toHaveLength(1);
     expect(layer.registry.get('way/1004')?.lines).toHaveLength(1);
-    expect(layer.registry.get('way/1006')?.lines).toHaveLength(1);
+    expect(layer.registry.get('way/1006')?.lines).toHaveLength(2);
   });
 
   it('is idempotent', () => {
