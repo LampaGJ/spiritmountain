@@ -48,7 +48,12 @@ import { Color, type Material, type Texture } from 'three';
 import { loadImageryStats } from './data/load-imagery-stats';
 import { loadSky } from './data/load-sky';
 import { loadSurface } from './data/load-surface';
-import { loadTrees, type LoadedTrees } from './data/load-trees';
+import {
+  loadContextTrees,
+  loadTrees,
+  type LoadedContextTrees,
+  type LoadedTrees,
+} from './data/load-trees';
 import type { LoadedTerrain } from './data/load-terrain';
 import { installTrees, type TreesHandle } from './scene/trees';
 
@@ -73,6 +78,9 @@ let surfaceHandle: SurfaceHandle | null = null;
 let treesHandle: TreesHandle | null = null;
 /** The decoded tree records and the core heightfield without canopy, once data/trees.* has loaded. */
 let treesData: LoadedTrees | null = null;
+/** The far-field trees beyond the core window, once data/context-trees.* has loaded; null while absent. */
+let contextTreesData: LoadedContextTrees | null = null;
+let contextTreesHandle: TreesHandle | null = null;
 let noCanopyLayer: LoadedTerrain | null = null;
 let treesWanted = decodeHash(location.hash).filter.trees === true;
 let treesRequest: Promise<void> | null = null;
@@ -384,6 +392,12 @@ export const setSurfaceWanted = (on: boolean): void => {
 if (surfaceWanted) readiness.register('surface', requestSurface());
 
 /**
+ * The far-field trees are already thinned at ingest (full density to 5 km, none at FADE_OUTER_M), so the shader fade only
+ * has to soften the last stretch; the default fade (inner 4 km) would thin them a second time.
+ */
+const CONTEXT_TREES_FADE_INNER_M = 9000;
+
+/**
  * Trees on: the instanced trees are built (from the cached records) and shown, and while the Surface layer is also on the
  * core mesh swaps to the core-nocanopy heightfield, so the LiDAR canopy blobs give way to the simulated trees. Trees off:
  * the trees are disposed and the normal core returns. Lines re-drape onto whichever composite is drawn.
@@ -399,6 +413,21 @@ function applyTreesMode(): void {
     treesHandle = null;
   }
   treesHandle?.setVisible(showTrees);
+  const showContextTrees = treesWanted && contextTreesData !== null;
+  if (showContextTrees && contextTreesData && !contextTreesHandle) {
+    contextTreesHandle = installTrees(handle.elevated, contextTreesData, {
+      fadeCentre,
+      name: 'context-trees',
+      fadeInnerM: CONTEXT_TREES_FADE_INNER_M,
+      fadeOuterM: FADE_OUTER_M,
+    });
+    handle.applyHorizon(contextTreesHandle.material);
+  }
+  if (!showContextTrees && contextTreesHandle) {
+    contextTreesHandle.dispose();
+    contextTreesHandle = null;
+  }
+  contextTreesHandle?.setVisible(showContextTrees);
   const mixed = showTrees && surfaceWanted && noCanopyLayer !== null;
   surfaceHandle?.setCoreVariant(mixed ? 'nocanopy' : 'canopy', noCanopyLayer ?? undefined);
   applySurfaceDrape();
@@ -420,8 +449,17 @@ function reportTreesFailure(message: string): void {
 /** Loads the trees the first time they are wanted; the default page with Trees off never pays for them. */
 function requestTrees(): Promise<void> {
   if (treesRequest) return treesRequest;
-  treesRequest = loadTrees({ frameUrl })
-    .then((result) => {
+  const contextRequest = loadContextTrees({ frameUrl }).then((layer) => {
+    if ('absent' in layer) {
+      console.info('context-trees: files are not in the build; the far-field forest is skipped');
+      return;
+    }
+    if ('error' in layer) return reportTreesFailure(layer.error);
+    contextTreesData = layer;
+    applyTreesMode();
+  });
+  treesRequest = Promise.all([loadTrees({ frameUrl }), contextRequest])
+    .then(([result]) => {
       if ('error' in result.trees) return reportTreesFailure(result.trees.error);
       treesData = result.trees;
       if ('error' in result.noCanopy) reportTreesFailure(result.noCanopy.error);

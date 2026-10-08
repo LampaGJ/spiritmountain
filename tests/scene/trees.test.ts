@@ -79,6 +79,27 @@ describe('installTrees', () => {
     expect(handle.group.visible).toBe(true);
   });
 
+  it('names the group and meshes from the name option and sets the fade radii on the material', () => {
+    const parent = new Group();
+    const handle = installTrees(parent, trees, {
+      fadeCentre: { east: 0, north: 0 },
+      name: 'context-trees',
+      fadeInnerM: 9000,
+      fadeOuterM: 10100,
+    });
+    expect(handle.group.name).toBe('context-trees');
+    expect(handle.meshes.every((m) => m.name.startsWith('context-trees-archetype-'))).toBe(true);
+    const uniforms: Record<string, { value: unknown }> = {};
+    const shader = {
+      uniforms,
+      vertexShader: '#include <common>\n#include <begin_vertex>',
+      fragmentShader: '#include <common>\n#include <opaque_fragment>',
+    };
+    handle.material.onBeforeCompile(shader as never, undefined as never);
+    expect(uniforms['fadeInner']?.value).toBe(9000);
+    expect(uniforms['fadeOuter']?.value).toBe(10100);
+  });
+
   it('dispose removes the group and frees geometries and the material', () => {
     const parent = new Group();
     const handle = installTrees(parent, trees, { fadeCentre: { east: 0, north: 0 } });
