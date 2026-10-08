@@ -159,3 +159,20 @@ describe('runTreeStats', () => {
     expect(() => runTreeStats(options(sandbox(true)))).toThrow(/BinLengthMismatch/);
   });
 });
+
+describe('the committed tree stats', () => {
+  it('parse and pin the current trees files', () => {
+    const stats = TreeStatsSchema.parse(JSON.parse(readFileSync('data/tree-stats.json', 'utf8')));
+    expect(stats.sources.map((s) => s.path)).toEqual([
+      'data/trees.bin',
+      'data/trees.json',
+      'data/context-trees.bin',
+      'data/context-trees.json',
+    ]);
+    for (const s of stats.sources) expect(s.sha256).toBe(sha256Hex(readFileSync(s.path)));
+    const counts = ['trees', 'context-trees'].map(
+      (n) => (JSON.parse(readFileSync(`data/${n}.json`, 'utf8')) as { count: number }).count,
+    );
+    expect(stats.count).toBe((counts[0] ?? 0) + (counts[1] ?? 0));
+  });
+});
