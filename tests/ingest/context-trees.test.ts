@@ -4,15 +4,18 @@ import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
 import {
   BASE_DENSITY,
+  BLOCK_M,
   GREEN_MIN,
-  INNER_M,
   OUTER_M,
+  REMOVAL_STEP,
+  RING_M,
   TRANSFORM_SOURCES,
   blockColour,
   blockSeed,
   keepProbability,
   mulberry32,
   placeContextTrees,
+  ringIndex,
   sampleHeightfield,
   type Heightfield,
   type ImageSource,
@@ -50,20 +53,20 @@ describe('shared conventions with trees.ts', () => {
   });
 });
 
-describe('keepProbability', () => {
-  it('is the base density inside INNER_M, falls monotonically, and is 0 at OUTER_M', () => {
+describe('ringIndex and keepProbability', () => {
+  it('puts a block at 249 m and 251 m beyond the core border in rings 0 and 1', () => {
+    expect(RING_M).toBe(250);
+    expect(ringIndex(1250 + 249, 1250, 250)).toBe(0);
+    expect(ringIndex(1250 + 251, 1250, 250)).toBe(1);
+    expect(ringIndex(1000, 1250, 250)).toBe(0);
+  });
+  it('is BASE_DENSITY in ring 0 and decays by 0.9 per ring', () => {
+    expect(REMOVAL_STEP).toBe(0.1);
     expect(keepProbability(0)).toBe(BASE_DENSITY);
-    expect(keepProbability(INNER_M)).toBe(BASE_DENSITY);
-    expect(keepProbability(OUTER_M)).toBe(0);
-    expect(keepProbability(OUTER_M + 500)).toBe(0);
-    let previous = BASE_DENSITY;
-    for (let r = INNER_M; r <= OUTER_M; r += 100) {
-      const p = keepProbability(r);
-      expect(p).toBeLessThanOrEqual(previous);
-      previous = p;
+    for (let k = 1; k <= 44; k += 1) {
+      expect(keepProbability(k)).toBeCloseTo(keepProbability(k - 1) * 0.9, 12);
     }
-    const mid = keepProbability((INNER_M + OUTER_M) / 2);
-    expect(mid).toBeCloseTo(BASE_DENSITY / 2, 6);
+    expect(keepProbability(44)).toBeLessThan(0.01);
   });
 });
 
@@ -143,9 +146,10 @@ describe('placeContextTrees', () => {
     expect(Buffer.from(a).equals(Buffer.from(b))).toBe(true);
   });
 
-  it('keeps about the base density of forest blocks near the centre, with height 8 to 22 m and ground from the heightfield', () => {
-    const { trees, forestBlocks } = placeContextTrees(input);
-    expect(forestBlocks).toBe(400);
+  it('keeps about the base density of forest blocks in ring 0, with height 8 to 22 m and ground from the heightfield', () => {
+    const { trees, forestBlocks } = placeContextTrees(input, { ringM: 100000 });
+    expect(BLOCK_M).toBe(15);
+    expect(forestBlocks).toBe(1600);
     expect(trees.length / forestBlocks).toBeGreaterThan(BASE_DENSITY - 0.1);
     expect(trees.length / forestBlocks).toBeLessThan(BASE_DENSITY + 0.1);
     for (const t of trees) {
@@ -165,31 +169,82 @@ describe('placeContextTrees', () => {
 
   it('skips blocks whose centre is inside the core window', () => {
     const exclude: LocalBox = { xmin: 0, xmax: 300, ymin: 0, ymax: 600 };
-    const { trees } = placeContextTrees({ ...input, exclude });
+    const flatRings = { ringM: 100000 };
+    const { trees } = placeContextTrees({ ...input, exclude }, flatRings);
     expect(trees.length).toBeGreaterThan(0);
-    for (const t of trees) expect(t.east).toBeGreaterThan(300 - 7);
-    const east = placeContextTrees(input).trees.filter((t) => t.east >= 306).length;
+    for (const t of trees) expect(t.east).toBeGreaterThan(300 - BLOCK_M / 2);
+    const east = placeContextTrees(input, flatRings).trees.filter(
+      (t) => t.east >= 300 + BLOCK_M / 2,
+    ).length;
     expect(trees.length).toBeGreaterThan(east * 0.9);
   });
 
-  it('places nothing at or beyond OUTER_M and thins between INNER_M and OUTER_M', () => {
-    const farBox = (centre: number): LocalBox => ({
-      xmin: centre,
-      xmax: centre + 600,
-      ymin: 0,
-      ymax: 600,
+  it('places nothing at or beyond OUTER_M', () => {
+    const far: LocalBox = { xmin: OUTER_M + 100, xmax: OUTER_M + 700, ymin: 0, ymax: 600 };
+    const { trees } = placeContextTrees({
+      sources: [photo('a', far, FOREST)],
+      heightfields: [flat(far, 250)],
+      exclude: NO_EXCLUDE,
     });
-    const count = (centre: number): number =>
-      placeContextTrees({
-        sources: [photo('a', farBox(centre), FOREST)],
-        heightfields: [flat(farBox(centre), 250)],
-        exclude: NO_EXCLUDE,
-      }).trees.length;
-    const inner = count(INNER_M - 700);
-    const middle = count((INNER_M + OUTER_M) / 2);
-    expect(inner).toBeGreaterThan(middle);
-    expect(middle).toBeGreaterThan(0);
-    expect(count(OUTER_M + 100)).toBe(0);
+    expect(trees).toEqual([]);
+  });
+
+  it('thins ring by ring, with no step at the core border', () => {
+    const big: LocalBox = { xmin: -3000, xmax: 3000, ymin: -3000, ymax: 3000 };
+    const exclude: LocalBox = { xmin: -1000, xmax: 1000, ymin: -1000, ymax: 1000 };
+    const { trees } = placeContextTrees(
+      { sources: [photo('a', big, FOREST)], heightfields: [flat(big, 250)], exclude },
+      { ringM: 200 },
+    );
+    const perRing = new Array<number>(6).fill(0);
+    for (const t of trees) {
+      const k = ringIndex(Math.hypot(t.east, t.north), 1000, 200);
+      if (k < 6) perRing[k] = (perRing[k] as number) + 1;
+    }
+    // Rings 3 to 5 (r 1600 to 2200 m) are full annuli outside the square core and inside the photo.
+    const density = (k: number): number => {
+      const r0 = 1000 + k * 200;
+      const r1 = r0 + 200;
+      return (perRing[k] as number) / (Math.PI * (r1 * r1 - r0 * r0));
+    };
+    for (let k = 4; k <= 5; k += 1) {
+      expect(density(k) / density(k - 1)).toBeGreaterThan(0.9 * 0.93);
+      expect(density(k) / density(k - 1)).toBeLessThan(0.9 * 1.07);
+    }
+  });
+
+  it('jitters each tree within plus or minus half a block of its block centre on both axes, and fills the range', () => {
+    const one: LocalBox = { xmin: 0, xmax: BLOCK_M, ymin: 0, ymax: BLOCK_M };
+    let minE = Infinity;
+    let maxE = -Infinity;
+    let minN = Infinity;
+    let maxN = -Infinity;
+    for (let seed = 1; seed <= 300; seed += 1) {
+      const { trees } = placeContextTrees(
+        { sources: [photo('a', one, FOREST)], heightfields: [flat(one, 250)], exclude: NO_EXCLUDE },
+        { seed, baseDensity: 1, ringM: 100000 },
+      );
+      expect(trees.length).toBe(1);
+      const t = trees[0] as { east: number; north: number };
+      expect(Math.abs(t.east - BLOCK_M / 2)).toBeLessThanOrEqual(BLOCK_M / 2);
+      expect(Math.abs(t.north - BLOCK_M / 2)).toBeLessThanOrEqual(BLOCK_M / 2);
+      minE = Math.min(minE, t.east);
+      maxE = Math.max(maxE, t.east);
+      minN = Math.min(minN, t.north);
+      maxN = Math.max(maxN, t.north);
+    }
+    expect(maxE - minE).toBeGreaterThan(BLOCK_M * 0.9);
+    expect(maxN - minN).toBeGreaterThan(BLOCK_M * 0.9);
+  });
+
+  it('draws the jitter before the keep test, so a lower density keeps a subset at the same positions', () => {
+    const full = placeContextTrees(input, { ringM: 100000, baseDensity: 0.85 }).trees;
+    const half = placeContextTrees(input, { ringM: 100000, baseDensity: 0.4 }).trees;
+    const key = (t: { east: number; north: number }): string => `${t.east},${t.north}`;
+    const fullKeys = new Set(full.map(key));
+    expect(half.length).toBeGreaterThan(0);
+    expect(half.length).toBeLessThan(full.length);
+    for (const t of half) expect(fullKeys.has(key(t))).toBe(true);
   });
 
   it('gives a block to the first photo that holds it, so overlapping photos never double a tree', () => {
@@ -226,7 +281,7 @@ describe('ContextTreesHeaderSchema', () => {
     archetypes: [1, 1, 0, 0, 1, 0],
     params: {
       seed: 53,
-      blockM: 30,
+      blockM: 15,
       greenMin: 0.055,
       greenFull: 0.11,
       baseDensity: 0.85,

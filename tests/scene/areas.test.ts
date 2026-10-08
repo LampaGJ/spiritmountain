@@ -13,8 +13,6 @@ import {
 import {
   DEFAULT_LINE_WIDTH_PX,
   patchStrandShader,
-  GHOST_OPACITY,
-  GHOST_RENDER_ORDER,
   buildAreaLayer,
   buildAreaPositions,
   type SceneMapper,
@@ -165,7 +163,7 @@ describe('buildAreaLayer', () => {
     expect([...layer.registry.keys()]).toEqual(areas.map((a) => a.id));
     let seen = 0;
     layer.group.traverse((object) => {
-      if (object instanceof Line2 && !object.name.endsWith(':ghost')) {
+      if (object instanceof Line2) {
         seen += 1;
         const id = object.userData['areaId'] as string;
         expect(layer.registry.get(id)?.lines).toContain(object);
@@ -262,25 +260,27 @@ describe('buildAreaLayer', () => {
   });
 });
 
-describe('ghost pass (#36)', () => {
+describe('opaque lines (#57)', () => {
   const toScene: SceneMapper = (e, n, z) => [e, z, -n];
   const layer = buildAreaLayer(areas, surface, toScene, { width: 800, height: 600 });
 
-  it('gives every line one ghost child sharing its geometry, faint, depth-test off, after the ground, unpickable', () => {
+  it('draws every line solid: no child strands, default renderOrder, material opaque and depth-tested', () => {
     for (const { area, lines } of layer.registry.values()) {
       for (const line of lines) {
-        expect(line.children).toHaveLength(1);
-        const ghost = line.children[0] as Line2;
-        expect(ghost.geometry).toBe(line.geometry);
-        expect(ghost.material).toBe(layer.ghostMaterials[KIND_DEFAULT_ACTIVITY[area.kind]]);
-        expect(ghost.renderOrder).toBe(GHOST_RENDER_ORDER);
-        expect(ghost.raycast(null as never, [])).toBeUndefined();
+        expect(line.children).toHaveLength(0);
+        expect(line.renderOrder).toBe(0);
+        expect(line.material).toBe(layer.materials[KIND_DEFAULT_ACTIVITY[area.kind]]);
       }
     }
-    const ghost = layer.ghostMaterials['alpine-ski'];
-    expect([ghost.depthTest, ghost.depthWrite, ghost.transparent]).toEqual([false, false, true]);
-    expect(ghost.opacity).toBe(GHOST_OPACITY);
-    expect(ghost.color.getHex()).toBe(SPORT_COLOR['alpine-ski']);
+    for (const m of Object.values(layer.materials)) {
+      expect([m.transparent, m.opacity, m.depthTest, m.depthWrite]).toEqual([false, 1, true, true]);
+    }
+    expect('ghostMaterials' in layer).toBe(false);
+  });
+
+  it('keeps the units-only depth bias on the band (no slope term)', () => {
+    const m = layer.materials['alpine-ski'];
+    expect([m.polygonOffset, m.polygonOffsetFactor, m.polygonOffsetUnits]).toEqual([true, 0, -4]);
   });
 });
 
@@ -321,17 +321,6 @@ describe('route (#40)', () => {
     expect(lineOf(layer, 'way/1002').material).toBe(layer.materials['nordic-classic']);
   });
 
-  it('the ghost child follows the colour; renderOrder and raycast are unchanged', () => {
-    const layer = buildAreaLayer(areas, surface, toScene, { width: 800, height: 600 });
-    const ghost = lineOf(layer, 'way/1001').children[0] as Line2;
-    const raycast = ghost.raycast;
-    layer.route(annotations, new Set<Activity>(['snowboard']));
-    expect(ghost.material).toBe(layer.ghostMaterials.snowboard);
-    expect(ghost.renderOrder).toBe(GHOST_RENDER_ORDER);
-    expect(ghost.raycast).toBe(raycast);
-    expect(lineOf(layer, 'way/1001').children).toEqual([ghost]);
-  });
-
   it('is idempotent, and an empty selection restores first-annotated colours', () => {
     const layer = buildAreaLayer(areas, surface, toScene, { width: 800, height: 600 });
     const run = lineOf(layer, 'way/1001');
@@ -344,7 +333,6 @@ describe('route (#40)', () => {
     layer.route(annotations, new Set());
     expect(run.material).toBe(layer.materials['alpine-ski']);
     expect(skate.material).toBe(layer.materials['nordic-classic']);
-    expect((skate.children[0] as Line2).material).toBe(layer.ghostMaterials['nordic-classic']);
     expect(lineOf(layer, 'way/1006').material).toBe(layer.materials['lift-ride']);
   });
 
@@ -356,7 +344,6 @@ describe('route (#40)', () => {
     layer.route(annotations, new Set<Activity>(['snowboard']));
     expect(run.material).toBe(highlight);
     expect(run.userData['baseMaterial']).toBe(layer.materials.snowboard);
-    expect((run.children[0] as Line2).material).toBe(layer.ghostMaterials.snowboard);
   });
 });
 
@@ -482,9 +469,7 @@ describe('parallel sport strands (#54)', () => {
     layer.route(annotations, new Set());
     expect(strands[0]?.material.color.getHex()).toBe(SPORT_COLOR['nordic-classic']);
     expect(strands[1]?.material.color.getHex()).toBe(SPORT_COLOR['nordic-skate']);
-    const ghost = strands[1]?.children[0] as Line2;
-    expect(ghost.material.color.getHex()).toBe(SPORT_COLOR['nordic-skate']);
-    expect(ghost.material.transparent).toBe(true);
+    expect(strands[1]?.children).toHaveLength(0);
     expect(strands.map((l) => l.parent)).toEqual([layer.group, layer.group]);
     expect(layer.registry.get('way/1003')?.lines).toHaveLength(1);
     expect(layer.registry.get('way/1004')?.lines).toHaveLength(1);
@@ -510,8 +495,6 @@ describe('parallel sport strands (#54)', () => {
     layer.setLineWidth(10);
     expect([shiftOf(a), shiftOf(b)]).toEqual([-5, 5]);
     expect([a.material.linewidth, b.material.linewidth]).toEqual([10, 10]);
-    expect((a.children[0] as Line2).material.linewidth).toBe(10);
-    expect(shiftOf(a.children[0] as Line2)).toBe(-5);
     // Strands share one centreline in the world; the offset is applied on screen.
     const pa = (
       a.geometry.getAttribute('instanceStart') as unknown as { data: { array: Float32Array } }
@@ -553,13 +536,13 @@ describe('parallel sport strands (#54)', () => {
     expect([a.visible, b.visible]).toEqual([false, true]);
   });
 
-  it('setLineWidth changes every solid and ghost base material in place, defaulting to 6 px', () => {
+  it('setLineWidth changes every base material in place, defaulting to 6 px', () => {
     const layer = fresh();
     expect(DEFAULT_LINE_WIDTH_PX).toBe(6);
     expect(layer.materials['alpine-ski'].linewidth).toBe(6);
     const geometry = layer.registry.get('way/1001')?.lines[0]?.geometry;
     layer.setLineWidth(7.5);
-    for (const m of [...Object.values(layer.materials), ...Object.values(layer.ghostMaterials)]) {
+    for (const m of Object.values(layer.materials)) {
       expect(m.linewidth).toBe(7.5);
     }
     expect(layer.registry.get('way/1001')?.lines[0]?.geometry).toBe(geometry);
