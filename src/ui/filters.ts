@@ -7,11 +7,11 @@ import {
   toFilter,
   type HashFilter,
 } from './filter-hash';
-import { createClickKey, createToggleKey, type ClickyKey } from './clicky-key';
+import { createClickKey, createToggleKey } from './clicky-key';
 import { createExaggerationKey, type ExaggerationKey } from './exaggeration-key';
 import { iconFor } from './icons';
 import { groupHead } from './rail';
-import type { Activity, FacetCounts, Filter, SeasonCounts } from './filter-predicate';
+import type { FacetCounts, Filter, SeasonCounts } from './filter-predicate';
 import {
   buildSeasonBar,
   normalizeSeason,
@@ -68,8 +68,6 @@ export const browserHash = {
 /** lift-ride is excluded: lifts are always visible, so that toggle would be a silent no-op. */
 export const TOGGLE_ACTIVITIES = ActivitySchema.options.filter((a) => a !== 'lift-ride');
 
-type Key = 'activity' | 'season';
-
 function el<K extends keyof HTMLElementTagNameMap>(
   tag: K,
   text?: string,
@@ -82,7 +80,6 @@ function el<K extends keyof HTMLElementTagNameMap>(
 }
 
 export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
-  const buttons: { key: Key; value: string; handle: ClickyKey }[] = [];
   let state: HashFilter = { activity: [], season: [] };
   let imageryButton: HTMLButtonElement | undefined;
   let imageryApplied: boolean | undefined;
@@ -104,43 +101,7 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
   const render = (): void => {
     const counts = deps.apply(toFilter(state));
     const { facets } = counts;
-    // Season mode: one season active and the bar mounted. facetCounts would give every activity the same union count.
-    const season = seasonBar === undefined ? undefined : state.season[0];
-    const inSeason = season === undefined ? undefined : (deps.seasonMap?.get(season) ?? []);
-    const seasonActivityCounts =
-      season === undefined ? undefined : deps.seasonCounts?.activities.get(season);
     seasonBar?.render(state);
-    for (const b of buttons) {
-      const pressed = (state[b.key] as string[]).includes(b.value);
-      // The pressed look (sunk key, accent face, check mark) is generated CSS keyed on aria-pressed.
-      b.handle.button.setAttribute('aria-pressed', String(pressed));
-      const offSeason =
-        b.key === 'activity' && inSeason !== undefined && !inSeason.includes(b.value as Activity);
-      b.handle.root.classList.toggle('is-off-season', offSeason);
-      if (b.key === 'activity' && seasonActivityCounts !== undefined) {
-        const n = seasonActivityCounts.get(b.value as Activity) ?? 0;
-        b.handle.setCount(n);
-        b.handle.root.classList.remove('is-zero');
-        b.handle.button.removeAttribute('aria-disabled');
-        b.handle.button.removeAttribute('title');
-        continue;
-      }
-      if (facets === undefined) continue;
-      const lookup: ReadonlyMap<string, number> =
-        b.key === 'activity' ? facets.activities : facets.seasons;
-      const n = lookup.get(b.value) ?? 0;
-      b.handle.setCount(n);
-      // A latched option stays operable so it can always be switched off.
-      const empty = n === 0 && !pressed;
-      b.handle.root.classList.toggle('is-zero', empty);
-      if (empty) {
-        b.handle.button.setAttribute('aria-disabled', 'true');
-        b.handle.button.title = NO_MATCH_TITLE;
-      } else {
-        b.handle.button.removeAttribute('aria-disabled');
-        b.handle.button.removeAttribute('title');
-      }
-    }
     if (facets === undefined) {
       count.textContent = `${counts.visibleCount} of ${counts.total} areas`;
     } else if (state.activity.length > 0 || state.season.length > 0) {
@@ -201,21 +162,6 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
     notice.textContent = '';
     writeIfChanged();
     render();
-  };
-
-  const toggle = (key: Key, value: string): void => {
-    // aria-disabled keys stay focusable but do nothing; a latched key is never disabled, so it can always be switched off.
-    const entry = buttons.find((b) => b.key === key && b.value === value);
-    if (entry?.handle.button.getAttribute('aria-disabled') === 'true') return;
-    // Season mode: the rail's Activity keys take the same transition as the bar's row, so an empty list clears both keys.
-    if (key === 'activity' && deps.seasonMap !== undefined && state.season.length > 0) {
-      commit(toggleSeasonActivity(state, value as Activity, deps.seasonMap));
-      return;
-    }
-    const values = new Set<string>(state[key]);
-    if (values.has(value)) values.delete(value);
-    else values.add(value);
-    commit(HashFilterSchema.parse({ ...state, [key]: [...values] }));
   };
 
   const toggleImagery = (): void => {
@@ -297,25 +243,11 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
     return wrap;
   };
 
-  const group = (headIconId: string, key: Key, options: readonly string[]): HTMLDivElement => {
-    const wrap = section(headIconId);
-    const row = el('div', undefined, 'key-row');
-    for (const value of options) {
-      const { symbol, label } = iconFor(value);
-      const handle = createToggleKey(label, { icon: symbol });
-      handle.button.addEventListener('click', () => toggle(key, value));
-      row.appendChild(handle.root);
-      buttons.push({ key, value, handle });
-    }
-    wrap.appendChild(row);
-    return wrap;
-  };
-
   const clearEntry = iconFor('clear-filters');
   const clearKey = createClickKey(clearEntry.label, { icon: clearEntry.symbol });
   clearKey.button.addEventListener('click', clear);
 
-  // Clear sits under the Activity group; the status line and the hash notice sit under Clear.
+  // Clear leads the rail (#56: activities live only in the season menu's row); the status line and the hash notice sit under Clear.
   const foot = el('div', undefined, 'console-foot');
   foot.append(clearKey.root, count, notice);
 
@@ -355,7 +287,6 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
   }
 
   deps.host.replaceChildren(
-    group('group-activity', 'activity', TOGGLE_ACTIVITIES),
     foot,
     ...(deps.setImagery ||
     deps.setBuildings ||

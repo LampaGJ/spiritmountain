@@ -50,6 +50,7 @@ Run as `npm run ingest:<name>`. Each needs the ones above it that it names.
 ## UI conventions
 
 - The rail is generated from `scripts/ui/clicky.config.json` with the clicky-button engine at `~/Projects/clicky-button` (override with `CLICKY_BUTTON_DIR`).
+- The rail has no Activity group (#56): it starts at Clear Filters, then the status line and Layers. Activities appear only as the season menu's second row (`src/ui/season-menu.ts`) while a season is selected; `activity` hash keys still parse and apply.
 - Icons come only from `src/ui/icons.json`, parsed at `src/ui/icons.ts:19`. Names are verified Material Symbols; never invent one. `iconFor` throws on an unknown id.
 - No `innerHTML`, `outerHTML`, `insertAdjacentHTML` or `document.write` in `src/` (`tests/lint/no-inner-html.test.ts`). Build DOM with `createElement` and `textContent`.
 - The hash codec lives in `src/ui/filter-hash.ts`; a new hash key goes through its Zod schema, never ad hoc parsing.
