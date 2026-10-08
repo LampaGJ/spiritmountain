@@ -1,5 +1,43 @@
 import { describe, expect, it } from 'vitest';
-import { mapKind } from '../../scripts/ingest/kind-mapping';
+import { GEOMETRY_RULE, mapKind, POINT_PROMOTED_KINDS } from '../../scripts/ingest/kind-mapping';
+
+describe('mapKind: zip line, campground, climbing, attraction (#71)', () => {
+  it.each([
+    [{ aerialway: 'zip_line', name: 'Zip' }, 'zip-line'],
+    [{ tourism: 'camp_site', name: 'Spirit Mountain Campsite' }, 'campground'],
+    [{ sport: 'climbing' }, 'climbing'],
+    [{ climbing: 'boulder' }, 'climbing'],
+    [{ roller_coaster: 'track', name: 'Timber Twister Alpine Coaster' }, 'attraction'],
+    [{ attraction: 'summer_toboggan' }, 'attraction'],
+  ])('maps %j to %s with no difficulty', (tags, kind) => {
+    expect(mapKind(tags)).toEqual({ ok: true, kind, difficulty: null });
+  });
+
+  it('keeps a lift a lift and does not take a zoo exhibit or the river train for a ride', () => {
+    expect(mapKind({ aerialway: 'chair_lift' })).toMatchObject({ kind: 'lift' });
+    expect(mapKind({ attraction: 'animal', name: 'Red Panda' })).toEqual({
+      ok: false,
+      reason: 'unmapped-tags',
+      detail: 'attraction=animal',
+    });
+    expect(mapKind({ attraction: 'train' })).toMatchObject({ ok: false });
+  });
+
+  it('applies the new rules after route=hiking, so existing kinds keep their precedence', () => {
+    expect(mapKind({ route: 'hiking', tourism: 'camp_site' })).toMatchObject({
+      kind: 'hiking-trail',
+    });
+    expect(mapKind({ 'mtb:scale': '1', sport: 'climbing' })).toMatchObject({ kind: 'mtb-trail' });
+  });
+
+  it('declares which kinds are polygon-only, line-only and point-promotable', () => {
+    expect(GEOMETRY_RULE['zip-line']).toBe('LineString');
+    expect(GEOMETRY_RULE['campground']).toBe('Polygon');
+    expect(GEOMETRY_RULE['climbing']).toBe('Polygon');
+    expect(GEOMETRY_RULE['attraction']).toBe('either');
+    expect(POINT_PROMOTED_KINDS).toEqual(['campground', 'climbing']);
+  });
+});
 
 describe('mapKind', () => {
   it.each([

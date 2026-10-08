@@ -9,8 +9,8 @@ const sports = ActivitySchema.options;
 const deltaE = differenceCiede2000();
 
 describe('palette', () => {
-  it('has exactly one colour for each of the twelve activities, and no others', () => {
-    expect(sports).toHaveLength(12);
+  it('has exactly one colour for each of the sixteen activities, and no others', () => {
+    expect(sports).toHaveLength(16);
     expect(new Set(Object.keys(SPORT_COLOR))).toEqual(new Set(sports));
   });
 
@@ -19,7 +19,7 @@ describe('palette', () => {
   });
 
   it('gives every activity a distinct colour', () => {
-    expect(new Set(Object.values(SPORT_COLOR)).size).toBe(12);
+    expect(new Set(Object.values(SPORT_COLOR)).size).toBe(16);
   });
 
   it.each(sports)(

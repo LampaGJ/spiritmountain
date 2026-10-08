@@ -508,3 +508,63 @@ describe('each sourced rule cites its original page (#69)', () => {
     expect(noteOf('way/3', 'fat-bike')).toContain('trails not specified on the page');
   });
 });
+
+describe('Adventure Park kinds (#71)', () => {
+  const rows = [
+    { id: 'way/801', kind: 'zip-line' },
+    { id: 'way/802', kind: 'campground' },
+    { id: 'way/803', kind: 'climbing' },
+    { id: 'way/804', kind: 'attraction' },
+  ];
+  const out = generateAnnotations({
+    areasBytes: areasBytes(rows),
+    seedBytes: realSeedBytes(),
+    codeCommit: FAKE_COMMIT,
+  }).file;
+  const of = (id: string) => out.annotations.find((a) => a.areaId === id);
+
+  it('gives the zip line the summer-only zip-line activity, sourced to the Adventure Park page', () => {
+    expect(of('way/801')?.activities).toEqual([
+      {
+        activity: 'zip-line',
+        seasons: ['summer'],
+        notes:
+          'zip line in the summer Adventure Park (https://spiritmt.com/summer/adventure-park/)',
+      },
+    ]);
+  });
+
+  it('gives the campground camping in spring, summer and fall, sourced to the camping page', () => {
+    expect(of('way/802')?.activities).toEqual([
+      {
+        activity: 'camping',
+        seasons: ['spring', 'summer', 'fall'],
+        notes: 'campground open May 20 to Oct 25 2026 (https://spiritmt.com/summer/camping/)',
+      },
+    ]);
+  });
+
+  it('assigns no activity to climbing, because no source names one', () => {
+    expect(of('way/803')?.activities).toEqual([]);
+  });
+
+  it('gives an attraction the summer-only alpine-coaster activity with the Cloudflare caveat in its note', () => {
+    expect(of('way/804')?.activities).toEqual([
+      {
+        activity: 'alpine-coaster',
+        seasons: ['summer'],
+        notes:
+          'Timber Twister Alpine Coaster; page blocked by Cloudflare at fetch time, cited from issue #71 (https://spiritmt.com/summer/adventure-park/)',
+      },
+    ]);
+  });
+
+  it('still annotates every area, so none is missing', () => {
+    expect(out.annotations.map((a) => a.areaId)).toEqual([
+      'way/801',
+      'way/802',
+      'way/803',
+      'way/804',
+    ]);
+  });
+});

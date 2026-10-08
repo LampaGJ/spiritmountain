@@ -16,6 +16,13 @@ describe('KIND_DEFAULT_ACTIVITY', () => {
   it('is total over the area kinds', () => {
     expect(new Set(Object.keys(KIND_DEFAULT_ACTIVITY))).toEqual(new Set(AreaKindSchema.options));
   });
+
+  it('routes the Adventure Park kinds to their activities; an attraction is the alpine coaster', () => {
+    expect(KIND_DEFAULT_ACTIVITY['zip-line']).toBe('zip-line');
+    expect(KIND_DEFAULT_ACTIVITY.campground).toBe('camping');
+    expect(KIND_DEFAULT_ACTIVITY.climbing).toBe('climbing');
+    expect(KIND_DEFAULT_ACTIVITY.attraction).toBe('alpine-coaster');
+  });
 });
 
 describe('sportForArea', () => {

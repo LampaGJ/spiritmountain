@@ -27,6 +27,10 @@ export const SPORT_COLOR: Record<Activity, number> = {
   tubing: 0x9f6aff,
   'lift-ride': 0xf0e442,
   adaptive: 0x11e0b9,
+  'zip-line': 0xffbbaa,
+  camping: 0xaa9944,
+  climbing: 0x999999,
+  'alpine-coaster': 0xbbccaa,
 };
 
 /**
