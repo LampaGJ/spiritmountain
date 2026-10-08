@@ -217,10 +217,10 @@ describe('facet counts and the zero state', () => {
 
   it('words the status line for no filter and for an active filter', () => {
     const idle = setupFacets('');
-    expect(idle.host.querySelector('.filter-count')?.textContent).toBe('107 areas · 8 lifts');
+    expect(idle.host.querySelector('.filter-count')?.textContent).toBe('107 trails · 8 lifts');
     const active = setupFacets('#activity=nordic-classic', 40);
     expect(active.host.querySelector('.filter-count')?.textContent).toBe(
-      '40 of 107 areas match · 8 lifts always shown',
+      '40 of 107 trails match · 8 lifts always shown',
     );
   });
 });

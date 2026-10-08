@@ -7,6 +7,7 @@ import {
   type Season,
 } from '../../src/ui/filter-predicate';
 import { entry, makeAnnotation, makeArea } from './filter-fixtures';
+import { trackKey } from '../../src/scene/track-key';
 import type { Area } from '../../src/schema/area';
 import type { Annotation } from '../../src/schema/annotation';
 
@@ -131,6 +132,55 @@ describe('facetCounts', () => {
     expect(c.matching).toBe(1);
     expect(c.seasons.get('winter')).toBe(1);
     expect(c.seasons.get('summer')).toBe(0);
+  });
+});
+
+describe('track counts (#50)', () => {
+  const named = (id: string, kind: Area['kind'], name: string | null, tags = {}): Area =>
+    ({ ...makeArea(id, kind), name, osmTags: tags }) as Area;
+  const split = [
+    named('way/1', 'hiking-trail', 'Superior Hiking Trail'),
+    named('way/2', 'hiking-trail', 'Superior Hiking Trail'),
+    named('way/3', 'hiking-trail', null, { 'route:name': 'Superior Hiking Trail' }),
+    named('way/4', 'mtb-trail', 'Stone Age'),
+    named('way/5', 'mtb-trail', null),
+    named('way/6', 'mtb-trail', null),
+    named('way/7', 'lift', 'Chair'),
+  ];
+  const notes = new Map<string, Annotation>([
+    ['way/1', makeAnnotation('way/1', [entry('hike', ['summer'])])],
+    ['way/2', makeAnnotation('way/2', [entry('hike', ['summer'])])],
+    ['way/3', makeAnnotation('way/3', [entry('hike', ['summer'])])],
+    ['way/4', makeAnnotation('way/4', [entry('mountain-bike', ['summer'])])],
+    ['way/5', makeAnnotation('way/5', [entry('mountain-bike', ['summer'])])],
+    ['way/6', makeAnnotation('way/6', [entry('mountain-bike', ['summer'])])],
+  ]);
+
+  it('keys a track by kind plus name, route:name or id', () => {
+    expect(trackKey(split[0] as Area)).toBe(trackKey(split[1] as Area));
+    expect(trackKey(split[2] as Area)).toBe(trackKey(split[0] as Area));
+    expect(trackKey(split[4] as Area)).not.toBe(trackKey(split[5] as Area));
+    expect(trackKey(named('way/9', 'mtb-trail', 'Chair'))).not.toBe(
+      trackKey(named('way/9', 'lift', 'Chair')),
+    );
+  });
+
+  it('counts a split track once per option, with unnamed segments as their own tracks', async () => {
+    const { facetCounts } = await import('../../src/ui/filter-predicate');
+    const c = facetCounts(split, notes, EMPTY_FILTER, ['hike', 'mountain-bike'], ['summer']);
+    expect(c.activities.get('hike')).toBe(1);
+    expect(c.activities.get('mountain-bike')).toBe(3);
+    expect(c.seasons.get('summer')).toBe(4);
+    expect(c.candidates).toBe(4);
+    expect(c.matching).toBe(4);
+    expect(c.lifts).toBe(1);
+  });
+
+  it('counts a split track once in the season badges', async () => {
+    const { seasonCounts } = await import('../../src/ui/filter-predicate');
+    const c = seasonCounts(split, notes);
+    expect(c.seasons.get('summer')).toBe(4);
+    expect(c.activities.get('summer')?.get('hike')).toBe(1);
   });
 });
 

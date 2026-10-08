@@ -144,9 +144,9 @@ export function mountFilterStrip(deps: FilterStripDeps): FilterStrip {
     if (facets === undefined) {
       count.textContent = `${counts.visibleCount} of ${counts.total} areas`;
     } else if (state.activity.length > 0 || state.season.length > 0) {
-      count.textContent = `${facets.matching} of ${facets.candidates} areas match · ${facets.lifts} lifts always shown`;
+      count.textContent = `${facets.matching} of ${facets.candidates} trails match · ${facets.lifts} lifts always shown`;
     } else {
-      count.textContent = `${facets.candidates} areas · ${facets.lifts} lifts`;
+      count.textContent = `${facets.candidates} trails · ${facets.lifts} lifts`;
     }
     if (imageryButton) {
       const on = state.imagery !== false;
