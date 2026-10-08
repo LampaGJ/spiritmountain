@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { AreasReplaySchema } from '../../scripts/ingest/areas-replay-schema';
 import {
   buildAreas,
+  deriveTubingRun,
   parseConversion,
   runAreas,
   TRANSFORM_SOURCES,
@@ -274,9 +275,11 @@ describe.each([
 
   // Fails with a delta (vitest prints both objects) when the transform and the raw bytes disagree. It always runs.
   it('agrees with the independent raw-element counter', () => {
-    const exploded = result.collection.features.filter((f) => !rawWayKeys.has(f.properties.id));
+    // Derived tubing runs add no raw element, so they are counted apart (see the derived tubing run block).
+    const real = result.collection.features.filter((f) => !f.properties.id.startsWith('derived/'));
+    const exploded = real.filter((f) => !rawWayKeys.has(f.properties.id));
     expect({
-      features: result.collection.features.length,
+      features: real.length,
       dropped: result.replay.dropped.length,
       exploded: exploded.length,
     }).toEqual(independentCounts(raw));
@@ -301,8 +304,9 @@ describe('probe file (tests/fixtures/overpass-probe.json, committed by this issu
       'mtb-trail': 15,
       'nordic-trail': 40,
       'snow-park': 2,
+      'tubing-run': 1,
     });
-    expect(result.collection.features).toHaveLength(115);
+    expect(result.collection.features).toHaveLength(116);
     expect(result.replay.droppedCounts).toEqual({ 'node-pylon': 23, 'node-station': 2 });
     expect(result.replay.dropped).toHaveLength(25);
     // Relation 15994736 has 29 member ways and none is a way element: all 29 must be exploded.
@@ -425,5 +429,88 @@ describe('sources', () => {
 
   it('TRANSFORM_SOURCES is exactly the transitive repo-import closure of areas.ts', () => {
     expect([...TRANSFORM_SOURCES].sort()).toEqual(importClosure('scripts/ingest/areas.ts'));
+  });
+});
+
+describe('derived tubing run', () => {
+  const lift = (name: string | null, coordinates: Array<[number, number, number]>) => ({
+    type: 'Feature' as const,
+    properties: { id: 'way/55', kind: 'lift' as const, name, difficulty: null, osmTags: {} },
+    geometry: { type: 'LineString' as const, coordinates },
+  });
+
+  it('puts the run 12 m to the right of a tow that points north (right is east)', () => {
+    const run = deriveTubingRun(
+      lift('Tubing Hill Handle Tow', [
+        [0, 0, 0],
+        [0, 100, 0],
+      ]),
+    );
+    expect(run?.geometry).toEqual({
+      type: 'LineString',
+      coordinates: [
+        [12, 0, 0],
+        [12, 100, 0],
+      ],
+    });
+  });
+
+  it('puts the run to the right of a tow that points east (right is south) and keeps z', () => {
+    const run = deriveTubingRun(
+      lift('tubing tow', [
+        [0, 0, 7],
+        [50, 0, 9],
+      ]),
+    );
+    expect(run?.geometry).toEqual({
+      type: 'LineString',
+      coordinates: [
+        [0, -12, 7],
+        [50, -12, 9],
+      ],
+    });
+  });
+
+  it('carries the derived id, the name Tubing Hill, kind tubing-run and the derivedFrom tag', () => {
+    const run = deriveTubingRun(
+      lift('Tubing Hill Handle Tow', [
+        [0, 0, 0],
+        [0, 10, 0],
+      ]),
+    );
+    expect(run?.properties).toEqual({
+      id: 'derived/tubing-run/way/55',
+      kind: 'tubing-run',
+      name: 'Tubing Hill',
+      difficulty: null,
+      osmTags: { derivedFrom: 'way/55' },
+    });
+  });
+
+  it('derives nothing for a lift whose name does not match /tubing/i, or has no name', () => {
+    const line: Array<[number, number, number]> = [
+      [0, 0, 0],
+      [0, 10, 0],
+    ];
+    expect(deriveTubingRun(lift('Summit Chair', line))).toBeNull();
+    expect(deriveTubingRun(lift(null, line))).toBeNull();
+  });
+
+  it('derives nothing from a zero-length tow', () => {
+    expect(
+      deriveTubingRun(
+        lift('Tubing Hill Handle Tow', [
+          [1, 1, 0],
+          [1, 1, 0],
+        ]),
+      ),
+    ).toBeNull();
+  });
+
+  it('emits exactly one tubing-run from the live pin, beside the Tubing Hill Handle Tow', () => {
+    const result = buildAreas(new Uint8Array(readFileSync(LIVE_FILE)), CTX);
+    const runs = result.collection.features.filter((f) => f.properties.kind === 'tubing-run');
+    expect(runs.map((f) => f.properties.id)).toEqual(['derived/tubing-run/way/1470101407']);
+    expect(result.replay.counts['tubing-run']).toBe(1);
   });
 });
