@@ -4,7 +4,7 @@ import { AreaIdSchema } from './area';
 /**
  * @displayName Activity
  * @strategicPurpose The activities a stakeholder review filters and discusses.
- * @tacticalObjective Closed enum of twelve values: the principal's eleven plus adaptive, which the real organizations seed file uses; expected to grow.
+ * @tacticalObjective Closed enum of sixteen values: the principal's eleven, adaptive (which the real organizations seed file uses), and the Adventure Park activities zip-line, camping, climbing and alpine-coaster (#71); expected to grow.
  */
 export const ActivitySchema = z.enum([
   'alpine-ski',
@@ -19,6 +19,10 @@ export const ActivitySchema = z.enum([
   'tubing',
   'lift-ride',
   'adaptive',
+  'zip-line',
+  'camping',
+  'climbing',
+  'alpine-coaster',
 ]);
 
 /**

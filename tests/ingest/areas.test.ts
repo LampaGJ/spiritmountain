@@ -7,7 +7,9 @@ import { AreasReplaySchema } from '../../scripts/ingest/areas-replay-schema';
 import {
   buildAreas,
   deriveTubingRun,
+  fitGeometry,
   parseConversion,
+  pointToOctagon,
   runAreas,
   TRANSFORM_SOURCES,
   type BuildContext,
@@ -47,11 +49,18 @@ function assertPartition(raw: Uint8Array): void {
   const featureIds = result.collection.features.map((f) => f.properties.id);
   const wayElements = input.elements.filter((e) => e.type === 'way').map((e) => `way/${e.id}`);
   const wayProducers = wayElements.filter((id) => featureIds.includes(id));
+  // A node of a point-promoted kind (campground, climbing) becomes an octagon feature, so it is a producer too.
+  const nodeProducers = input.elements
+    .filter((e) => e.type === 'node')
+    .map((e) => `node/${e.id}`)
+    .filter((id) => featureIds.includes(id));
   const relationProducers = input.elements
     .filter((e) => e.type === 'relation')
     .map((e) => `relation/${e.id}`)
     .filter((id) => !droppedElements.includes(id));
-  expect([...wayProducers, ...relationProducers, ...droppedElements].sort(cmp)).toEqual(inputKeys);
+  expect(
+    [...wayProducers, ...nodeProducers, ...relationProducers, ...droppedElements].sort(cmp),
+  ).toEqual(inputKeys);
   expect(wayProducers.filter((id) => droppedElements.includes(id))).toEqual([]);
   expect(Object.values(result.replay.droppedCounts).reduce((a, b) => a + b, 0)).toBe(
     result.replay.dropped.length,
@@ -69,6 +78,9 @@ describe('fixture: golden bytes and every drop reason', () => {
 
   it('records every dropped element with its reason and detail', () => {
     expect(result.replay.dropped).toEqual([
+      { id: 'node/22', reason: 'node-other', detail: 'attraction=animal' },
+      { id: 'node/23', reason: 'node-other', detail: 'no-point-form:attraction' },
+      { id: 'node/24', reason: 'outside-bbox' },
       { id: 'node/7', reason: 'node-pylon' },
       { id: 'node/8', reason: 'node-station' },
       { id: 'node/9', reason: 'node-other', detail: 'no-lift-tag' },
@@ -95,8 +107,13 @@ describe('fixture: golden bytes and every drop reason', () => {
         detail: 'every member is a way element or was dropped',
       },
       { id: 'relation/103', reason: 'relation-unmapped', detail: 'no-recognised-tag' },
+      {
+        id: 'relation/104',
+        reason: 'relation-unmapped',
+        detail: 'polygon-relation-unsupported:campground',
+      },
+      { id: 'way/13', reason: 'unsupported-geometry', detail: 'campground-needs-closed-ring' },
       { id: 'way/5', reason: 'unmapped-piste-type', detail: 'piste:type=sled' },
-      { id: 'way/6', reason: 'unmapped-tags', detail: 'aerialway=zip_line' },
       { id: 'way/7', reason: 'unmapped-tags', detail: 'no-recognised-tag' },
       { id: 'way/8', reason: 'outside-bbox' },
     ]);
@@ -149,6 +166,9 @@ interface RawElement {
   id: number;
   tags?: Record<string, string>;
   geometry?: RawPoint[];
+  lat?: number;
+  lon?: number;
+  nodes?: number[];
   members?: Array<{ type: string; ref: number; geometry?: RawPoint[] }>;
 }
 
@@ -191,10 +211,52 @@ function independentCounts(raw: Uint8Array): {
   let features = 0;
   let dropped = 0;
   let exploded = 0;
+  // #71 families, retyped: a way is one when the old tags miss and one of these hits. A camp_site or climbing area needs a closed ring.
+  const rides = new Set([
+    'amusement_ride',
+    'big_wheel',
+    'bumper_car',
+    'bungee_jumping',
+    'carousel',
+  ]);
+  for (const ride of [
+    'dark_ride',
+    'drop_tower',
+    'kiddie_ride',
+    'log_flume',
+    'maze',
+    'river_rafting',
+    'roller_coaster',
+    'summer_toboggan',
+    'swing_carousel',
+    'water_slide',
+  ])
+    rides.add(ride);
+  const polygonFamily = (tags: Record<string, string> = {}): boolean =>
+    tags['tourism'] === 'camp_site' ||
+    tags['sport'] === 'climbing' ||
+    tags['climbing'] !== undefined;
+  const lineFamily = (tags: Record<string, string> = {}): boolean =>
+    tags['aerialway'] === 'zip_line' ||
+    tags['roller_coaster'] === 'track' ||
+    rides.has(tags['attraction'] ?? '');
+  const closedRing = (e: RawElement): boolean => {
+    const n = e.nodes ?? [];
+    return n.length >= 4 && n[0] === n[n.length - 1];
+  };
   for (const element of elements) {
-    if (element.type === 'node') dropped += 1;
-    else if (element.type === 'way') {
-      if (wanted(element.tags) && inBox(element.geometry ?? [])) features += 1;
+    if (element.type === 'node') {
+      const t = element.tags ?? {};
+      const point = { lat: element.lat ?? Number.NaN, lon: element.lon ?? Number.NaN };
+      // Only a lone camp_site or climbing node is promoted to an octagon feature, and only inside the bbox.
+      if (t['aerialway'] === undefined && polygonFamily(t) && inBox([point])) features += 1;
+      else dropped += 1;
+    } else if (element.type === 'way') {
+      const inside = inBox(element.geometry ?? []);
+      if (wanted(element.tags) || lineFamily(element.tags)) {
+        if (inside) features += 1;
+        else dropped += 1;
+      } else if (polygonFamily(element.tags) && inside && closedRing(element)) features += 1;
       else dropped += 1;
     }
   }
@@ -277,7 +339,9 @@ describe.each([
   it('agrees with the independent raw-element counter', () => {
     // Derived tubing runs add no raw element, so they are counted apart (see the derived tubing run block).
     const real = result.collection.features.filter((f) => !f.properties.id.startsWith('derived/'));
-    const exploded = real.filter((f) => !rawWayKeys.has(f.properties.id));
+    const exploded = real.filter(
+      (f) => !rawWayKeys.has(f.properties.id) && !f.properties.id.startsWith('node/'),
+    );
     expect({
       features: real.length,
       dropped: result.replay.dropped.length,
@@ -297,6 +361,9 @@ describe('probe file (tests/fixtures/overpass-probe.json, committed by this issu
 
   it('matches the probe counts exactly', () => {
     expect(result.replay.counts).toEqual({
+      attraction: 0,
+      campground: 0,
+      climbing: 0,
       'downhill-run': 21,
       'hiking-trail': 0,
       lift: 8,
@@ -305,6 +372,7 @@ describe('probe file (tests/fixtures/overpass-probe.json, committed by this issu
       'nordic-trail': 40,
       'snow-park': 2,
       'tubing-run': 1,
+      'zip-line': 0,
     });
     expect(result.collection.features).toHaveLength(116);
     expect(result.replay.droppedCounts).toEqual({ 'node-pylon': 23, 'node-station': 2 });
@@ -429,6 +497,87 @@ describe('sources', () => {
 
   it('TRANSFORM_SOURCES is exactly the transitive repo-import closure of areas.ts', () => {
     expect([...TRANSFORM_SOURCES].sort()).toEqual(importClosure('scripts/ingest/areas.ts'));
+  });
+});
+
+describe('zip line, campground, climbing and attraction (#71)', () => {
+  const result = buildAreas(fixtureBytes(), CTX);
+  const byId = (id: string) => result.collection.features.find((f) => f.properties.id === id);
+
+  it('maps a zip_line way to a zip-line LineString with its tags kept', () => {
+    expect(byId('way/6')?.properties).toMatchObject({
+      kind: 'zip-line',
+      osmTags: { aerialway: 'zip_line' },
+    });
+    expect(byId('way/6')?.geometry.type).toBe('LineString');
+  });
+
+  it('keeps a closed camp_site way as a campground Polygon, and refuses an open one by name', () => {
+    expect(byId('way/11')?.properties).toMatchObject({ kind: 'campground', name: 'Camp Ring' });
+    expect(byId('way/11')?.geometry.type).toBe('Polygon');
+    expect(byId('way/13')).toBeUndefined();
+    expect(result.replay.dropped).toContainEqual({
+      id: 'way/13',
+      reason: 'unsupported-geometry',
+      detail: 'campground-needs-closed-ring',
+    });
+  });
+
+  it('maps a roller_coaster track to an attraction LineString', () => {
+    expect(byId('way/12')?.properties.kind).toBe('attraction');
+    expect(byId('way/12')?.geometry.type).toBe('LineString');
+  });
+
+  it('promotes a camp_site node and a climbing node to a closed octagon and says so in osmTags', () => {
+    for (const [id, kind] of [
+      ['node/20', 'campground'],
+      ['node/21', 'climbing'],
+    ] as const) {
+      const feature = byId(id);
+      expect(feature?.properties.kind).toBe(kind);
+      expect(feature?.properties.osmTags).toMatchObject({
+        promotedFromNode: 'octagon-radius-10m',
+      });
+      expect(feature?.geometry.type).toBe('Polygon');
+    }
+  });
+
+  it('drops a node of a kind with no point form and a node outside the bbox, naming why', () => {
+    expect(byId('node/23')).toBeUndefined();
+    expect(byId('node/24')).toBeUndefined();
+  });
+
+  it('pointToOctagon is a closed ring of 8 vertices, all 10 m from the node, z 0, stable bytes', () => {
+    const [cx, cy] = toLocal(-92.21, 46.712);
+    const ring = pointToOctagon(-92.21, 46.712);
+    expect(ring).toHaveLength(9);
+    expect(ring[0]).toEqual(ring[8]);
+    for (const [x, y, z] of ring) {
+      expect(Math.hypot(x - cx, y - cy)).toBeCloseTo(10, 2);
+      expect(z).toBe(0);
+    }
+    expect(pointToOctagon(-92.21, 46.712)).toEqual(ring);
+  });
+
+  it('fitGeometry: closed line becomes a polygon for a Polygon kind, a Polygon is refused for a zip line', () => {
+    const ring: Array<[number, number]> = [
+      [0, 0],
+      [1, 0],
+      [1, 1],
+      [0, 0],
+    ];
+    expect(fitGeometry('climbing', { type: 'LineString', coordinates: ring })).toEqual({
+      ok: true,
+      geometry: { type: 'Polygon', coordinates: [ring] },
+    });
+    expect(fitGeometry('climbing', { type: 'LineString', coordinates: ring.slice(0, 3) })).toEqual({
+      ok: false,
+      detail: 'climbing-needs-closed-ring',
+    });
+    expect(fitGeometry('zip-line', { type: 'Polygon', coordinates: [ring] })).toEqual({
+      ok: false,
+      detail: 'zip-line-needs-line',
+    });
   });
 });
 

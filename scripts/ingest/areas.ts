@@ -9,12 +9,13 @@ import {
   AreaFeatureCollectionSchema,
   AreaIdSchema,
   AreaKindSchema,
+  type AreaKind,
   type AreaFeature,
   type AreaFeatureCollection,
 } from '../../src/schema/area';
 import { AreasReplaySchema, type AreasReplay, type DroppedEntry } from './areas-replay-schema';
 import { serializeAreas, serializeReplay } from './areas-serialize';
-import { mapKind } from './kind-mapping';
+import { GEOMETRY_RULE, mapKind, POINT_PROMOTED_KINDS } from './kind-mapping';
 import { BBOX, FRAME, toLocal } from './local-frame';
 import { ManifestSchema } from './manifest-schema';
 import { OverpassEnvelopeSchema, type OverpassEnvelope } from './overpass-schema';
@@ -144,6 +145,58 @@ export function deriveTubingRun(feature: AreaFeature): AreaFeature | null {
   };
 }
 
+/** Radius, in metres, of the octagon a lone OSM node of a polygon kind is promoted to. */
+export const POINT_OCTAGON_RADIUS_M = 10;
+
+/** osmTags marker on a promoted node, so the scene and a reader can tell a real boundary from a stand-in. */
+export const POINT_PROMOTED_TAG = 'promotedFromNode';
+export const POINT_PROMOTED_VALUE = `octagon-radius-${POINT_OCTAGON_RADIUS_M}m`;
+
+/**
+ * @displayName Point to octagon
+ * @strategicPurpose OSM often maps a campground or crag as one node; a node has no boundary to draw, so this gives it a small honest stand-in outline the scene can drape and label.
+ * @tacticalObjective Pure function: a lon/lat becomes a closed 9-position ring (8 vertices at 22.5, 67.5, ... degrees from east, then the first repeated) of radius 10 m about the node's local position, z 0, each coordinate rounded to the millimetre so the bytes do not depend on the platform's libm.
+ */
+export function pointToOctagon(lon: number, lat: number): Position[] {
+  const [cx, cy] = toLocal(lon, lat);
+  const ring: Position[] = [];
+  for (let k = 0; k < 8; k += 1) {
+    const angle = ((22.5 + 45 * k) * Math.PI) / 180;
+    ring.push([
+      Math.round((cx + POINT_OCTAGON_RADIUS_M * Math.cos(angle)) * 1000) / 1000,
+      Math.round((cy + POINT_OCTAGON_RADIUS_M * Math.sin(angle)) * 1000) / 1000,
+      0,
+    ]);
+  }
+  const first = ring[0] as Position;
+  ring.push([first[0], first[1], first[2]]);
+  return ring;
+}
+
+type FitResult =
+  | { ok: true; geometry: LonLatGeometry & { type: 'LineString' | 'Polygon' } }
+  | { ok: false; detail: string };
+
+/**
+ * @displayName Geometry fit for a kind
+ * @strategicPurpose A campground is a boundary and a zip line is a trail; this keeps a wrongly shaped way from reaching the scene as the wrong thing.
+ * @tacticalObjective Pure function: applies GEOMETRY_RULE to the converted geometry. A closed line of a Polygon kind becomes a Polygon; an open line of a Polygon kind, or a Polygon of a LineString kind, is refused with a named detail; everything else passes through.
+ */
+export function fitGeometry(
+  kind: AreaKind,
+  geometry: LonLatGeometry & { type: 'LineString' | 'Polygon' },
+): FitResult {
+  const rule = GEOMETRY_RULE[kind];
+  if (rule === 'either' || rule === geometry.type) return { ok: true, geometry };
+  if (rule === 'LineString') return { ok: false, detail: `${kind}-needs-line` };
+  const line = geometry.type === 'LineString' ? geometry.coordinates : [];
+  const first = line[0];
+  const last = line[line.length - 1];
+  if (line.length >= 4 && first !== undefined && last !== undefined && first.join() === last.join())
+    return { ok: true, geometry: { type: 'Polygon', coordinates: [line] } };
+  return { ok: false, detail: `${kind}-needs-closed-ring` };
+}
+
 const FAMILIES = ['piste:type', 'aerialway', 'mtb:scale'] as const;
 
 function checkFamilies(elements: readonly Element[]): void {
@@ -203,9 +256,40 @@ export function buildAreas(rawBytes: Uint8Array, ctx: BuildContext): BuildResult
     const tags = element.tags ?? {};
     if (element.type === 'node') {
       const lift = tags['aerialway'];
-      if (lift === 'pylon') drop(key, 'node-pylon');
-      else if (lift === 'station') drop(key, 'node-station');
-      else drop(key, 'node-other', 'no-lift-tag');
+      if (lift === 'pylon') {
+        drop(key, 'node-pylon');
+        continue;
+      }
+      if (lift === 'station') {
+        drop(key, 'node-station');
+        continue;
+      }
+      const mapped = mapKind(tags);
+      if (!mapped.ok) {
+        drop(
+          key,
+          'node-other',
+          mapped.detail === 'no-recognised-tag' ? 'no-lift-tag' : mapped.detail,
+        );
+      } else if (!POINT_PROMOTED_KINDS.includes(mapped.kind)) {
+        drop(key, 'node-other', `no-point-form:${mapped.kind}`);
+      } else if (!inBbox(element.lon, element.lat)) {
+        drop(key, 'outside-bbox');
+      } else {
+        features.push({
+          type: 'Feature',
+          properties: {
+            id: key,
+            kind: mapped.kind,
+            name: tags['name'] === undefined || tags['name'] === '' ? null : tags['name'],
+            difficulty: mapped.difficulty,
+            osmTags: { ...tags, [POINT_PROMOTED_TAG]: POINT_PROMOTED_VALUE },
+          },
+          geometry: { type: 'Polygon', coordinates: [pointToOctagon(element.lon, element.lat)] },
+        });
+        seenFeatureIds.push(key);
+        produced.push(key);
+      }
     } else if (element.type === 'way') {
       const mapped = mapKind(tags);
       if (!mapped.ok) {
@@ -227,6 +311,12 @@ export function buildAreas(rawBytes: Uint8Array, ctx: BuildContext): BuildResult
         drop(key, 'outside-bbox');
         continue;
       }
+      const fitted = fitGeometry(mapped.kind, geometry);
+      if (!fitted.ok) {
+        drop(key, 'unsupported-geometry', fitted.detail);
+        continue;
+      }
+      const placed = fitted.geometry;
       features.push({
         type: 'Feature',
         properties: {
@@ -237,11 +327,11 @@ export function buildAreas(rawBytes: Uint8Array, ctx: BuildContext): BuildResult
           osmTags: { ...tags },
         },
         geometry:
-          geometry.type === 'LineString'
-            ? { type: 'LineString', coordinates: geometry.coordinates.map(project) }
+          placed.type === 'LineString'
+            ? { type: 'LineString', coordinates: placed.coordinates.map(project) }
             : {
                 type: 'Polygon',
-                coordinates: geometry.coordinates.map((ring) => ring.map(project)),
+                coordinates: placed.coordinates.map((ring) => ring.map(project)),
               },
       });
       seenFeatureIds.push(key);
@@ -256,6 +346,11 @@ export function buildAreas(rawBytes: Uint8Array, ctx: BuildContext): BuildResult
     const mapped = mapKind(tags);
     if (!mapped.ok) {
       drop(key, 'relation-unmapped', mapped.detail);
+      continue;
+    }
+    if (GEOMETRY_RULE[mapped.kind] === 'Polygon') {
+      // Relation members are exploded to lines; a boundary needs a ring, which this transform does not assemble from members.
+      drop(key, 'relation-unmapped', `polygon-relation-unsupported:${mapped.kind}`);
       continue;
     }
     let created = 0;

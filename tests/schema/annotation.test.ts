@@ -24,7 +24,7 @@ describe('AnnotationSchema', () => {
       false,
     );
   });
-  it('accepts exactly the twelve activities', () => {
+  it('accepts exactly the sixteen activities', () => {
     expect(ActivitySchema.options).toEqual([
       'alpine-ski',
       'snowboard',
@@ -38,6 +38,10 @@ describe('AnnotationSchema', () => {
       'tubing',
       'lift-ride',
       'adaptive',
+      'zip-line',
+      'camping',
+      'climbing',
+      'alpine-coaster',
     ]);
   });
   it('accepts exactly the four seasons and five roles', () => {

@@ -12,7 +12,7 @@ export const AreaIdSchema = z.string().regex(/^(derived\/tubing-run\/)?(node|way
 /**
  * @displayName Area kind
  * @strategicPurpose Names the recreational categories the scene colours and filters by.
- * @tacticalObjective Closed enum of the seven OSM kinds plus tubing-run, which the areas transform derives beside a tubing tow.
+ * @tacticalObjective Closed enum of the seven original OSM kinds, tubing-run (derived beside a tubing tow), and the Adventure Park kinds zip-line, campground, climbing and attraction (#71).
  */
 export const AreaKindSchema = z.enum([
   'downhill-run',
@@ -23,6 +23,10 @@ export const AreaKindSchema = z.enum([
   'mtb-route',
   'hiking-trail',
   'tubing-run',
+  'zip-line',
+  'campground',
+  'climbing',
+  'attraction',
 ]);
 export type AreaKind = z.infer<typeof AreaKindSchema>;
 

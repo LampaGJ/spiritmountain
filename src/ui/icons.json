@@ -54,6 +54,26 @@
     "label": "Adaptive",
     "rationale": "Symbolic: ISA wheelchair user, the learned sign for accessible; forward-leaning variant is the dynamic reading."
   },
+  "zip-line": {
+    "symbol": "cable",
+    "label": "Zip Line",
+    "rationale": "Iconic/indexical: a strung cable, the one object a zip line is; Material Symbols has no zip-line glyph, and paragliding reads as flight rather than a rider on a line. Verified: renders as a 24 px ligature (Chromium probe, width 24 against 288 for a bogus name)."
+  },
+  "camping": {
+    "symbol": "camping",
+    "label": "Camping",
+    "rationale": "Iconic: tent beside a tree, the standard campground pictogram. Verified: renders as a 24 px ligature (Chromium probe)."
+  },
+  "climbing": {
+    "symbol": "sports_gymnastics",
+    "label": "Climbing",
+    "rationale": "Iconic/indexical: athlete mid-move with raised limbs. Material Symbols has no climbing glyph (climbing, rock_climbing and mountain_climbing all render as plain text in a Chromium probe); this figure reads as bodily effort on a structure, and nothing else in the set is a rock-face figure. Verified: renders as a 24 px ligature."
+  },
+  "alpine-coaster": {
+    "symbol": "attractions",
+    "label": "Alpine Coaster",
+    "rationale": "Iconic: Material Symbols attractions is a ferris wheel, the amusement-ride pictogram; no coaster-track glyph is needed to read as a ride, and it is distinct from the gondola used for lift ride. Verified: renders as a 24 px ligature (Chromium width probe, bogus name 288 px)."
+  },
   "lift-ride": {
     "symbol": "gondola_lift",
     "label": "Lift Ride",

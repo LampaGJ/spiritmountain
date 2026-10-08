@@ -23,6 +23,10 @@ export const KIND_DEFAULT_ACTIVITY: Record<AreaKind, Activity> = {
   lift: 'lift-ride',
   'hiking-trail': 'hike',
   'tubing-run': 'tubing',
+  'zip-line': 'zip-line',
+  campground: 'camping',
+  climbing: 'climbing',
+  attraction: 'alpine-coaster',
 };
 
 /**

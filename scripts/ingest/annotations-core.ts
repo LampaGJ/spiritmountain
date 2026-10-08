@@ -61,6 +61,19 @@ const SUMMER_LIFT_SOURCE: RuleSource = {
   note: 'scenic chairlift; months not stated',
 };
 
+const ZIP_LINE_SOURCE: RuleSource = {
+  url: 'https://spiritmt.com/summer/adventure-park/',
+  note: 'zip line in the summer Adventure Park',
+};
+const COASTER_SOURCE: RuleSource = {
+  url: 'https://spiritmt.com/summer/adventure-park/',
+  note: 'Timber Twister Alpine Coaster; page blocked by Cloudflare at fetch time, cited from issue #71',
+};
+const CAMPING_SOURCE: RuleSource = {
+  url: 'https://spiritmt.com/summer/camping/',
+  note: 'campground open May 20 to Oct 25 2026',
+};
+
 /** The text written into an annotation's notes: the structural default, or the source note followed by its URL. */
 export function noteFor(source: RuleSource | undefined): string {
   return source === undefined ? DERIVED_NOTE : `${source.note} (${source.url})`;
@@ -105,6 +118,12 @@ const KIND_RULES: Record<AreaKind, KindRule> = {
     { activity: 'trail-run', seasons: WARM },
   ],
   'tubing-run': [{ activity: 'tubing', seasons: ['winter'], source: TUBING_SOURCE }],
+  'zip-line': [{ activity: 'zip-line', seasons: ['summer'], source: ZIP_LINE_SOURCE }],
+  campground: [{ activity: 'camping', seasons: WARM, source: CAMPING_SOURCE }],
+  // No page names a climbing wall or crag, so no rule assigns the climbing activity; the area still draws, with the kind default.
+  climbing: [],
+  // OSM's only attraction in the bbox is the alpine coaster (roller_coaster=track).
+  attraction: [{ activity: 'alpine-coaster', seasons: ['summer'], source: COASTER_SOURCE }],
 };
 
 /**
