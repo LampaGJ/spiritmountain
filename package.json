@@ -36,6 +36,7 @@
     "ingest:tree-stats": "tsx scripts/ingest/tree-stats.ts",
     "ingest:trees": "tsx scripts/ingest/trees.ts",
     "ingest:context-trees": "tsx scripts/ingest/context-trees.ts",
+    "ingest:canopy": "tsx scripts/ingest/canopy.ts",
     "ingest:places": "tsx scripts/ingest/places.ts"
   },
   "dependencies": {
