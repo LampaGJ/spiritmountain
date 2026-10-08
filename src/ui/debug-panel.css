@@ -48,8 +48,7 @@
 #debug-panel label:has(input[type='checkbox']) {
   grid-template-columns: auto 1fr;
 }
-@media (max-width: 719px) {
-  #debug-panel {
-    top: calc(12px + env(safe-area-inset-top, 0px) + var(--sm-season-h, 0px));
-  }
+/* The bar spans most of the width now, so the tab always sits under it, never beside the Layers circle. */
+#debug-panel {
+  top: calc(12px + env(safe-area-inset-top, 0px) + var(--sm-season-h, 0px));
 }

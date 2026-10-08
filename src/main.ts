@@ -234,6 +234,7 @@ if (!('error' in areaLayerResult)) {
         fadeCentre: { east: fadeCentre.east, north: fadeCentre.north },
         places,
         onPlan: heroSign.render,
+        heroRect: heroSign.rect,
       },
     );
     handle.elevated.add(billboardLayer.group);
