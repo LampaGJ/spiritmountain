@@ -6,9 +6,9 @@
  * The key look (faces, pressed state, hover and focus-visible lift) is generated into clicky.css.
  */
 :root:has(#season-bar) {
-  /* 36 px key plus 8 px above and below; the open value adds the activity row. */
-  --sm-season-h: 52px;
-  --sm-season-open-h: 100px;
+  /* 72 px season key plus 8 px above and below; the open value adds the 36 px activity row. */
+  --sm-season-h: 88px;
+  --sm-season-open-h: 136px;
 }
 @media (pointer: coarse) {
   :root:has(#season-bar) {
@@ -23,9 +23,14 @@
   position: fixed;
   z-index: 5;
   top: calc(var(--rail-inset, 16px) + env(safe-area-inset-top, 0px));
-  left: calc(var(--rail-inset, 16px) + env(safe-area-inset-left, 0px));
+  /* Centred on the viewport (Graham, 2026-10-08): the season keys are the primary control. */
+  left: 0;
+  right: 0;
+  width: fit-content;
+  margin-inline: auto;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 8px;
   max-width: calc(100vw - 2 * var(--rail-inset, 16px));
   /* Gaps between keys pass pointer events through to the scene, like #rail; keys take them back. */
@@ -49,8 +54,17 @@
   flex-wrap: nowrap;
   align-items: center;
   gap: 8px;
+  justify-content: center;
   /* Room for the key's drop shadow and the focus ring. */
   padding: 2px 4px 6px 3px;
+}
+/* Season keys at twice the rail size on desktop: 72 px tall, type and badge scaled with them. */
+@media (min-width: 720px) {
+  #season-bar .sm-season-keys {
+    --cl-h: 72px;
+    font-size: 2em;
+    gap: 16px;
+  }
 }
 #season-bar .sm-season-row[hidden] {
   display: none;

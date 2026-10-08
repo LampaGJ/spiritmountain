@@ -84,8 +84,8 @@ describe('season bar CSS (#42)', () => {
   });
 
   it('declares the bar heights the rail offsets by, and the rail reads them', () => {
-    expect(css).toMatch(/--sm-season-h: 52px;/);
-    expect(css).toMatch(/--sm-season-open-h: 100px;/);
+    expect(css).toMatch(/--sm-season-h: 88px;/);
+    expect(css).toMatch(/--sm-season-open-h: 136px;/);
     const rail = read('src/ui/rail.css');
     expect(rail).toMatch(/top: calc\([^;]*var\(--sm-season-h, 0px\)\);/);
     expect(rail).toMatch(
