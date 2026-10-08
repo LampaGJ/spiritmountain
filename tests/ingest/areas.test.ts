@@ -288,6 +288,7 @@ describe('probe file (tests/fixtures/overpass-probe.json, committed by this issu
   it('matches the probe counts exactly', () => {
     expect(result.replay.counts).toEqual({
       'downhill-run': 21,
+      'hiking-trail': 0,
       lift: 8,
       'mtb-route': 29,
       'mtb-trail': 15,

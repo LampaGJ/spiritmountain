@@ -47,6 +47,10 @@ const KIND_RULES: Record<AreaKind, KindRule> = {
   'mtb-trail': [{ activity: 'mountain-bike', seasons: ['spring', 'summer', 'fall'] }],
   'mtb-route': [{ activity: 'mountain-bike', seasons: ['spring', 'summer', 'fall'] }],
   lift: [{ activity: 'lift-ride', seasons: [] }],
+  'hiking-trail': [
+    { activity: 'hike', seasons: ['spring', 'summer', 'fall'] },
+    { activity: 'trail-run', seasons: ['spring', 'summer', 'fall'] },
+  ],
 };
 
 /** Code-unit string order. Never a locale-sensitive comparison: it must give the same answer on every machine. */

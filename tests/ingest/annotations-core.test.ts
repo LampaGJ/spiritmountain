@@ -98,6 +98,14 @@ describe('kind defaults (one case per kind)', () => {
       [{ activity: 'mountain-bike', seasons: ['spring', 'summer', 'fall'] }],
     ],
     ['lift', 'way/7', [{ activity: 'lift-ride', seasons: [] }]],
+    [
+      'hiking-trail',
+      'way/40',
+      [
+        { activity: 'hike', seasons: ['spring', 'summer', 'fall'] },
+        { activity: 'trail-run', seasons: ['spring', 'summer', 'fall'] },
+      ],
+    ],
   ];
   it.each(cases)('%s', (_kind, id, expected) => {
     const annotation = built.annotations.find((a) => a.areaId === id);
@@ -105,8 +113,8 @@ describe('kind defaults (one case per kind)', () => {
       expected.map((e) => ({ ...e, notes: 'derived from OSM kind' })),
     );
   });
-  it('the fixture covers all six kinds', () => {
-    expect(new Set(AREA_ROWS.map((r) => r.kind)).size).toBe(6);
+  it('the fixture covers all seven kinds', () => {
+    expect(new Set(AREA_ROWS.map((r) => r.kind)).size).toBe(7);
   });
   it('every annotation has empty notes', () => {
     expect(built.annotations.every((a) => a.notes === '')).toBe(true);
@@ -122,7 +130,15 @@ describe('kind defaults (one case per kind)', () => {
 describe('ordering and byte-stable shape', () => {
   it('sorts by areaId in code-unit order (way/1000 before way/999) and equals the sorted feature order', () => {
     const ids = built.annotations.map((a) => a.areaId);
-    expect(ids).toEqual(['relation/5', 'way/1000', 'way/20', 'way/30', 'way/7', 'way/999']);
+    expect(ids).toEqual([
+      'relation/5',
+      'way/1000',
+      'way/20',
+      'way/30',
+      'way/40',
+      'way/7',
+      'way/999',
+    ]);
     expect(ids).toEqual([...AREA_ROWS.map((r) => r.id)].sort(compareCodeUnit));
   });
   it('lists activities and seasons in rule order, not sorted', () => {

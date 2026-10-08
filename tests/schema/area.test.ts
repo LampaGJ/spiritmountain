@@ -28,7 +28,7 @@ describe('AreaSchema', () => {
   it('rejects an extra unknown key', () => {
     expect(AreaSchema.safeParse(withExtraKey(validArea)).success).toBe(false);
   });
-  it('accepts exactly the six kinds', () => {
+  it('accepts exactly the seven kinds', () => {
     expect(AreaKindSchema.options).toEqual([
       'downhill-run',
       'nordic-trail',
@@ -36,6 +36,7 @@ describe('AreaSchema', () => {
       'lift',
       'snow-park',
       'mtb-route',
+      'hiking-trail',
     ]);
   });
   it('rejects a numeric osmTags value', () => {

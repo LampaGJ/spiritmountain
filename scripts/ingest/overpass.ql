@@ -5,6 +5,7 @@
   way["highway"~"path|track|cycleway"]["mtb:scale"](46.68,-92.26,46.74,-92.17);
   way["route"="mtb"](46.68,-92.26,46.74,-92.17);
   relation["route"~"mtb|piste|ski"](46.68,-92.26,46.74,-92.17);
+  relation["route"="hiking"](46.68,-92.26,46.74,-92.17);
     node["aerialway"](46.68,-92.26,46.74,-92.17);
 );
 out geom;

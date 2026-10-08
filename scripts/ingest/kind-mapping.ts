@@ -30,7 +30,7 @@ const LIFT_VALUES: readonly string[] = [
 /**
  * @displayName OSM tags to area kind
  * @strategicPurpose One pure, testable rule table that turns raw OSM tags into the scene's closed set of area kinds, so no kind is ever guessed elsewhere.
- * @tacticalObjective Returns kind and difficulty by first match in this order: piste:type (downhill, snow_park, nordic), aerialway in the lift list, mtb:scale, route=mtb; otherwise returns the drop reason and a detail naming the offending tag.
+ * @tacticalObjective Returns kind and difficulty by first match in this order: piste:type (downhill, snow_park, nordic), aerialway in the lift list, mtb:scale, route=mtb, route=hiking; otherwise returns the drop reason and a detail naming the offending tag.
  */
 export function mapKind(tags: Readonly<Record<string, string>>): KindMapping {
   const piste = tags['piste:type'];
@@ -48,6 +48,9 @@ export function mapKind(tags: Readonly<Record<string, string>>): KindMapping {
   }
   if (tags['route'] === 'mtb') {
     return { ok: true, kind: 'mtb-route', difficulty: null };
+  }
+  if (tags['route'] === 'hiking') {
+    return { ok: true, kind: 'hiking-trail', difficulty: null };
   }
   if (piste !== undefined) {
     return { ok: false, reason: 'unmapped-piste-type', detail: `piste:type=${piste}` };

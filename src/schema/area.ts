@@ -21,6 +21,7 @@ export const AreaKindSchema = z.enum([
   'lift',
   'snow-park',
   'mtb-route',
+  'hiking-trail',
 ]);
 export type AreaKind = z.infer<typeof AreaKindSchema>;
 

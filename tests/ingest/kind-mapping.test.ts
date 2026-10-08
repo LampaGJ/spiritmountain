@@ -9,6 +9,7 @@ describe('mapKind', () => {
     [{ aerialway: 'magic_carpet' }, 'lift', null],
     [{ 'mtb:scale': '3', highway: 'path' }, 'mtb-trail', '3'],
     [{ route: 'mtb' }, 'mtb-route', null],
+    [{ route: 'hiking', name: 'Superior Hiking Trail' }, 'hiking-trail', null],
   ])('maps %j to %s with difficulty %s', (tags, kind, difficulty) => {
     expect(mapKind(tags)).toEqual({ ok: true, kind, difficulty });
   });
