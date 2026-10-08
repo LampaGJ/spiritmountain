@@ -18,13 +18,14 @@ export const HORIZON_NEAR_FRACTION = 0.88;
 export const CAPPED_NEAR_FRACTION = 0.75;
 /**
  * Aerial perspective length scale in metres: ground colour relaxes toward the horizon sky as 1 - exp(-d / L).
- * Koschmieder with a very clear day, visibility near 300 km (L = V / 3.912). At 5 km this tints by 6 percent, at
- * 20 km by 22 percent, so the near slopes stay saturated and only far ground picks up blue.
+ * Koschmieder with a very clear day; 60 km (was 80 km, #52) because the far field still greyed. At 5 km this tints by
+ * 8 percent, at 20 km by 28 percent, so the near slopes stay saturated and only far ground picks up blue.
  */
-export const AERIAL_SCALE_M = 80_000;
+export const AERIAL_SCALE_M = 60_000;
 /**
- * The colour far ground relaxes toward: a muted atmospheric blue-grey (sRGB), not the panorama's horizon band. The
- * band is near white in every daytime sky, and mixing ground toward white over tens of kilometres read as smog.
+ * The starting value of the uAerialTint uniform (sRGB blue-grey); scene.ts overwrites it with the procedural sky colour
+ * just above the horizon (#52). A photo panorama's horizon band is near white, and mixing ground toward white over tens
+ * of kilometres read as smog.
  */
 export const AERIAL_TINT = 0xa9bccd;
 
@@ -51,6 +52,8 @@ export interface HorizonUniforms {
   uHorizonNear: IUniform<number>;
   uCameraPos: IUniform<Vector3>;
   uFallbackColor: IUniform<Color>;
+  /** Linear colour far ground relaxes toward; scene.ts sets it to the procedural sky colour at the horizon. AERIAL_TINT until then. */
+  uAerialTint: IUniform<Color>;
 }
 
 export function createHorizonUniforms(fallbackColor: number): HorizonUniforms {
@@ -61,6 +64,7 @@ export function createHorizonUniforms(fallbackColor: number): HorizonUniforms {
     uHorizonNear: { value: HORIZON_NEAR_FRACTION * MIN_HORIZON_M },
     uCameraPos: { value: new Vector3() },
     uFallbackColor: { value: new Color(fallbackColor) },
+    uAerialTint: { value: new Color(AERIAL_TINT) },
   };
 }
 
@@ -120,13 +124,12 @@ export function applyHorizonBlend(material: Material, shared: HorizonUniforms): 
       'uniform float uHorizonNear;',
       'uniform vec3 uCameraPos;',
       'uniform vec3 uFallbackColor;',
+      'uniform vec3 uAerialTint;',
     ].join('\n');
     // Two sky samples. The aerial tint relaxes toward the sky AT the horizon (v = 0.5), the colour haze really
     // takes on. The curvature term blends toward the sky in the fragment's own view direction, so wherever the
     // ground ends (true horizon, or the far-plane cap seen from a high camera) it matches the background behind it
     // and leaves no ring.
-    const tint = new Color(AERIAL_TINT);
-    const aerialTint = `vec3(${tint.r.toFixed(5)}, ${tint.g.toFixed(5)}, ${tint.b.toFixed(5)})`;
     const blend = `{
   vec3 horizonOffset = vHorizonPos - uCameraPos;
   float horizonDist = length(horizonOffset.xz);
@@ -138,7 +141,7 @@ export function applyHorizonBlend(material: Material, shared: HorizonUniforms): 
   vec3 behindSky = uHasSky > 0.5 ? textureLod(uSkyMap, vec2(horizonU, horizonV), 0.0).rgb : uFallbackColor;
   float aerial = 1.0 - exp(-horizonDist / ${AERIAL_SCALE_M.toFixed(1)});
   float curvature = smoothstep(uHorizonNear, uHorizonDist, horizonDist);
-  gl_FragColor.rgb = mix(gl_FragColor.rgb, ${aerialTint}, aerial);
+  gl_FragColor.rgb = mix(gl_FragColor.rgb, uAerialTint, aerial);
   gl_FragColor.rgb = mix(gl_FragColor.rgb, behindSky, curvature);
 }`;
     shader.fragmentShader = shader.fragmentShader
