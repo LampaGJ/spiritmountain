@@ -60,6 +60,11 @@ describe('sportForArea', () => {
     expect(sportForArea(area('hiking-trail'), undefined, none)).toBe('hike');
   });
 
+  it('a tubing-run defaults to tubing', () => {
+    expect(KIND_DEFAULT_ACTIVITY['tubing-run']).toBe('tubing');
+    expect(sportForArea(area('tubing-run'), undefined, none)).toBe('tubing');
+  });
+
   it('a lift defaults to lift-ride', () => {
     expect(KIND_DEFAULT_ACTIVITY.lift).toBe('lift-ride');
     expect(sportForArea(area('lift'), undefined, none)).toBe('lift-ride');

@@ -63,9 +63,14 @@ export const SIGN_PANEL_ALPHA = 0.9;
 /** Light and dark label colours; labelColorFor picks the higher-contrast one per sport. */
 export const LABEL_LIGHT = 0xffffff;
 export const LABEL_DARK = 0x111111;
-/** Canvas size of one sign texture in device pixels (aspect 4:1). */
+/** Canvas width of every sign texture in device pixels. The height is sized to the content (layoutSign, #70). */
 export const SIGN_CANVAS_WIDTH = 512;
+/** The reference panel height the layout metrics were tuned at; a sign's real height comes from layoutSign. */
 export const SIGN_CANVAS_HEIGHT = 128;
+/** The hero sign is this many times the normal sign width on screen (#70; the DOM hero was 288 px against 160). */
+export const HERO_SCALE = 1.8;
+/** The hero sign's base floats this far above the active surface, in world metres before exaggeration (#70). */
+export const HERO_OFFSET_M = 40;
 const SYMBOL_FONT_FAMILY = '"Material Symbols Outlined"';
 const LABEL_FONT_FAMILY = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
 
@@ -435,26 +440,8 @@ export interface SignPlan {
   readonly placeId?: string;
 }
 
-/** The place whose sign is the MAIN sign, rendered as a DOM element by src/ui/hero-sign.ts instead of a sprite (#63). */
+/** The place whose sign is the MAIN sign: a sprite HERO_SCALE x as wide, floating HERO_OFFSET_M above the resort, never decluttered (#70). */
 export const HERO_PLACE_ID = 'spirit-mountain-adventure-park';
-
-/** What the hero sign needs to render one planned place sign. */
-export interface PlacePlan {
-  readonly id: string;
-  readonly name: string;
-  readonly trailCount: number;
-  /** In ActivitySchema.options order. */
-  readonly activities: readonly Activity[];
-}
-
-/** The place signs among `plans`, as PlacePlans. Pure. */
-export function placePlans(plans: readonly SignPlan[]): PlacePlan[] {
-  return plans.flatMap((p) =>
-    p.placeId === undefined || p.place === undefined
-      ? []
-      : [{ id: p.placeId, name: p.place, trailCount: p.trackCount, activities: p.activities }],
-  );
-}
 
 /**
  * Activities of one track: the union over its segments of annotation activities that are in `selected` (every
@@ -746,9 +733,9 @@ export function labelColorFor(panelHex: number): number {
     : LABEL_DARK;
 }
 
-/** Full canvas height of a sign texture: the panel, plus the tail for a trail sign. */
-export function signCanvasHeight(family: SignFamily): number {
-  return family === 'trail' ? SIGN_CANVAS_HEIGHT + TAIL_PX : SIGN_CANVAS_HEIGHT;
+/** Full canvas height of a sign texture: the content-sized panel, plus the tail for a trail sign. */
+export function signCanvasHeight(family: SignFamily, panelHeight: number): number {
+  return family === 'trail' ? panelHeight + TAIL_PX : panelHeight;
 }
 
 /** Sign width in CSS pixels: 160, or a fifth of the viewport on narrow screens (78 at 390). */
@@ -936,9 +923,8 @@ export interface SignSpec {
   readonly place?: string | undefined;
   /** False until the Material Symbols font has loaded (or forever when it fails): chips and label only. */
   readonly glyph: boolean;
-  /** The panel's size; a trail sign's canvas is TAIL_PX taller than `height`. */
+  /** The canvas width; the panel height comes from layoutSign, and a trail sign's canvas is TAIL_PX taller. */
   readonly width: number;
-  readonly height: number;
 }
 
 const cssHex = (hex: number): string => `#${hex.toString(16).padStart(6, '0')}`;
@@ -960,7 +946,7 @@ function roundedPanel(
   colour: number,
   tail: boolean,
 ): void {
-  const r = h * 0.22;
+  const r = PANEL_RADIUS_PX;
   ctx.globalAlpha = SIGN_PANEL_ALPHA;
   ctx.fillStyle = cssHex(colour);
   ctx.beginPath();
@@ -980,95 +966,239 @@ function roundedPanel(
   ctx.globalAlpha = 1;
 }
 
-/** Shrinks the font until `text` fits `available`, never below 12 px. */
-function fitLabel(
+/** Shrinks the font until `text` fits `available`, never below 12 px; returns the CSS font string. */
+function fitFont(
   ctx: SignContext2D,
   text: string,
   size: number,
   available: number,
-  weight = '600',
-): void {
-  ctx.font = `${weight} ${size}px ${LABEL_FONT_FAMILY}`;
+  weight: string,
+): { readonly font: string; readonly size: number } {
+  let font = `${weight} ${size}px ${LABEL_FONT_FAMILY}`;
+  ctx.font = font;
   const measured = ctx.measureText(text).width;
+  let fitted = size;
   if (measured > available && measured > 0) {
-    ctx.font = `${weight} ${Math.max(12, Math.floor((size * available) / measured))}px ${LABEL_FONT_FAMILY}`;
+    fitted = Math.max(12, Math.floor((size * available) / measured));
+    font = `${weight} ${fitted}px ${LABEL_FONT_FAMILY}`;
+  }
+  return { font, size: fitted };
+}
+
+/** Greedy word wrap of `text` to at most `maxLines` lines that each fit `available` at the current font; null when it cannot. */
+function wrapWords(
+  ctx: SignContext2D,
+  text: string,
+  available: number,
+  maxLines: number,
+): string[] | null {
+  const lines: string[] = [];
+  let line = '';
+  for (const word of text.split(' ').filter((w) => w !== '')) {
+    const trial = line === '' ? word : `${line} ${word}`;
+    if (ctx.measureText(trial).width <= available) {
+      line = trial;
+    } else if (line === '' || lines.length + 1 >= maxLines) {
+      return null;
+    } else {
+      lines.push(line);
+      line = word;
+    }
+  }
+  if (line !== '') lines.push(line);
+  return lines.length > 0 && lines.length <= maxLines ? lines : null;
+}
+
+/** A place name: wraps to at most two lines at the nominal size, shrinking only when two lines still do not fit. */
+function fitNameLines(
+  ctx: SignContext2D,
+  text: string,
+  size: number,
+  available: number,
+): { readonly lines: string[]; readonly font: string; readonly size: number } {
+  for (let s = size; ; s = Math.max(12, s - 2)) {
+    const font = `bold ${s}px ${LABEL_FONT_FAMILY}`;
+    ctx.font = font;
+    const lines = wrapWords(ctx, text, available, 2);
+    if (lines !== null) return { lines, font, size: s };
+    if (s <= 12) {
+      const one = fitFont(ctx, text, 12, available, 'bold');
+      return { lines: [text], font: one.font, size: one.size };
+    }
   }
 }
 
-/** One circular chip per activity (ActivitySchema order) from `left`, centred on `y`, each holding its sport glyph. */
-function drawChips(
+/** Radius of one chip in a row of `count` with a gap of half a chip diameter (= r): at most `maxRadius`, small enough that the row fits `available`. */
+function chipRadius(count: number, maxRadius: number, available: number): number {
+  return Math.min(maxRadius, available / (3 * Math.max(count, 1) - 1));
+}
+
+/** Layout metrics in canvas pixels, tuned at the 512 x 128 reference panel. */
+const NAME_PX = 44;
+const SIGN_PAD = Math.ceil(0.6 * Math.ceil(NAME_PX * 1.15));
+const SIGN_ROW_GAP = Math.ceil(0.45 * Math.ceil(NAME_PX * 1.15));
+const SIGN_LINE_HEIGHT = 1.15;
+const PANEL_RADIUS_PX = 28;
+const COUNT_PX = 26;
+const LABEL_PX = 41;
+const CONCENTRATION_CHIP_R_PX = 26;
+const PLACE_CHIP_R_PX = 22;
+const TRAIL_CHIP_R_PX = SIGN_CANVAS_HEIGHT * TRAIL_CHIP_R_FRACTION;
+
+/** One run of text on the panel: `lines` stacked from `y` (the first line's centre) at `lineHeight` apart. */
+export interface SignTextRow {
+  readonly lines: readonly string[];
+  readonly font: string;
+  readonly x: number;
+  readonly y: number;
+  readonly lineHeight: number;
+  readonly align: CanvasTextAlign;
+}
+
+/** Where the chip row sits: `left` is the row's span start, `centred` centres the row in that span. */
+export interface SignChipRow {
+  readonly left: number;
+  readonly y: number;
+  readonly r: number;
+  readonly gap: number;
+  readonly centred: boolean;
+}
+
+/** Where everything on one sign sits, and the panel height those positions need. */
+export interface SignLayout {
+  /** The panel height, excluding a trail sign's tail. */
+  readonly height: number;
+  readonly texts: readonly SignTextRow[];
+  readonly chips: SignChipRow;
+}
+
+/**
+ * Sizes a sign to its content (#70): padding, the name (one line, or up to two for a place), the count or label, and the
+ * chip row, stacked top to bottom. The canvas takes this height and the sprite takes the canvas's own width:height
+ * ratio, so a sign is never stretched. A place sign is name, count, chips; a plain concentration sign is chips, label; a
+ * trail sign is name, chips. Measures with ctx, so it sets ctx.font.
+ */
+export function layoutSign(
   ctx: SignContext2D,
-  spec: SignSpec,
-  left: number,
-  y: number,
-  maxRadius: number,
-  available: number,
-  gap: number,
-  centred = false,
-): void {
+  spec: Pick<SignSpec, 'activities' | 'label' | 'family' | 'place' | 'width'>,
+): SignLayout {
+  const w = spec.width;
+  const available = w - 2 * SIGN_PAD;
+  const n = ActivitySchema.options.filter((a) => spec.activities.includes(a)).length;
+  const texts: SignTextRow[] = [];
+  const lineH = (size: number): number => Math.ceil(size * SIGN_LINE_HEIGHT);
+  let y = SIGN_PAD;
+  if (spec.family === 'trail') {
+    const name = fitFont(ctx, spec.label, NAME_PX, available, 'bold');
+    const h = lineH(name.size);
+    texts.push({
+      lines: [spec.label],
+      font: name.font,
+      x: SIGN_PAD,
+      y: y + h / 2,
+      lineHeight: h,
+      align: 'left',
+    });
+    y += h + SIGN_ROW_GAP;
+    const r = chipRadius(n, TRAIL_CHIP_R_PX, available);
+    return {
+      height: Math.ceil(y + 2 * r + SIGN_PAD),
+      texts,
+      chips: { left: SIGN_PAD, y: y + r, r, gap: r, centred: false },
+    };
+  }
+  if (spec.place !== undefined) {
+    const name = fitNameLines(ctx, spec.place, NAME_PX, available);
+    const nameH = lineH(name.size);
+    texts.push({
+      lines: name.lines,
+      font: name.font,
+      x: w / 2,
+      y: y + nameH / 2,
+      lineHeight: nameH,
+      align: 'center',
+    });
+    y += nameH * name.lines.length + 2;
+    const count = fitFont(ctx, spec.label, COUNT_PX, available, '600');
+    const countH = lineH(count.size);
+    texts.push({
+      lines: [spec.label],
+      font: count.font,
+      x: w / 2,
+      y: y + countH / 2,
+      lineHeight: countH,
+      align: 'center',
+    });
+    y += countH + SIGN_ROW_GAP;
+    const r = chipRadius(n, PLACE_CHIP_R_PX, available);
+    return {
+      height: Math.ceil(y + 2 * r + SIGN_PAD),
+      texts,
+      chips: { left: SIGN_PAD, y: y + r, r, gap: r, centred: true },
+    };
+  }
+  const r = chipRadius(n, CONCENTRATION_CHIP_R_PX, available);
+  const chipsY = y + r;
+  y += 2 * r + SIGN_ROW_GAP;
+  const label = fitFont(ctx, spec.label, LABEL_PX, available, '600');
+  const labelH = lineH(label.size);
+  texts.push({
+    lines: [spec.label],
+    font: label.font,
+    x: w / 2,
+    y: y + labelH / 2,
+    lineHeight: labelH,
+    align: 'center',
+  });
+  return {
+    height: Math.ceil(y + labelH + SIGN_PAD),
+    texts,
+    chips: { left: SIGN_PAD, y: chipsY, r, gap: r, centred: true },
+  };
+}
+
+/** One circular chip per activity (ActivitySchema order), each holding its sport glyph; round at any panel height. */
+function drawChips(ctx: SignContext2D, spec: SignSpec, chips: SignChipRow): void {
   const activities = ActivitySchema.options.filter((a) => spec.activities.includes(a));
-  const chipR = Math.min(
-    maxRadius,
-    (available - gap * Math.max(activities.length - 1, 0)) / (2 * Math.max(activities.length, 1)),
-  );
-  const rowWidth = activities.length * 2 * chipR + gap * Math.max(activities.length - 1, 0);
-  // Centred rows sit in the middle of the `available` span that starts at `left`.
-  const start = centred ? left + (available - rowWidth) / 2 : left;
+  const available = spec.width - 2 * chips.left;
+  const rowWidth = activities.length * 2 * chips.r + chips.gap * Math.max(activities.length - 1, 0);
+  const start = chips.centred ? chips.left + (available - rowWidth) / 2 : chips.left;
   activities.forEach((activity, i) => {
-    const cx = start + chipR + i * (2 * chipR + gap);
+    const cx = start + chips.r + i * (2 * chips.r + chips.gap);
     ctx.fillStyle = cssHex(SPORT_COLOR[activity]);
     ctx.beginPath();
-    ctx.arc(cx, y, chipR, 0, Math.PI * 2);
+    ctx.arc(cx, chips.y, chips.r, 0, Math.PI * 2);
     ctx.closePath();
     ctx.fill();
     if (spec.glyph) {
       ctx.fillStyle = cssHex(labelColorFor(SPORT_COLOR[activity]));
-      ctx.font = `${Math.round(chipR * 1.5)}px ${SYMBOL_FONT_FAMILY}`;
+      ctx.font = `${Math.round(chips.r * 1.5)}px ${SYMBOL_FONT_FAMILY}`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(signGlyph(activity).symbol, cx, y);
+      ctx.fillText(signGlyph(activity).symbol, cx, chips.y);
     }
   });
 }
 
 /**
- * Draws one sign on a dark neutral rounded panel at SIGN_PANEL_ALPHA. A concentration sign: top row one circular chip
- * per activity filled with SPORT_COLOR holding the sport glyph, bottom row the label in white. A trail sign: the track
- * name in bold white on top, left-aligned, one such chip per activity below it.
+ * Draws one sign on a dark neutral rounded panel at SIGN_PANEL_ALPHA, laid out by layoutSign so the panel is exactly as
+ * tall as its content. A place sign: name (bold, centred, up to two lines), the trail count, then centred chips. A plain
+ * concentration sign: centred chips, then the label. A trail sign: the name in bold, left-aligned, over its chips.
  */
-export function drawSign(ctx: SignContext2D, spec: SignSpec): void {
-  const { width: w, height: h } = spec;
+export function drawSign(ctx: SignContext2D, spec: SignSpec): SignLayout {
   const trail = spec.family === 'trail';
-  ctx.clearRect(0, 0, w, h + (trail ? TAIL_PX : 0));
-  const pad = h * 0.12;
-  roundedPanel(ctx, w, h, SIGN_PANEL_COLOR, trail);
-  if (spec.family === 'trail') {
-    ctx.fillStyle = cssHex(LABEL_LIGHT);
-    ctx.textBaseline = 'middle';
-    ctx.textAlign = 'left';
-    fitLabel(ctx, spec.label, Math.round(h * 0.34), w - 2 * pad, 'bold');
-    ctx.fillText(spec.label, pad, h * 0.25);
-    drawChips(ctx, spec, pad, h * 0.7, h * TRAIL_CHIP_R_FRACTION, w - 2 * pad, h * 0.06);
-    return;
-  }
-  if (spec.place !== undefined) {
-    // A named place: chips on top, the place name in bold, then the trail count smaller underneath. The name matches a trail sign's name: 0.34 of the height, bold.
-    drawChips(ctx, spec, pad, h * 0.2, h * 0.15, w - 2 * pad, h * 0.05, true);
-    ctx.fillStyle = cssHex(LABEL_LIGHT);
-    ctx.textBaseline = 'middle';
-    ctx.textAlign = 'center';
-    fitLabel(ctx, spec.place, Math.round(h * 0.34), w - 2 * pad, 'bold');
-    ctx.fillText(spec.place, w / 2, h * 0.55);
-    fitLabel(ctx, spec.label, Math.round(h * 0.2), w - 2 * pad);
-    ctx.fillText(spec.label, w / 2, h * 0.85);
-    return;
-  }
-  drawChips(ctx, spec, pad, h * 0.28, h * 0.2, w - 2 * pad, h * 0.06, true);
+  const layout = layoutSign(ctx, spec);
+  ctx.clearRect(0, 0, spec.width, layout.height + (trail ? TAIL_PX : 0));
+  roundedPanel(ctx, spec.width, layout.height, SIGN_PANEL_COLOR, trail);
   ctx.fillStyle = cssHex(LABEL_LIGHT);
   ctx.textBaseline = 'middle';
-  fitLabel(ctx, spec.label, Math.round(h * 0.32), w - 2 * pad);
-  ctx.textAlign = 'center';
-  ctx.fillText(spec.label, w / 2, h * 0.76);
+  for (const row of layout.texts) {
+    ctx.font = row.font;
+    ctx.textAlign = row.align;
+    row.lines.forEach((line, i) => ctx.fillText(line, row.x, row.y + i * row.lineHeight));
+  }
+  drawChips(ctx, spec, layout.chips);
+  return layout;
 }
 
 /** The slice of FontFaceSet the loader uses. */
@@ -1137,13 +1267,6 @@ export interface BillboardDeps {
   readonly places?: readonly Place[];
   /** Defaults to console.warn. */
   readonly warn?: (message: string) => void;
-  /**
-   * Called on every filter change and redrape with the planned place signs (#63). The hero place (HERO_PLACE_ID) gets
-   * no sprite: src/ui/hero-sign.ts renders it from this plan, and a place with no member trail is absent from it.
-   */
-  readonly onPlan?: (places: readonly PlacePlan[]) => void;
-  /** The hero sign's current screen rect in CSS pixels, or null when it is hidden (#66); sprites never sit under it. */
-  readonly heroRect?: () => ScreenRect | null;
 }
 
 export interface BillboardStats {
@@ -1180,6 +1303,10 @@ interface Sign {
   readonly sprite: Sprite;
   readonly material: SpriteMaterial;
   family: SignFamily;
+  /** Canvas height over canvas width of the sign's texture: the sprite's world aspect, so it is never stretched. */
+  aspect: number;
+  /** The hero sign (#70): wider, lifted, never decluttered; its screen rect is the fixed rect the others yield to. */
+  hero: boolean;
   priority: number;
   active: boolean;
   /** Hysteresis state for the declutter pass. */
@@ -1223,42 +1350,44 @@ export function buildBillboardLayer(
     readonly canvas: SignCanvas;
     readonly texture: CanvasTexture;
     readonly spec: Pick<SignSpec, 'activities' | 'label' | 'family' | 'place'>;
+    /** Canvas height over width, from the content-sized layout (#70). */
+    readonly aspect: number;
   }
   const textures = new Map<string, SignTexture>();
   const paint = (entry: SignTexture): void => {
     const ctx = entry.canvas.getContext('2d');
     if (!ctx) return;
-    drawSign(ctx, {
-      ...entry.spec,
-      glyph: glyphReady,
-      width: SIGN_CANVAS_WIDTH,
-      height: SIGN_CANVAS_HEIGHT,
-    });
+    drawSign(ctx, { ...entry.spec, glyph: glyphReady, width: SIGN_CANVAS_WIDTH });
     entry.texture.needsUpdate = true;
   };
   const textureFor = (
     spec: Pick<SignSpec, 'activities' | 'label' | 'family' | 'place'>,
-  ): CanvasTexture => {
+  ): SignTexture => {
     const key = signTextureKey(spec);
     const cached = textures.get(key);
-    if (cached) return cached.texture;
+    if (cached) return cached;
     const canvas = createCanvas();
+    // Measure first: the canvas is as tall as its content, and the sprite uses that same ratio (never stretched).
+    const ctx = canvas.getContext('2d');
+    const panelHeight = ctx
+      ? layoutSign(ctx, { ...spec, width: SIGN_CANVAS_WIDTH }).height
+      : SIGN_CANVAS_HEIGHT;
     canvas.width = SIGN_CANVAS_WIDTH;
-    canvas.height = signCanvasHeight(spec.family);
+    canvas.height = signCanvasHeight(spec.family, panelHeight);
     const texture = new CanvasTexture(canvas as unknown as HTMLCanvasElement);
     texture.colorSpace = SRGBColorSpace;
     texture.minFilter = LinearFilter;
     texture.generateMipmaps = false;
-    const entry: SignTexture = { canvas, texture, spec };
+    const entry: SignTexture = { canvas, texture, spec, aspect: canvas.height / canvas.width };
     textures.set(key, entry);
     paint(entry);
-    return texture;
+    return entry;
   };
 
   const pool: Sign[] = [];
   const makeSign = (plan: SignPlan): Sign => {
     const material = new SpriteMaterial({
-      map: textureFor(plan),
+      map: textureFor(plan).texture,
       transparent: true,
       depthTest: false,
       depthWrite: false,
@@ -1270,6 +1399,8 @@ export function buildBillboardLayer(
       sprite,
       material,
       family: plan.family,
+      aspect: 0,
+      hero: false,
       priority: 0,
       active: false,
       dc: initialDeclutterState(),
@@ -1310,19 +1441,18 @@ export function buildBillboardLayer(
     const { annotations, selected, visibleIds } = lastArgs;
     // Concentration signs first: they win declutter ties and keep their pool slots across trail-sign changes.
     const concentrations = planSigns(areas, annotations, selected, visibleIds, deps.places ?? []);
-    deps.onPlan?.(placePlans(concentrations));
-    lastPlans = [
-      ...concentrations.filter((p) => p.placeId !== HERO_PLACE_ID),
-      ...planTrailSigns(areas, annotations, selected, visibleIds),
-    ];
+    lastPlans = [...concentrations, ...planTrailSigns(areas, annotations, selected, visibleIds)];
     lastPlans.forEach((plan, i) => {
       const sign = pool[i] ?? makeSign(plan);
       if (pool[i] === undefined) pool.push(sign);
       sign.active = true;
       sign.dc = initialDeclutterState();
       sign.fade = 0;
-      sign.priority = plan.family === 'concentration' ? 0 : 1;
-      sign.material.map = textureFor(plan);
+      sign.hero = plan.placeId === HERO_PLACE_ID;
+      sign.priority = sign.hero ? -1 : plan.family === 'concentration' ? 0 : 1;
+      const entry = textureFor(plan);
+      sign.material.map = entry.texture;
+      sign.aspect = entry.aspect;
       sign.sprite.name = `billboard:${signTextureKey(plan)}`;
       sign.sprite.userData['activities'] = plan.activities;
       sign.sprite.userData['family'] = plan.family;
@@ -1334,7 +1464,7 @@ export function buildBillboardLayer(
         sign.sprite.position.set(x, y, z);
       } else {
         const [x, y, z] = toScene(plan.east, plan.north, heightAt(plan.east, plan.north));
-        sign.sprite.position.set(x, y + SIGN_OFFSET_M, z);
+        sign.sprite.position.set(x, y + (sign.hero ? HERO_OFFSET_M : SIGN_OFFSET_M), z);
       }
     });
     for (let i = lastPlans.length; i < pool.length; i++) {
@@ -1369,17 +1499,21 @@ export function buildBillboardLayer(
     const viewportH = Math.max(renderer.domElement.clientHeight, 1);
     const tanHalf = Math.tan(((camera.fov / 2) * Math.PI) / 180);
     const widthPx = signWidthPx(viewportW);
-    const heightOf = (family: SignFamily): number =>
-      (widthPx * signCanvasHeight(family)) / SIGN_CANVAS_WIDTH;
     const ys = effectiveScale(host.exaggeration);
     // Sign positions never depend on the camera; only the screen-space scale and the rects below do.
     const onScreen: Sign[] = [];
     const rects: ScreenRect[] = [];
     const alphas: number[] = [];
+    // The hero (#70) is never decluttered: its projected rect is the fixed rect every other sign yields to.
+    let hero: Sign | null = null;
+    let heroAlpha = 0;
+    let heroRect: ScreenRect | null = null;
     for (const sign of pool) {
       if (!sign.active) continue;
       const trail = sign.family === 'trail';
-      const heightPx = heightOf(sign.family);
+      // Each sign's own canvas ratio sets its height, so no sign is stretched (#70).
+      const signWidthPxOnScreen = sign.hero ? widthPx * HERO_SCALE : widthPx;
+      const heightPx = signWidthPxOnScreen * sign.aspect;
       sign.sprite.getWorldPosition(world);
       const horizontal = Math.hypot(world.x - fadeCentre.east, world.z + fadeCentre.north);
       const alpha = fadeAlpha(horizontal);
@@ -1390,8 +1524,8 @@ export function buildBillboardLayer(
       }
       // View-space depth sets the pixel size of a point at any screen position; Euclidean distance overstates it off-axis.
       const d = Math.max(-view.copy(world).applyMatrix4(camera.matrixWorldInverse).z, camera.near);
-      const w = widthPx * ((2 * d * tanHalf) / viewportH);
-      sign.sprite.scale.set(w, (w * heightPx) / widthPx / ys, 1);
+      const w = signWidthPxOnScreen * ((2 * d * tanHalf) / viewportH);
+      sign.sprite.scale.set(w, (w * sign.aspect) / ys, 1);
       ndc.copy(world).project(camera);
       // Behind the camera or outside the clip range: never drawn, so it occupies no screen space.
       if (ndc.z < -1 || ndc.z > 1) {
@@ -1400,18 +1534,25 @@ export function buildBillboardLayer(
       }
       const cx = ((ndc.x + 1) / 2) * viewportW;
       const baseY = ((1 - ndc.y) / 2) * viewportH;
-      onScreen.push(sign);
-      alphas.push(alpha);
       // Concentration: the bottom-centre is the projected point, so the rect extends half a width each side and up.
       // Trail: the tail apex is, TAIL_X_FRACTION of the width from the left; the rect includes the tail.
-      rects.push({
-        x: trail ? cx - TAIL_X_FRACTION * widthPx : cx - widthPx / 2,
+      const rect: ScreenRect = {
+        x: trail ? cx - TAIL_X_FRACTION * signWidthPxOnScreen : cx - signWidthPxOnScreen / 2,
         y: baseY - heightPx,
-        w: widthPx,
+        w: signWidthPxOnScreen,
         h: heightPx,
         distance: d,
         priority: sign.priority,
-      });
+      };
+      if (sign.hero) {
+        hero = sign;
+        heroAlpha = alpha;
+        heroRect = rect;
+        continue;
+      }
+      onScreen.push(sign);
+      alphas.push(alpha);
+      rects.push(rect);
     }
     // The pass runs at most every DECLUTTER_INTERVAL_MS, and only when something could change its answer.
     sinceMs += deltaMs;
@@ -1433,7 +1574,7 @@ export function buildBillboardLayer(
         rects,
         onScreen.map((sign) => sign.dc),
         sinceMs,
-        deps.heroRect?.() ?? null,
+        heroRect,
       );
       onScreen.forEach((sign, i) => {
         sign.dc = next[i] as DeclutterState;
@@ -1453,6 +1594,14 @@ export function buildBillboardLayer(
       sign.material.opacity = (alphas[i] as number) * sign.fade;
       sign.sprite.visible = sign.dc.visible || sign.fade > 0;
     });
+    // The hero is always shown (fades in on appearing, never hidden by declutter).
+    const shownHero: Sign | null = hero;
+    if (shownHero !== null) {
+      shownHero.fade = stepFade(shownHero.fade, true, deltaMs);
+      shownHero.material.opacity = heroAlpha * shownHero.fade;
+      shownHero.sprite.visible = true;
+      count++;
+    }
     shownCount = count;
   };
   const unsubscribe = host.onFrame(onFrame);

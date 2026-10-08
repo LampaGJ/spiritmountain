@@ -105,6 +105,45 @@ export function parseConversion(converted: unknown): Record<string, LonLatGeomet
   return ways;
 }
 
+/** Metres to the right of the tow, looking from its first vertex to its last, that the derived tubing run sits. */
+export const TUBING_RUN_OFFSET_M = 12;
+
+/**
+ * @displayName Derived tubing run
+ * @strategicPurpose OSM maps only the tubing hill's tow, so the hill has no trail to colour or label; this gives the tubing activity a line of its own.
+ * @tacticalObjective Pure function: for a LineString lift whose name matches /tubing/i, returns one tubing-run feature (id derived/tubing-run/<lift id>, name "Tubing Hill", osmTags { derivedFrom: <lift id> }) whose vertices are the tow's, each shifted 12 m to the right of the tow's first-to-last direction, same z; otherwise null.
+ */
+export function deriveTubingRun(feature: AreaFeature): AreaFeature | null {
+  const { id, kind, name } = feature.properties;
+  if (kind !== 'lift' || name === null || !/tubing/i.test(name)) return null;
+  if (feature.geometry.type !== 'LineString') return null;
+  const line = feature.geometry.coordinates;
+  const first = line[0];
+  const last = line[line.length - 1];
+  if (first === undefined || last === undefined) return null;
+  const dx = last[0] - first[0];
+  const dy = last[1] - first[1];
+  const length = Math.sqrt(dx * dx + dy * dy);
+  if (length === 0) return null;
+  // Local frame is x east, y north, so the right-hand normal of (dx, dy) is (dy, -dx).
+  const rx = (dy / length) * TUBING_RUN_OFFSET_M;
+  const ry = (-dx / length) * TUBING_RUN_OFFSET_M;
+  return {
+    type: 'Feature',
+    properties: {
+      id: `derived/tubing-run/${id}`,
+      kind: 'tubing-run',
+      name: 'Tubing Hill',
+      difficulty: null,
+      osmTags: { derivedFrom: id },
+    },
+    geometry: {
+      type: 'LineString',
+      coordinates: line.map(([x, y, z]): Position => [x + rx, y + ry, z]),
+    },
+  };
+}
+
 const FAMILIES = ['piste:type', 'aerialway', 'mtb:scale'] as const;
 
 function checkFamilies(elements: readonly Element[]): void {
@@ -258,6 +297,12 @@ export function buildAreas(rawBytes: Uint8Array, ctx: BuildContext): BuildResult
     }
     if (created > 0) produced.push(key);
     else drop(key, 'relation-no-new-members', 'every member is a way element or was dropped');
+  }
+
+  // Derived areas ride beside the mapped ones; they add no input element, so the partition identity below is unaffected.
+  for (const feature of [...features]) {
+    const run = deriveTubingRun(feature);
+    if (run !== null) features.push(run);
   }
 
   // Effect proof (declared effect: reduces): every input element is a feature producer or dropped, never both, never neither.

@@ -4,6 +4,25 @@
     {
       "type": "Feature",
       "properties": {
+        "id": "derived/tubing-run/way/1470101407",
+        "kind": "tubing-run",
+        "name": "Tubing Hill",
+        "difficulty": null,
+        "osmTags": {
+          "derivedFrom": "way/1470101407"
+        }
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-290.73, 631.62, 0],
+          [-433.12, 686.77, 0]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
         "id": "way/1008678100",
         "kind": "mtb-route",
         "name": null,

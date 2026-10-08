@@ -29,6 +29,7 @@ import {
 } from './drape';
 import { applyRadialFade, setFadeCentre, type RadialFadeUniforms } from './fade';
 import type { MeshSurface } from './heightfield';
+import { buildLiftLoop, type LiftLoop } from './lifts';
 import { SPORT_COLOR } from './palette';
 import { sportForArea, type Activity } from './sport-routing';
 import type { CullWall } from './trees';
@@ -90,6 +91,8 @@ export interface AreaPolylines {
   readonly clampedCount: number;
   /** Smallest cable clearance above the mesh for a lift; null for every other kind. */
   readonly liftMinClearanceM: number | null;
+  /** The haul-rope loop of a lift (#68); null for every other kind. world and scene hold its two rope lines. */
+  readonly lift: LiftLoop | null;
 }
 
 function closeRing(
@@ -125,13 +128,20 @@ export function buildAreaPositions(
   const world: Vec3[][] = [];
   let clampedCount = 0;
   let liftMinClearanceM: number | null = null;
+  let lift: LiftLoop | null = null;
 
   if (area.kind === 'lift') {
     if (area.geometry.type !== 'LineString') {
       throw new Error(`area ${area.id}: a lift must be a LineString, got ${area.geometry.type}`);
     }
     const cable = cableLine(surface, area.geometry.coordinates, liftOffsetM(area.id, area.osmTags));
-    world.push(cable.points);
+    // Two rope lines replace the centre cable (#68), both in the cable's own vertex order, one per side.
+    const loop = buildLiftLoop(cable.points);
+    lift = loop;
+    const ropes = [loop.up, loop.down];
+    for (const rope of loop.reversed ? ropes.map((r) => [...r].reverse()) : ropes) {
+      world.push([...rope]);
+    }
     clampedCount += cable.clampedCount;
     liftMinClearanceM = minClearance(surface, cable.points);
   } else {
@@ -162,7 +172,7 @@ export function buildAreaPositions(
     }
     return points.flatMap(([east, north, elevation]) => [...toScene(east, north, elevation)]);
   });
-  return { areaId: area.id, world, scene, clampedCount, liftMinClearanceM };
+  return { areaId: area.id, world, scene, clampedCount, liftMinClearanceM, lift };
 }
 
 /**
@@ -178,6 +188,8 @@ export interface AreaEntry {
   readonly lines: readonly Line2[];
   /** The walls along a non-lift LineString when the layer was built with walls (#64, #67); never picked. */
   readonly walls?: TrailWalls;
+  /** The haul-rope loop of a lift (#68), which the chair animation rides; absent for every other kind. */
+  readonly lift?: LiftLoop;
 }
 
 export interface AreaLayerStats {
@@ -429,7 +441,12 @@ export function buildAreaLayer(
     const sport = sportForArea(area, undefined, new Set());
     const lines = built.scene.map((positions) => makeLine(area, positions, sport));
     const walls = wallsFor(area, built);
-    registry.set(area.id, walls ? { area, lines, walls } : { area, lines });
+    registry.set(area.id, {
+      area,
+      lines,
+      ...(walls ? { walls } : {}),
+      ...(built.lift ? { lift: built.lift } : {}),
+    });
     lineCount += lines.length;
     clampedVertexCount += built.clampedCount;
     if (built.liftMinClearanceM !== null) {

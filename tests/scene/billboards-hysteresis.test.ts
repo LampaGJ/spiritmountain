@@ -4,6 +4,7 @@ import {
   declutterStep,
   drawSign,
   initialDeclutterState,
+  layoutSign,
   stepFade,
   DECLUTTER_SHOW_HOLD_MS,
   SIGN_CANVAS_HEIGHT,
@@ -169,7 +170,7 @@ function recorder(): { ctx: SignContext2D; rec: Rec } {
 }
 
 describe('drawSign layout (#63)', () => {
-  const base = { glyph: false, width: SIGN_CANVAS_WIDTH, height: SIGN_CANVAS_HEIGHT };
+  const base = { glyph: false, width: SIGN_CANVAS_WIDTH };
 
   it('centres a place sign name and chip row on the canvas centre', () => {
     const { ctx, rec } = recorder();
@@ -197,5 +198,72 @@ describe('drawSign layout (#63)', () => {
     drawSign(ctx, { ...base, activities: ['hike'], label: 'Birch', family: 'trail' });
     expect(TRAIL_CHIP_R_FRACTION).toBeCloseTo(0.19 * 1.4, 9);
     expect(rec.arcs[0]?.r).toBeCloseTo(SIGN_CANVAS_HEIGHT * 0.19 * 1.4, 9);
+  });
+});
+
+describe('layoutSign content sizing (#70)', () => {
+  const spec = { width: SIGN_CANVAS_WIDTH };
+  const wideCtx = (): SignContext2D =>
+    ({
+      ...recorder().ctx,
+      measureText: (text: string) => ({ width: text.length * 20 }),
+    }) as unknown as SignContext2D;
+
+  it('wraps a long place name to two lines and grows the panel by one name line', () => {
+    const ctx = wideCtx();
+    const one = layoutSign(ctx, {
+      ...spec,
+      activities: ['hike'],
+      label: '1 trail',
+      family: 'concentration',
+      place: 'Peak',
+    });
+    const two = layoutSign(ctx, {
+      ...spec,
+      activities: ['hike'],
+      label: '1 trail',
+      family: 'concentration',
+      place: 'Spirit Mountain Adventure Park',
+    });
+    expect(one.texts[0]?.lines).toEqual(['Peak']);
+    expect(two.texts[0]?.lines).toEqual(['Spirit Mountain', 'Adventure Park']);
+    expect(two.height).toBeGreaterThan(one.height);
+  });
+
+  it('stacks a place sign name, count, then chips, all centred', () => {
+    const { ctx } = recorder();
+    const layout = layoutSign(ctx, {
+      ...spec,
+      activities: ['hike'],
+      label: '2 trails',
+      family: 'concentration',
+      place: 'Peak',
+    });
+    const [name, count] = layout.texts;
+    expect(name?.align).toBe('center');
+    expect(count?.align).toBe('center');
+    expect(name?.y).toBeLessThan(count?.y ?? 0);
+    expect(count?.y).toBeLessThan(layout.chips.y);
+    expect(layout.chips.centred).toBe(true);
+    expect(layout.height).toBeGreaterThan(layout.chips.y + layout.chips.r);
+  });
+
+  it('spaces a trail sign generously: pad >= 0.6 line, name-to-chips gap >= 0.45 line, chip gap half a diameter', () => {
+    const { ctx } = recorder();
+    const layout = layoutSign(ctx, {
+      ...spec,
+      activities: ['hike', 'mountain-bike'],
+      label: 'Birch',
+      family: 'trail',
+    });
+    const name = layout.texts[0];
+    const line = name?.lineHeight ?? 0;
+    const top = (name?.y ?? 0) - line / 2;
+    expect(top).toBeGreaterThanOrEqual(0.6 * line);
+    const nameBottom = (name?.y ?? 0) + line / 2;
+    expect(layout.chips.y - layout.chips.r - nameBottom).toBeGreaterThanOrEqual(0.45 * line);
+    expect(layout.height - (layout.chips.y + layout.chips.r)).toBeGreaterThanOrEqual(0.6 * line);
+    expect(layout.chips.gap).toBeCloseTo(layout.chips.r, 9);
+    expect(layout.chips.left).toBeGreaterThanOrEqual(0.6 * line);
   });
 });

@@ -24,6 +24,7 @@ const ACTIVITY_BY_KIND = {
   'snow-park': null,
   'mtb-route': 'mountain-bike',
   'hiking-trail': 'hike',
+  'tubing-run': 'tubing',
 } as const satisfies Record<AreaKind, string | null>;
 
 const compare = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
