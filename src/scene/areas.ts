@@ -5,6 +5,7 @@ import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
 import type { Annotation } from '../schema/annotation';
 import type { Area } from '../schema/area';
 import {
+  applyWallLanes,
   buildTrailWalls,
   canopyProfile,
   createWallMaterial,
@@ -359,6 +360,8 @@ export function buildAreaLayer(
   if (wallMaterial) {
     const centre = { east: surface.extent.centreEast, north: surface.extent.centreNorth };
     wallFades.push(applyRadialFade(wallMaterial, { centre }));
+    // After the fade (which replaces onBeforeCompile) and before the caller's horizon blend (which wraps both).
+    applyWallLanes(wallMaterial);
     wallMaterials.push(wallMaterial);
   }
   /** Every wall drawn in one call: the merge of the visible trails' walls, rebuilt on each change. */
