@@ -93,10 +93,11 @@ export function crownRadiusM(tree: TreeRecord): number {
 
 /**
  * @displayName Tree cull at trail walls
- * @strategicPurpose Stops the forest at a trail wall's face, so no crown pokes into or through a wall (#67).
- * @tacticalObjective Drops every tree whose trunk lies within its wall set's half-width plus its own crown radius of any
- *   wall centreline segment, looking only in the grid cells that reach covers. Pure and deterministic: records keep
- *   their order, and the data files are untouched (a scene-time filter, not an ingest).
+ * @strategicPurpose Stops the forest at a trail wall's face, so no crown pokes out of the far side of a wall (#67), while a crown that only reaches into the wall stays (it hides inside the wall), so the forest runs right up to the wall (#76).
+ * @tacticalObjective Drops every tree whose trunk lies within its wall set's half-width plus however far its crown radius
+ *   exceeds the full wall width (never negative) of any wall centreline segment, looking only in the grid cells that the
+ *   full reach covers. Pure and deterministic: records keep their order, and the data files are untouched (a scene-time
+ *   filter, not an ingest).
  */
 export function cullTreesAtWalls(
   records: readonly TreeRecord[],
@@ -125,7 +126,8 @@ export function cullTreesAtWalls(
             s[o + 2] as number,
             s[o + 3] as number,
           );
-          if (d < (s[o + 4] as number) + crown) {
+          const half = s[o + 4] as number;
+          if (d < half + Math.max(0, crown - 2 * half)) {
             hit = true;
             break;
           }
