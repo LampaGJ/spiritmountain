@@ -16,7 +16,7 @@ import {
 import { AreasReplaySchema, type AreasReplay, type DroppedEntry } from './areas-replay-schema';
 import { serializeAreas, serializeReplay } from './areas-serialize';
 import { GEOMETRY_RULE, mapKind, POINT_PROMOTED_KINDS } from './kind-mapping';
-import { BBOX, FRAME, toLocal } from './local-frame';
+import { BBOX, FRAME, osmToLocal } from './local-frame';
 import { ManifestSchema } from './manifest-schema';
 import { OverpassEnvelopeSchema, type OverpassEnvelope } from './overpass-schema';
 import { LOCKFILE_URL, lockSubtreeSha256, resolveCodeCommit, sha256Hex } from './replay';
@@ -54,7 +54,7 @@ const inBbox = (lon: number, lat: number): boolean =>
   lat >= BBOX.south && lat <= BBOX.north && lon >= BBOX.west && lon <= BBOX.east;
 
 const project = ([lon, lat]: readonly [number, number]): Position => {
-  const [x, y] = toLocal(lon, lat);
+  const [x, y] = osmToLocal(lon, lat);
   return [x, y, 0];
 };
 
@@ -158,7 +158,7 @@ export const POINT_PROMOTED_VALUE = `octagon-radius-${POINT_OCTAGON_RADIUS_M}m`;
  * @tacticalObjective Pure function: a lon/lat becomes a closed 9-position ring (8 vertices at 22.5, 67.5, ... degrees from east, then the first repeated) of radius 10 m about the node's local position, z 0, each coordinate rounded to the millimetre so the bytes do not depend on the platform's libm.
  */
 export function pointToOctagon(lon: number, lat: number): Position[] {
-  const [cx, cy] = toLocal(lon, lat);
+  const [cx, cy] = osmToLocal(lon, lat);
   const ring: Position[] = [];
   for (let k = 0; k < 8; k += 1) {
     const angle = ((22.5 + 45 * k) * Math.PI) / 180;

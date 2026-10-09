@@ -1,7 +1,7 @@
 {
   "inputHash": "791bda50dc9d341953c4bc85d9856b92aab813848570806748dac1a75fd49ee0",
-  "codeCommit": "3a29fc2291f43a9d5591e70223835129d9e7b1c4",
-  "outputHash": "394d2189a67fbfc5b0ee3ca634b9d8831ee9e2f3d731c5c87a1d7554bb197b09",
+  "codeCommit": "c4006cd7701f9b6cff2b5e9db1b0c2881555582a",
+  "outputHash": "ca1e74b74c510440c86d3fccca37585303fb04516dd52f21322acdda455766b3",
   "effect": "reduces",
   "toolVersions": {
     "osmtogeojson": "3.0.0-beta.5",

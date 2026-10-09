@@ -18,7 +18,7 @@ import {
   type BuildingsReplay,
 } from './buildings-replay-schema';
 import { serializeBuildings, serializeBuildingsReplay } from './buildings-serialize';
-import { BBOX, FRAME, gridEnvelope, ORIGIN, toLocal } from './local-frame';
+import { BBOX, FRAME, gridEnvelope, ORIGIN, osmToLocal } from './local-frame';
 import { OverpassEnvelopeSchema } from './overpass-schema';
 import { LOCKFILE_URL, lockSubtreeSha256, resolveCodeCommit, sha256Hex } from './replay';
 
@@ -68,7 +68,7 @@ function fail(name: string, message: string): never {
 }
 
 const project = ([lon, lat]: readonly [number, number]): Position => {
-  const [x, y] = toLocal(lon, lat);
+  const [x, y] = osmToLocal(lon, lat);
   return [x, y, 0];
 };
 

@@ -13,7 +13,7 @@ import {
   type BuildContext,
 } from '../../scripts/ingest/buildings';
 import { BuildingsReplaySchema } from '../../scripts/ingest/buildings-replay-schema';
-import { FRAME, toLocal } from '../../scripts/ingest/local-frame';
+import { FRAME, osmToLocal } from '../../scripts/ingest/local-frame';
 import { sha256Hex } from '../../scripts/ingest/replay';
 import { BuildingFeatureCollectionSchema } from '../../src/schema/building';
 
@@ -108,9 +108,9 @@ describe('buildBuildings on the mini fixture', () => {
     expect(ringCounts.sort()).toEqual([1, 2]);
   });
 
-  it('reprojects through toLocal and closes every ring', () => {
+  it('reprojects through osmToLocal (ITRF2014 to NAD83(2011), #77) and closes every ring', () => {
     const ring = byId('way/1')?.geometry.coordinates[0] ?? [];
-    const [x, y] = toLocal(-92.215 - 0.0001, 46.71 - 0.0001);
+    const [x, y] = osmToLocal(-92.215 - 0.0001, 46.71 - 0.0001);
     expect(ring[0]?.[0]).toBeCloseTo(x, 2);
     expect(ring[0]?.[1]).toBeCloseTo(y, 2);
     expect(ring[0]?.[2]).toBe(0);
