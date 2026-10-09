@@ -37,8 +37,10 @@ function smoothstep(edge0: number, edge1: number, x: number): number {
  * row 0 the UV v = 1 and column 0 the UV u = 0, so after rotateX the north-west corner is UV (0, 1).
  * A texture loaded from an image has flipY = true, which puts the image's top row at v = 1 and its left
  * column at u = 0. So an image whose top edge is north and left edge is west drapes with no UV change.
- * The NAIP export is requested for the heightfield's own box, so image edges equal mesh edges. The plane spans segX * stepEast = (cols - 1) * cellSize
- * (cell-centre samples), so its edges coincide with the first and last sample.
+ * The UVs run 0..1 over the MESH box, which spans segX * stepEast = (cols - 1) * cellSize (first to last cell centre). The
+ * photo covers the heightfield's pixel-corner box, half a cell wider on every side, so a mesh-box UV squeezes the photo by
+ * one cell (5 m over 6950 m, up to 2.5 m at the frame edge; measured in #75). Callers that drape the base photo crop with
+ * cropTerrainUvToPhoto (createTerrainMesh does); surface.ts crops its meshes with a texture offset and repeat instead.
  */
 export function buildTerrainGeometry(surface: MeshSurface): BufferGeometry {
   const { grid, heights, extent } = surface;
@@ -163,6 +165,31 @@ export function setTerrainImagery(mesh: Mesh, texture: Texture | null): void {
 }
 
 /**
+ * Rewrites a buildTerrainGeometry uv (0..1 over the mesh box) so it addresses the base photo, which covers the
+ * heightfield's pixel-corner box: west = first cell centre - cellSizeEast / 2, width = cols * cellSizeEast, and the same
+ * north-south. The NAIP export is requested for exactly that box (scripts/ingest/imagery.ts asks for the 3DEP decoded box,
+ * which data/terrain.json's corner origin and cell count describe), so after this a vertex samples the pixel it lies in.
+ */
+export function cropTerrainUvToPhoto(geometry: BufferGeometry, surface: MeshSurface): void {
+  const { field, extent } = surface;
+  const photoWest = field.originEast - field.cellSizeEast / 2;
+  const photoNorth = field.originNorth + field.cellSizeNorth / 2;
+  const photoW = field.cols * field.cellSizeEast;
+  const photoH = field.rows * field.cellSizeNorth;
+  const meshWest = extent.centreEast - extent.widthM / 2;
+  const meshSouth = extent.centreNorth - extent.heightM / 2;
+  const repeatU = extent.widthM / photoW;
+  const repeatV = extent.heightM / photoH;
+  const offsetU = (meshWest - photoWest) / photoW;
+  const offsetV = (meshSouth - (photoNorth - photoH)) / photoH;
+  const uv = geometry.getAttribute('uv') as BufferAttribute;
+  for (let i = 0; i < uv.count; i += 1) {
+    uv.setXY(i, offsetU + uv.getX(i) * repeatU, offsetV + uv.getY(i) * repeatV);
+  }
+  uv.needsUpdate = true;
+}
+
+/**
  * Terrain mesh: standard material, slope vertex colours or (when a texture is given) the photo, no shadows.
  * The material fades radially (see applyRadialFade) around a centre that defaults to the mesh centre; the
  * uniforms are kept on mesh.userData.fade so the caller can move the centre to the resort focus box.
@@ -173,7 +200,9 @@ export function createTerrainMesh(surface: MeshSurface, texture: Texture | null 
     centre: { east: surface.extent.centreEast, north: surface.extent.centreNorth },
   });
   applyImagerySharpen(material);
-  const mesh = new Mesh(buildTerrainGeometry(surface), material);
+  const geometry = buildTerrainGeometry(surface);
+  cropTerrainUvToPhoto(geometry, surface);
+  const mesh = new Mesh(geometry, material);
   mesh.name = 'terrain';
   mesh.userData['fade'] = fade;
   setTerrainImagery(mesh, texture);

@@ -7,7 +7,7 @@ import { FrameSchema } from '../../src/schema/frame';
 import { focusBoxOf } from '../../src/scene/views';
 import type { Progress, ProgressOptions } from '../progress';
 import { IngestError, USER_AGENT, requestWithRetry } from './fetch';
-import { IMAGE_WIDTH, jpegSize } from './imagery';
+import { IMAGE_WIDTH, fetchCheckedExtent, jpegSize } from './imagery';
 import {
   ImageryInsetManifestSchema,
   type ImageryInsetManifest,
@@ -57,6 +57,8 @@ export interface ImageryInsetRunOptions {
   dataDir?: string;
   progressDir?: string;
   progressFactory?: ProgressFactory;
+  /** Ask f=json first and refuse a rendered extent off the requested box (checkExportExtent). The CLI always sets it. */
+  checkExtent?: boolean;
 }
 
 /** Requests the inset box, validates it in memory, then writes the jpg and the manifest. */
@@ -72,6 +74,7 @@ export async function runImageryInset(
     dataDir = path.join(REPO_ROOT, 'data'),
     progressDir = 'reports/.progress',
     progressFactory = noopProgress,
+    checkExtent = false,
   } = opts;
   if (!userAgent.trim()) throw new IngestError('MissingUserAgent', 'a User-Agent is required');
 
@@ -142,10 +145,10 @@ export async function runImageryInset(
   );
   let res: Response;
   let bytes: Uint8Array;
-  try {
-    res = await requestWithRetry(
+  const request = (u: string) =>
+    requestWithRetry(
       () =>
-        fetchImpl(url, {
+        fetchImpl(u, {
           headers: { 'User-Agent': userAgent },
           signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
         }),
@@ -158,6 +161,11 @@ export async function runImageryInset(
       },
       { http: 'ImageryInsetHttpError', blocked: 'ImageryInsetBlocked' },
     );
+  try {
+    if (checkExtent) {
+      await fetchCheckedExtent(NAIP_URL, params, bbox, { width, height }, request);
+    }
+    res = await request(url);
     bytes = new Uint8Array(await res.arrayBuffer());
   } finally {
     clearInterval(beat);
@@ -222,7 +230,7 @@ async function main() {
   }
   const started = performance.now();
   try {
-    const m = await runImageryInset({ force: values.force, progressFactory });
+    const m = await runImageryInset({ force: values.force, progressFactory, checkExtent: true });
     const seconds = ((performance.now() - started) / 1000).toFixed(1);
     console.log(
       `pinned naip-inset ${m.width}x${m.height}, ${m.byteLength} bytes, ${m.metresPerPixel} m/px, ${seconds} s`,

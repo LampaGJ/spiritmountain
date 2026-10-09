@@ -2,7 +2,7 @@ import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, existsSync } from '
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { IMAGE_WIDTH, jpegSize, runImagery } from '../../scripts/ingest/imagery';
+import { IMAGE_WIDTH, checkExportExtent, jpegSize, runImagery } from '../../scripts/ingest/imagery';
 import { ImageryManifestSchema } from '../../scripts/ingest/imagery-manifest-schema';
 import { sha256Hex } from '../../scripts/ingest/replay';
 
@@ -127,5 +127,93 @@ describe('runImagery', () => {
     const dataDir = sandbox();
     const { fetchImpl } = respond(new Uint8Array(), 'text/plain', 400);
     await expect(runImagery({ dataDir, fetchImpl })).rejects.toThrow(/ImageryHttpError: HTTP 400/);
+  });
+});
+
+describe('returned-extent check (#75)', () => {
+  const requested = { xmin: 556530, ymin: 5169870, xmax: 563480, ymax: 5176610 };
+  /** The f=json body the service returned for the pinned request on 2026-10-08: x widened 0.12 m a side to square the pixels. */
+  const echo = (extent: Partial<typeof requested> = {}, width = 4000, height = 3879) => ({
+    href: 'https://example.invalid/out.jpg',
+    width,
+    height,
+    extent: {
+      xmin: 556529.8775457592,
+      ymin: 5169870,
+      xmax: 563480.1224542408,
+      ymax: 5176610,
+      ...extent,
+      spatialReference: { wkid: 26915, latestWkid: 26915 },
+    },
+    scale: 0,
+  });
+
+  it('accepts the live echo (0.12 m is under half a pixel)', () => {
+    expect(() => checkExportExtent(echo(), requested, 4000, 3879)).not.toThrow();
+  });
+
+  it('names the edge when the returned extent moves by more than half a pixel', () => {
+    expect(() => checkExportExtent(echo({ ymax: 5176611 }), requested, 4000, 3879)).toThrow(
+      /ImageryExtentMismatch: .*ymax/,
+    );
+  });
+
+  it('refuses a returned size that differs from the request', () => {
+    expect(() => checkExportExtent(echo({}, 4000, 3878), requested, 4000, 3879)).toThrow(
+      /ImageryExtentMismatch: .*4000x3878/,
+    );
+  });
+
+  it('asks f=json first with the same params and validates it, then fetches the image', async () => {
+    const dataDir = sandbox();
+    const urls: string[] = [];
+    const jpg = fakeJpeg(IMAGE_WIDTH, 3879);
+    const fetchImpl = (url: string) => {
+      urls.push(url);
+      const json = new URL(url).searchParams.get('f') === 'json';
+      return Promise.resolve(
+        json
+          ? new Response(JSON.stringify(echo()), {
+              headers: { 'content-type': 'application/json' },
+            })
+          : new Response(jpg as BodyInit, { headers: { 'content-type': 'image/jpeg' } }),
+      );
+    };
+    await runImagery({ dataDir, fetchImpl, now: () => 0, checkExtent: true });
+    expect(urls.map((u) => new URL(u).searchParams.get('f'))).toEqual(['json', 'image']);
+    const a = new URL(urls[0] as string).searchParams;
+    const b = new URL(urls[1] as string).searchParams;
+    a.delete('f');
+    b.delete('f');
+    expect(a.toString()).toBe(b.toString());
+  });
+
+  it('writes nothing when the echo disagrees', async () => {
+    const dataDir = sandbox();
+    const fetchImpl = (url: string) =>
+      Promise.resolve(
+        new URL(url).searchParams.get('f') === 'json'
+          ? new Response(JSON.stringify(echo({ xmin: 556520 })), {
+              headers: { 'content-type': 'application/json' },
+            })
+          : new Response(fakeJpeg(IMAGE_WIDTH, 3879) as BodyInit, {
+              headers: { 'content-type': 'image/jpeg' },
+            }),
+      );
+    await expect(runImagery({ dataDir, fetchImpl, checkExtent: true })).rejects.toThrow(
+      /ImageryExtentMismatch: .*xmin/,
+    );
+    expect(existsSync(path.join(dataDir, 'raw/naip.jpg'))).toBe(false);
+  });
+
+  it('refuses an echo that is not the documented shape', async () => {
+    const dataDir = sandbox();
+    const fetchImpl = () =>
+      Promise.resolve(
+        new Response('{"error":{"code":400}}', { headers: { 'content-type': 'application/json' } }),
+      );
+    await expect(runImagery({ dataDir, fetchImpl, checkExtent: true })).rejects.toThrow(
+      /ImageryExtentMismatch: .*not an exportImage echo/,
+    );
   });
 });
