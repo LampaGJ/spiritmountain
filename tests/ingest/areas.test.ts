@@ -14,7 +14,7 @@ import {
   TRANSFORM_SOURCES,
   type BuildContext,
 } from '../../scripts/ingest/areas';
-import { BBOX, FRAME, toLocal } from '../../scripts/ingest/local-frame';
+import { BBOX, FRAME, osmToLocal, toLocal } from '../../scripts/ingest/local-frame';
 import { sha256Hex } from '../../scripts/ingest/replay';
 
 const cmp = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
@@ -548,7 +548,7 @@ describe('zip line, campground, climbing and attraction (#71)', () => {
   });
 
   it('pointToOctagon is a closed ring of 8 vertices, all 10 m from the node, z 0, stable bytes', () => {
-    const [cx, cy] = toLocal(-92.21, 46.712);
+    const [cx, cy] = osmToLocal(-92.21, 46.712);
     const ring = pointToOctagon(-92.21, 46.712);
     expect(ring).toHaveLength(9);
     expect(ring[0]).toEqual(ring[8]);

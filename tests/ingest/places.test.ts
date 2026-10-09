@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, relative } from 'node:path';
 import ts from 'typescript';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { toLocal } from '../../scripts/ingest/local-frame';
+import { osmToLocal } from '../../scripts/ingest/local-frame';
 import { generatePlaces, PlacesError } from '../../scripts/ingest/places-core';
 import { main, PlacesReplaySchema, TRANSFORM_SOURCES } from '../../scripts/ingest/places';
 import { sha256Hex } from '../../scripts/ingest/replay';
@@ -62,7 +62,7 @@ function run(rows: PlaceSeed[], areas: Uint8Array = areasOf(LIFT)) {
 describe('generatePlaces', () => {
   it('projects coordinates to local metres through the frame, rounded to a centimetre', () => {
     const { file } = run([row({ id: 'a', lat: 46.718, lon: -92.2167 })]);
-    const [east, north] = toLocal(-92.2167, 46.718);
+    const [east, north] = osmToLocal(-92.2167, 46.718);
     expect(file.places[0]?.east).toBe(Math.round(east * 100) / 100);
     expect(file.places[0]?.north).toBe(Math.round(north * 100) / 100);
     expect(file.places[0]?.positionSource).toBe('coordinates');

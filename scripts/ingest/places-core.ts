@@ -8,7 +8,7 @@ import {
   type PlaceSeed,
   type PlacesFile,
 } from '../../src/schema/places';
-import { FRAME, toLocal } from './local-frame';
+import { FRAME, osmToLocal } from './local-frame';
 import { sha256Hex } from './replay';
 
 /** A named, exit-coded failure of the places transform. `code` is the error name printed on stderr. */
@@ -119,7 +119,7 @@ export function generatePlaces(input: {
     let position: Vertex | null = null;
     let positionSource: Place['positionSource'] = 'none';
     if (row.lat !== null && row.lon !== null) {
-      position = toLocal(row.lon, row.lat);
+      position = osmToLocal(row.lon, row.lat);
       positionSource = 'coordinates';
     } else if (row.anchor !== null) {
       positionSource = 'anchor';
@@ -131,7 +131,7 @@ export function generatePlaces(input: {
             `${row.id}: placeId ${row.anchor.placeId} has no coordinates`,
           );
         }
-        position = toLocal(target.lon, target.lat);
+        position = osmToLocal(target.lon, target.lat);
       } else {
         position = resolveAreaAnchor(areas, row, row.anchor);
       }

@@ -29,15 +29,111 @@ export const LAT0 = (BBOX.south + BBOX.north) / 2;
  */
 export const ORIGIN = { easting: 560002.112255701, northing: 5173237.48355887 } as const;
 
-/** Project lon/lat degrees to absolute EPSG:26915 metres: [easting, northing]. */
+/** Project NAD83 lon/lat degrees to absolute EPSG:26915 metres: [easting, northing]. No datum shift. */
 export function projectToUtm(lon: number, lat: number): [number, number] {
   const [x, y] = proj4('EPSG:4326', 'EPSG:26915', [lon, lat]);
   return [x as number, y as number];
 }
 
-/** Project lon/lat degrees to local metres: [east, north], relative to ORIGIN. */
+/**
+ * Project NAD83 lon/lat degrees to local metres: [east, north], relative to ORIGIN. This is the frame
+ * projection: it applies no datum shift, so use it for NAD83 inputs (3DEP, NAIP, LiDAR probe points) and
+ * for the frame constants. OSM coordinates go through osmToLocal instead.
+ */
 export function toLocal(lon: number, lat: number): [number, number] {
   const [x, y] = projectToUtm(lon, lat);
+  return [x - ORIGIN.easting, y - ORIGIN.northing];
+}
+
+/**
+ * @displayName ITRF2014 to NAD83(2011) Helmert parameters
+ * @strategicPurpose OSM is WGS84, which at current realisations (G1762, G2139) agrees with ITRF2014 to centimetres,
+ *   while 3DEP and NAIP are NAD83(2011). Treating the two as identical misplaces every OSM feature by about 1.2 m at
+ *   Duluth (#77).
+ * @tacticalObjective Holds the 15 published parameters of EPSG:8970, "ITRF2014 to NAD83(2011) (1)", method
+ *   "Time-dependent Coordinate Frame rotation (geocen)" (EPSG 1056), reference epoch 2010.0. Translations in metres,
+ *   rotations in milliarcseconds, scale in parts per billion; rates per year.
+ *   Source: https://epsg.io/8970 (EPSG registry entry; PROJ 9.9.0 `projinfo -s EPSG:7789 -t EPSG:6318` prints the
+ *   same 15 values). EPSG describes it as NAD83(CORS96) to ITRF96 (EPSG:6864) chained with the IGS and IERS ITRF96 to
+ *   ITRF2014 parameters, https://itrf.ign.fr/docs/solutions/itrf2014/Transfo-ITRF2014_ITRFs.txt . The NGS tool for
+ *   this transformation is HTDP, https://geodesy.noaa.gov/TOOLS/Htdp/Htdp.shtml (Pearson and Snay 2013,
+ *   https://doi.org/10.1007/s10291-012-0255-y ). Verification and epoch choice: docs/datum.md.
+ */
+export const ITRF2014_TO_NAD83_2011 = {
+  epsg: 8970,
+  referenceEpoch: 2010.0,
+  tx: 1.0053,
+  ty: -1.90921,
+  tz: -0.54157,
+  rxMas: 26.78138,
+  ryMas: -0.42027,
+  rzMas: 10.93206,
+  sPpb: 0.36891,
+  dtx: 0.00079,
+  dty: -0.0006,
+  dtz: -0.00144,
+  drxMas: 0.06667,
+  dryMas: -0.75744,
+  drzMas: -0.05133,
+  dsPpb: -0.07201,
+} as const;
+
+/**
+ * Epoch at which OSM coordinates are taken to be ITRF2014 positions: 2010.0, the NAD83(2011) anchor epoch, so
+ * the rate terms vanish and the shift is the epoch-2010 one. A later epoch moves the shift by about 0.02 m per year
+ * at Duluth (0.33 m east at 2026.77); see docs/datum.md.
+ */
+export const OSM_EPOCH = 2010.0;
+
+const GRS80_GEOGRAPHIC = '+proj=longlat +ellps=GRS80 +towgs84=0,0,0 +no_defs';
+const GRS80_GEOCENTRIC = '+proj=geocent +ellps=GRS80 +towgs84=0,0,0 +units=m +no_defs';
+const MAS_TO_RAD = Math.PI / (180 * 3600 * 1000);
+
+/**
+ * Transform ITRF2014 (OSM WGS84) lon/lat degrees at `epoch` to NAD83(2011) lon/lat degrees, ellipsoidal height 0.
+ * proj4 does the geographic to geocentric conversions (GRS80, which both frames use); the 7-parameter
+ * time-dependent Helmert in between is applied here because proj4js has no time-dependent method.
+ * Coordinate frame rotation convention (EPSG 1032/1056), small-angle form, as PROJ applies EPSG:8970:
+ *   X' = T + (1 + s) [[1, rz, -ry], [-rz, 1, rx], [ry, -rx, 1]] X
+ */
+export function itrf2014ToNad83(
+  lon: number,
+  lat: number,
+  epoch: number = OSM_EPOCH,
+): [number, number] {
+  const p = ITRF2014_TO_NAD83_2011;
+  const dt = epoch - p.referenceEpoch;
+  const tx = p.tx + p.dtx * dt;
+  const ty = p.ty + p.dty * dt;
+  const tz = p.tz + p.dtz * dt;
+  const rx = (p.rxMas + p.drxMas * dt) * MAS_TO_RAD;
+  const ry = (p.ryMas + p.dryMas * dt) * MAS_TO_RAD;
+  const rz = (p.rzMas + p.drzMas * dt) * MAS_TO_RAD;
+  const k = 1 + (p.sPpb + p.dsPpb * dt) * 1e-9;
+  const [x, y, z] = proj4(GRS80_GEOGRAPHIC, GRS80_GEOCENTRIC, [lon, lat, 0]) as number[];
+  const xs = x as number;
+  const ys = y as number;
+  const zs = z as number;
+  const x2 = tx + k * (xs + rz * ys - ry * zs);
+  const y2 = ty + k * (-rz * xs + ys + rx * zs);
+  const z2 = tz + k * (ry * xs - rx * ys + zs);
+  const [lon2, lat2] = proj4(GRS80_GEOCENTRIC, GRS80_GEOGRAPHIC, [x2, y2, z2]) as number[];
+  return [lon2 as number, lat2 as number];
+}
+
+/** Project OSM (ITRF2014 / WGS84) lon/lat degrees to absolute EPSG:26915 NAD83(2011) metres: [easting, northing]. */
+export function projectOsmToUtm(lon: number, lat: number): [number, number] {
+  const [nadLon, nadLat] = itrf2014ToNad83(lon, lat);
+  return projectToUtm(nadLon, nadLat);
+}
+
+/**
+ * Project OSM (ITRF2014 / WGS84) lon/lat degrees to local metres: [east, north], relative to ORIGIN.
+ * ORIGIN itself stays the unshifted projection of the bbox centre: it is a constant offset, so it only has to be
+ * the same number everywhere, and the NAD83 rasters already share it.
+ */
+export function osmToLocal(lon: number, lat: number): [number, number] {
+  const [x, y] = projectOsmToUtm(lon, lat);
   return [x - ORIGIN.easting, y - ORIGIN.northing];
 }
 
