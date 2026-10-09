@@ -21,6 +21,8 @@ export interface WireOptions {
   };
   /** `areaLayer.registry` from src/scene/areas.ts: one AreaEntry per area, one Line2 per ring in `lines`. */
   readonly registry: ReadonlyMap<string, AreaEntry>;
+  /** Brightens the walls of the highlighted area ids (AreaLayer.setWallHighlight, #74). */
+  readonly setWallHighlight?: (ids: ReadonlySet<string>) => void;
   readonly annotationsUrl: string;
   readonly panelRoot: HTMLElement;
   readonly tooltipRoot: HTMLElement;
@@ -85,7 +87,7 @@ export async function wireAnnotations(options: WireOptions): Promise<Annotations
 
   const linesByAreaId = new Map<string, readonly Line2[]>();
   for (const [areaId, entry] of registry) linesByAreaId.set(areaId, entry.lines);
-  const highlighter = createHighlighter(linesByAreaId);
+  const highlighter = createHighlighter(linesByAreaId, (ids) => options.setWallHighlight?.(ids));
   let state = INITIAL_STATE;
   const dispatch = (event: InteractionEvent): void => {
     state = reduce(state, event);

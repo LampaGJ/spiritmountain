@@ -186,6 +186,8 @@ const LANE_VERTEX_DECLARATIONS = [
   'attribute vec3 laneColor1;',
   'attribute vec3 laneColor2;',
   'attribute vec3 laneColor3;',
+  'attribute float highlight;',
+  'varying float vWallHighlight;',
   'varying float vWallLane;',
   'varying float vWallLaneCount;',
   'varying vec3 vWallLaneColor1;',
@@ -198,6 +200,7 @@ const LANE_VERTEX_ASSIGN = [
   'vWallLaneColor1 = laneColor1;',
   'vWallLaneColor2 = laneColor2;',
   'vWallLaneColor3 = laneColor3;',
+  'vWallHighlight = highlight;',
 ].join('\n');
 const LANE_FRAGMENT_DECLARATIONS = [
   'varying float vWallLane;',
@@ -205,6 +208,7 @@ const LANE_FRAGMENT_DECLARATIONS = [
   'varying vec3 vWallLaneColor1;',
   'varying vec3 vWallLaneColor2;',
   'varying vec3 vWallLaneColor3;',
+  'varying float vWallHighlight;',
 ].join('\n');
 /**
  * Replaces three's color_fragment: the vertex colour (lane 0) or lane 1..3 by a step on floor(lane * k), so the left
@@ -218,7 +222,7 @@ const LANE_SELECT = `#if defined( USE_COLOR ) || defined( USE_COLOR_ALPHA )
   wallLaneColor = mix(wallLaneColor, vWallLaneColor1, step(0.5, wallLaneIndex));
   wallLaneColor = mix(wallLaneColor, vWallLaneColor2, step(1.5, wallLaneIndex));
   wallLaneColor = mix(wallLaneColor, vWallLaneColor3, step(2.5, wallLaneIndex));
-  diffuseColor.rgb *= wallLaneColor;
+  diffuseColor.rgb *= mix(wallLaneColor, vec3(1.0), vWallHighlight * 0.65);
 }
 #endif`;
 
@@ -357,6 +361,8 @@ export const WALL_ATTRIBUTES = [
   ['lane', 1],
   /** k, the number of lanes this trail shows. */
   ['laneCount', 1],
+  /** 1 on the wall of a hovered or selected trail, else 0; the lane shader mixes it toward white (#74). */
+  ['highlight', 1],
 ] as const;
 
 export interface TrailWalls {

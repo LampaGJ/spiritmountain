@@ -156,4 +156,15 @@ describe('highlight after route (#40)', () => {
     highlighter.apply(INITIAL_STATE);
     expect(line.material).toBe(layer.materials.snowboard);
   });
+
+  it('hands the highlighted ids to the wall hook on every apply (#74)', () => {
+    const { lineA } = { lineA: new Line2(new LineGeometry(), new LineMaterial()) };
+    const seen: string[][] = [];
+    const highlighter = createHighlighter(new Map([['a', [lineA]]]), (ids) => {
+      seen.push([...ids]);
+    });
+    highlighter.apply(reduce(INITIAL_STATE, { type: 'hover', areaId: 'a' }));
+    highlighter.apply(INITIAL_STATE);
+    expect(seen).toEqual([['a'], []]);
+  });
 });

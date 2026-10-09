@@ -54,6 +54,8 @@ export const HIGHLIGHT_COLOR = 0xffffff;
  */
 export function createHighlighter(
   linesByAreaId: ReadonlyMap<string, readonly Line2[]>,
+  /** Called with the highlighted area ids on every apply, to brighten their walls (#74); lines still swap too. */
+  setWallHighlight?: (ids: ReadonlySet<string>) => void,
 ): Highlighter {
   const highlightFor = new Map<LineMaterial, LineMaterial>();
   // Construction-time fallback for a line with no recorded base (userData.baseMaterial, set by AreaLayer).
@@ -77,6 +79,7 @@ export function createHighlighter(
   return {
     apply(state) {
       const on = highlightedIds(state);
+      setWallHighlight?.(on);
       for (const [areaId, lines] of linesByAreaId) {
         for (const line of lines) {
           const base = baseOf(line);

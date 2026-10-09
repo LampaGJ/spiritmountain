@@ -1,8 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import {
+  type BufferGeometry,
   Color,
   FrontSide,
+  Layers,
   MeshStandardMaterial,
   ShaderLib,
   Vector3,
@@ -33,6 +35,7 @@ import {
   WALL_THICKNESS_M,
   type TrailWalls,
 } from '../../src/scene/walls';
+import { createLineRaycaster } from '../../src/scene/pick';
 import { applyRadialFade } from '../../src/scene/fade';
 import { applyHorizonBlend, createHorizonUniforms } from '../../src/scene/horizon';
 import { DRAPE_LIFT_M, type Vec3 } from '../../src/scene/drape';
@@ -633,5 +636,101 @@ describe('area layer with walls (#64, #67)', () => {
     // The lane select (#73) chains after the radial fade; the caller adds the horizon blend on top.
     expect(layer.wallMaterials[0]?.customProgramCacheKey()).toBe('radial-fade+wall-lanes');
     layer.setWallFadeCentre({ east: 1, north: 2 });
+  });
+});
+
+describe('trail lines hidden behind the walls (#74)', () => {
+  const fixtureUrl = new URL('../fixtures/areas.geojson', import.meta.url);
+  const areas = parseAreas(JSON.parse(readFileSync(fileURLToPath(fixtureUrl), 'utf8')));
+  const surface = createMeshSurface(makeFixtureField(), 16);
+  const build = () =>
+    buildAreaLayer(areas, surface, toScene, { width: 800, height: 600 }, { walls: true });
+  const drawn = (line: Line2): boolean => new Layers().test(line.layers);
+  const picked = (line: Line2): boolean => createLineRaycaster().layers.test(line.layers);
+  const linesOf = (layer: ReturnType<typeof build>, id: string): Line2[] => [
+    ...(layer.registry.get(id)?.lines ?? []),
+  ];
+
+  it('draws no line over a walled trail by default, but still picks it and keeps its filter visibility', () => {
+    const layer = build();
+    expect(layer.trailLinesVisible).toBe(false);
+    for (const line of linesOf(layer, 'way/1001')) {
+      expect(drawn(line)).toBe(false);
+      expect(picked(line)).toBe(true);
+      expect(line.visible).toBe(true);
+    }
+  });
+
+  it('keeps lifts and polygons drawn', () => {
+    const layer = build();
+    for (const id of ['way/1006', 'way/1004']) {
+      for (const line of linesOf(layer, id)) expect(drawn(line)).toBe(true);
+    }
+  });
+
+  it('the toggle restores the lines and hides them again, strands included', () => {
+    const layer = build();
+    layer.setTrailLinesVisible(true);
+    expect(layer.trailLinesVisible).toBe(true);
+    expect(linesOf(layer, 'way/1001').every(drawn)).toBe(true);
+    layer.setTrailLinesVisible(false);
+    expect(linesOf(layer, 'way/1001').some(drawn)).toBe(false);
+    const note: Annotation = {
+      areaId: 'way/1001',
+      activities: [
+        { activity: 'alpine-ski', seasons: [], notes: '' },
+        { activity: 'snowboard', seasons: [], notes: '' },
+      ],
+      stakeholders: [],
+      notes: '',
+    };
+    layer.applyStrands(new Map([['way/1001', note]]));
+    const strands = linesOf(layer, 'way/1001');
+    expect(strands).toHaveLength(2);
+    expect(strands.some(drawn)).toBe(false);
+    expect(strands.every(picked)).toBe(true);
+  });
+
+  it('draws the lines again while the walls are off', () => {
+    const layer = build();
+    layer.setWallsOn(false);
+    expect(linesOf(layer, 'way/1001').every(drawn)).toBe(true);
+    layer.setWallsOn(true);
+    expect(linesOf(layer, 'way/1001').some(drawn)).toBe(false);
+  });
+
+  it('highlights the wall range of an area in the merged mesh and clears it', () => {
+    const layer = build();
+    const geometry = () => layer.wallMesh?.geometry as BufferGeometry;
+    const marks = () => Array.from(geometry().getAttribute('highlight').array as Float32Array);
+    expect(marks().every((m) => m === 0)).toBe(true);
+    layer.setWallHighlight(new Set(['way/1002']));
+    const own = layer.registry.get('way/1002')?.walls?.geometry.getAttribute('position').count ?? 0;
+    expect(own).toBeGreaterThan(0);
+    expect(marks().filter((m) => m === 1)).toHaveLength(own);
+    layer.setWallHighlight(new Set());
+    expect(marks().every((m) => m === 0)).toBe(true);
+  });
+
+  it('keeps a highlight across a re-merge', () => {
+    const layer = build();
+    layer.setWallHighlight(new Set(['way/1002']));
+    layer.setWallThickness(6);
+    const marks = layer.wallMesh?.geometry.getAttribute('highlight').array as Float32Array;
+    const own = layer.registry.get('way/1002')?.walls?.geometry.getAttribute('position').count ?? 0;
+    expect(Array.from(marks).filter((m) => m === 1)).toHaveLength(own);
+  });
+
+  it('mixes the highlight toward white in the lane shader', () => {
+    const m = createWallMaterial();
+    applyWallLanes(m);
+    const shader = {
+      vertexShader: ShaderLib.standard.vertexShader,
+      fragmentShader: ShaderLib.standard.fragmentShader,
+      uniforms: {},
+    } as unknown as WebGLProgramParametersWithUniforms;
+    m.onBeforeCompile(shader, null as never);
+    expect(shader.vertexShader).toContain('attribute float highlight;');
+    expect(shader.fragmentShader).toContain('vWallHighlight');
   });
 });

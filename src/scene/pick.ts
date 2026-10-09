@@ -7,6 +7,11 @@ import type { OrbitControls } from 'three/addons/controls/OrbitControls.js';
  * 3 px line with threshold 6 had). The Line2 is the only trail marker and the only pick target.
  */
 export const LINE2_PICK_THRESHOLD_PX = 7;
+/**
+ * three layer of a Line2 that is picked but not drawn (#74). The cameras only see layer 0, so a line on this layer is
+ * not rendered, while `visible` stays the filter's own state and the raycaster (which enables this layer) still hits it.
+ */
+export const HIDDEN_LINE_LAYER = 1;
 /** A pointerup counts as a click only if the pointer moved fewer than this many px since pointerdown. */
 export const CLICK_MAX_DISTANCE_PX = 5;
 /** ...and fewer than this many ms elapsed. A long press never opens the panel. */
@@ -25,6 +30,8 @@ export interface RayPicker {
  */
 export function createLineRaycaster(): Raycaster {
   const raycaster = new Raycaster();
+  // Trail lines hidden behind their walls (#74) sit on this layer: the camera skips them, the picker still hits them.
+  raycaster.layers.enable(HIDDEN_LINE_LAYER);
   raycaster.params.Line2 = { threshold: LINE2_PICK_THRESHOLD_PX };
   return raycaster;
 }
