@@ -106,3 +106,29 @@ describe('cullTreesAtWalls', () => {
     expect(a.kept).toEqual([trees[1], trees[3]]);
   });
 });
+
+describe('cullTreesAtWalls margin (#76)', () => {
+  // A 3-lane set: half-width 6 m, full width 12 m.
+  const wide = buildWallGrid([{ ...straight[0], halfWidthM: 6 } as never]);
+
+  it('keeps a tree whose crown reaches into a wide wall but not out of its far face', () => {
+    // Trunk 1 m outside the face; a 16 m oak has a crown narrower than the 12 m wall.
+    const oak = tree(60, 7, 16, 3);
+    expect(crownRadiusM(oak)).toBeLessThan(12);
+    expect(cullTreesAtWalls([oak], wide).culled).toBe(0);
+  });
+
+  it('culls a trunk inside the wall face whatever its crown', () => {
+    expect(cullTreesAtWalls([tree(60, 5, 0, 0)], wide).culled).toBe(1);
+  });
+
+  it('culls a tree whose crown would poke out of the far face of a narrow wall', () => {
+    const narrow = buildWallGrid(straight);
+    // Half-width 2 (full width 4): a 20 m oak clears the face only beyond 2 + (crown - 4).
+    const crown = crownRadiusM(tree(60, 0, 20, 3));
+    const limit = WALL_THICKNESS_M / 2 + (crown - WALL_THICKNESS_M);
+    expect(limit).toBeGreaterThan(8);
+    expect(cullTreesAtWalls([tree(60, limit - 0.5, 20, 3)], narrow).culled).toBe(1);
+    expect(cullTreesAtWalls([tree(60, limit + 0.5, 20, 3)], narrow).culled).toBe(0);
+  });
+});
