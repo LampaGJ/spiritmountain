@@ -177,3 +177,42 @@ describe('ImageryInsetManifestSchema', () => {
     expect(ImageryInsetManifestSchema.safeParse({ ...valid, extra: 1 }).success).toBe(false);
   });
 });
+
+describe('runImageryInset returned-extent check (#75)', () => {
+  it('asks f=json with the same params first and refuses an extent off the requested box', async () => {
+    const dataDir = sandbox();
+    const urls: string[] = [];
+    const fetchImpl = (url: string) => {
+      urls.push(url);
+      const q = new URL(url).searchParams;
+      if (q.get('f') !== 'json') {
+        return Promise.resolve(
+          new Response(fakeJpeg(INSET_PIXELS, INSET_PIXELS) as BodyInit, {
+            headers: { 'content-type': 'image/jpeg' },
+          }),
+        );
+      }
+      const [xmin, ymin, xmax, ymax] = (q.get('bbox') as string).split(',').map(Number) as [
+        number,
+        number,
+        number,
+        number,
+      ];
+      const extent = { xmin, ymin, xmax, ymax: ymax + 1, spatialReference: { wkid: 26915 } };
+      const body = {
+        href: 'https://example.invalid/o.jpg',
+        width: INSET_PIXELS,
+        height: INSET_PIXELS,
+        extent,
+      };
+      return Promise.resolve(
+        new Response(JSON.stringify(body), { headers: { 'content-type': 'application/json' } }),
+      );
+    };
+    await expect(runImageryInset({ dataDir, fetchImpl, checkExtent: true })).rejects.toThrow(
+      /ImageryExtentMismatch: .*ymax/,
+    );
+    expect(urls.map((u) => new URL(u).searchParams.get('f'))).toEqual(['json']);
+    expect(existsSync(path.join(dataDir, 'raw/naip-inset.jpg'))).toBe(false);
+  });
+});
