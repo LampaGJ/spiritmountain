@@ -1,15 +1,24 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { Color, FrontSide, MeshStandardMaterial, Vector3 } from 'three';
+import {
+  Color,
+  FrontSide,
+  MeshStandardMaterial,
+  ShaderLib,
+  Vector3,
+  type WebGLProgramParametersWithUniforms,
+} from 'three';
 import { Line2 } from 'three/addons/lines/Line2.js';
 import { describe, expect, it } from 'vitest';
 import { parseAreas } from '../../src/data/load-areas';
 import { buildAreaLayer, trailTopHeight, type SceneMapper } from '../../src/scene/areas';
 import {
+  applyWallLanes,
   buildTrailWalls,
   canopyFromSurface,
   canopyProfile,
   createWallMaterial,
+  laneIndex,
   mergeWalls,
   mitredNormals,
   sportVertexColor,
@@ -18,11 +27,14 @@ import {
   wallSports,
   wallVertexCount,
   WALL_BURY_M,
+  WALL_MAX_LANES,
   WALL_MAX_M,
   WALL_MIN_M,
   WALL_THICKNESS_M,
   type TrailWalls,
 } from '../../src/scene/walls';
+import { applyRadialFade } from '../../src/scene/fade';
+import { applyHorizonBlend, createHorizonUniforms } from '../../src/scene/horizon';
 import { DRAPE_LIFT_M, type Vec3 } from '../../src/scene/drape';
 import { createMeshSurface, type Heightfield } from '../../src/scene/heightfield';
 import { SPORT_COLOR } from '../../src/scene/palette';
@@ -256,22 +268,27 @@ describe('buildTrailWalls', () => {
     );
   });
 
-  it('puts k walls side by side, left to right, and re-centres when one is filtered off', () => {
+  it('puts k lanes side by side in one box, left to right, and re-centres when one is filtered off (#73)', () => {
     const walls = buildTrailWalls('way/1', world, bare, toScene);
     walls.setSports(['nordic-classic', 'nordic-skate'], 2);
-    expect(walls.geometry.getAttribute('position').count).toBe(2 * wallVertexCount(3));
+    // One box for the trail, k lanes across it (#73 replaced the k boxes of #67).
+    expect(walls.geometry.getAttribute('position').count).toBe(wallVertexCount(3));
     const p = positions(walls);
-    const first = p.slice(0, wallVertexCount(3)).map((v) => -v.z);
-    const second = p.slice(wallVertexCount(3)).map((v) => -v.z);
-    // Looking east, left is north: classic (first in ActivitySchema order) spans north 0..4, skate 0..-4.
-    expect(Math.min(...first)).toBeCloseTo(0, 5);
-    expect(Math.max(...first)).toBeCloseTo(WALL_THICKNESS_M, 5);
-    expect(Math.min(...second)).toBeCloseTo(-WALL_THICKNESS_M, 5);
-    expect(Math.max(...second)).toBeCloseTo(0, 5);
+    const lane = walls.geometry.getAttribute('lane');
+    const north = p.map((v) => -v.z);
+    // Looking east, left is north: lane 0 (classic, first in ActivitySchema order) is the north face at +4, the
+    // skate lane the south face at -4.
+    const leftFace = north.filter((_, i) => lane.getX(i) === 0);
+    const rightFace = north.filter((_, i) => lane.getX(i) === 1);
+    expect(Math.min(...leftFace)).toBeCloseTo(WALL_THICKNESS_M, 5);
+    expect(Math.max(...rightFace)).toBeCloseTo(-WALL_THICKNESS_M, 5);
     expect(colours(walls)[0]).toEqual(f32(sportVertexColor('nordic-classic')));
-    expect(colours(walls)[wallVertexCount(3)]).toEqual(f32(sportVertexColor('nordic-skate')));
-    // Both walls run full height.
-    expect(Math.max(...p.slice(wallVertexCount(3)).map((v) => v.y))).toBeCloseTo(130, 5);
+    const second = walls.geometry.getAttribute('laneColor1');
+    expect([second.getX(0), second.getY(0), second.getZ(0)]).toEqual(
+      f32(sportVertexColor('nordic-skate')),
+    );
+    // Every lane runs full height: the one box does.
+    expect(Math.max(...p.map((v) => v.y))).toBeCloseTo(130, 5);
     expect(walls.setHalfWidthM).toBe(WALL_THICKNESS_M);
     walls.setSports(['nordic-skate'], 2);
     const alone = positions(walls).map((v) => -v.z);
@@ -302,6 +319,205 @@ describe('buildTrailWalls', () => {
     expect(merged.index?.count).toBe(2 * wallIndexCount(3));
     expect(Math.max(...Array.from(merged.index?.array ?? []))).toBe(2 * wallVertexCount(3) - 1);
     expect(merged.groups).toEqual([]);
+  });
+});
+
+describe('one wall, k lanes (#73)', () => {
+  const bare = (): number => 100;
+  const plan = (walls: TrailWalls, from: number, count: number): number[][] => {
+    const p = walls.geometry.getAttribute('position');
+    return Array.from({ length: count }, (_, i) => [p.getX(from + i), -p.getZ(from + i)]);
+  };
+  const orient = (p: number[], q: number[], r: number[]): number =>
+    Math.sign(
+      ((q[0] as number) - (p[0] as number)) * ((r[1] as number) - (p[1] as number)) -
+        ((q[1] as number) - (p[1] as number)) * ((r[0] as number) - (p[0] as number)),
+    );
+  /** Pairs of non-adjacent segments of a polyline that properly cross. */
+  const selfCrossings = (line: number[][]): number => {
+    let count = 0;
+    for (let i = 0; i + 1 < line.length; i += 1) {
+      for (let j = i + 2; j + 1 < line.length; j += 1) {
+        const [a, b, c, d] = [line[i], line[i + 1], line[j], line[j + 1]] as number[][];
+        const crosses =
+          orient(a as number[], b as number[], c as number[]) *
+            orient(a as number[], b as number[], d as number[]) <
+            0 &&
+          orient(c as number[], d as number[], a as number[]) *
+            orient(c as number[], d as number[], b as number[]) <
+            0;
+        if (crosses) count += 1;
+      }
+    }
+    return count;
+  };
+  /**
+   * A 20 m radius left-hand bend as OSM draws it (a chord every 30 degrees), with the extra vertices drapeLine's
+   * mesh-edge split puts close to a corner (0.5 m either side): the shape that folded the inner face before #73.
+   */
+  const bend: Vec3[] = (() => {
+    const corners = Array.from({ length: 7 }, (_, i) => {
+      const a = (i * Math.PI) / 6;
+      return [20 * Math.sin(a), 20 - 20 * Math.cos(a)] as const;
+    });
+    const out: Vec3[] = [[-30, 0, 110 + DRAPE_LIFT_M]];
+    corners.forEach((c, i) => {
+      const before = corners[i - 1];
+      const after = corners[i + 1];
+      const near = (o: readonly [number, number]): Vec3 => {
+        const length = Math.hypot(o[0] - c[0], o[1] - c[1]);
+        return [c[0] + ((o[0] - c[0]) / length) * 0.5, c[1] + ((o[1] - c[1]) / length) * 0.5, 110];
+      };
+      if (before) out.push(near(before));
+      out.push([c[0], c[1], 110]);
+      if (after) out.push(near(after));
+    });
+    out.push([-30, 40, 110]);
+    return out.map(([e, n]) => [e, n, 110 + DRAPE_LIFT_M] as Vec3);
+  })();
+
+  it('builds an outline that never crosses itself on a 20 m radius bend 12 m wide', () => {
+    const walls = buildTrailWalls('way/1', bend, bare, toScene, 6);
+    walls.setSports(['nordic-classic', 'nordic-skate']);
+    const n = bend.length;
+    expect(walls.geometry.getAttribute('position').count).toBe(wallVertexCount(n));
+    const left = plan(walls, 0, n);
+    const right = plan(walls, 2 * n, n);
+    // The full width is k lanes: 12 m between the faces on the straight run in.
+    expect(
+      Math.hypot(...[0, 1].map((a) => (left[0]?.[a] ?? 0) - (right[0]?.[a] ?? 0))),
+    ).toBeCloseTo(12, 5);
+    expect(selfCrossings(left)).toBe(0);
+    expect(selfCrossings(right)).toBe(0);
+    const ring = [...left, ...[...right].reverse(), left[0] as number[]];
+    expect(selfCrossings(ring)).toBe(0);
+  });
+
+  it('runs the lane attribute from 0 at the left face to 1 at the right face', () => {
+    const world: Vec3[] = [
+      [0, 0, 110],
+      [10, 0, 110],
+      [20, 0, 110],
+    ];
+    const walls = buildTrailWalls('way/1', world, bare, toScene);
+    walls.setSports(['nordic-classic', 'nordic-skate', 'snowshoe']);
+    const lane = walls.geometry.getAttribute('lane');
+    const count = walls.geometry.getAttribute('laneCount');
+    const values = Array.from({ length: lane.count }, (_, i) => lane.getX(i));
+    expect(Math.min(...values)).toBe(0);
+    expect(Math.max(...values)).toBe(1);
+    expect(values.every((v) => v === 0 || v === 1)).toBe(true);
+    // Left face (first 2n) all 0, right face (next 2n) all 1, the top's left row 0 and right row 1.
+    expect(values.slice(0, 6).every((v) => v === 0)).toBe(true);
+    expect(values.slice(6, 12).every((v) => v === 1)).toBe(true);
+    expect(values.slice(12, 18)).toEqual([0, 0, 0, 1, 1, 1]);
+    // Across the width 0..1 the shader picks the lanes in order, k stripes.
+    expect([0, 0.2, 0.34, 0.5, 0.7, 0.99, 1].map((t) => laneIndex(t, 3))).toEqual([
+      0, 0, 1, 1, 2, 2, 2,
+    ]);
+    expect(Array.from({ length: count.count }, (_, i) => count.getX(i)).every((k) => k === 3)).toBe(
+      true,
+    );
+  });
+
+  it('lands lane 0 colour on the left face and lane 1 colour on the right face for k = 2', () => {
+    const world: Vec3[] = [
+      [0, 0, 110],
+      [10, 0, 110],
+    ];
+    const walls = buildTrailWalls('way/1', world, bare, toScene);
+    walls.setSports(['nordic-classic', 'nordic-skate']);
+    const g = walls.geometry;
+    const colourAt = (i: number): number[] => {
+      const k = g.getAttribute('laneCount').getX(i);
+      const which = laneIndex(g.getAttribute('lane').getX(i), k);
+      const a = g.getAttribute(which === 0 ? 'color' : `laneColor${which}`);
+      return [a.getX(i), a.getY(i), a.getZ(i)];
+    };
+    const p = g.getAttribute('position');
+    const f32 = (rgb: readonly number[]): number[] => rgb.map((v) => Math.fround(v));
+    // Left face: vertices 0..3 (n = 2, lo row then hi row), north of the east-going line.
+    for (let i = 0; i < 4; i += 1) {
+      expect(-p.getZ(i)).toBeCloseTo(WALL_THICKNESS_M, 5);
+      expect(colourAt(i)).toEqual(f32(sportVertexColor('nordic-classic')));
+    }
+    for (let i = 4; i < 8; i += 1) {
+      expect(-p.getZ(i)).toBeCloseTo(-WALL_THICKNESS_M, 5);
+      expect(colourAt(i)).toEqual(f32(sportVertexColor('nordic-skate')));
+    }
+  });
+
+  it('shrinks the width when a sport is filtered off, and keeps the full set for the tree cull', () => {
+    const world: Vec3[] = [
+      [0, 0, 110],
+      [10, 0, 110],
+    ];
+    const walls = buildTrailWalls('way/1', world, bare, toScene);
+    walls.setSports(['nordic-classic', 'nordic-skate', 'snowshoe'], 3);
+    const width = (): number => {
+      const zs = plan(walls, 0, walls.geometry.getAttribute('position').count).map(
+        (q) => q[1] as number,
+      );
+      return Math.max(...zs) - Math.min(...zs);
+    };
+    expect(width()).toBeCloseTo(3 * WALL_THICKNESS_M, 5);
+    walls.setSports(['nordic-skate', 'snowshoe'], 3);
+    expect(width()).toBeCloseTo(2 * WALL_THICKNESS_M, 5);
+    expect(walls.geometry.getAttribute('laneCount').getX(0)).toBe(2);
+    expect(walls.setHalfWidthM).toBe((3 * WALL_THICKNESS_M) / 2);
+  });
+
+  it('refuses more lanes than the shader carries', () => {
+    const walls = buildTrailWalls(
+      'way/1',
+      [
+        [0, 0, 110],
+        [10, 0, 110],
+      ],
+      bare,
+      toScene,
+    );
+    const five: Activity[] = ['hike', 'trail-run', 'mountain-bike', 'fat-bike', 'snowshoe'];
+    expect(five.length).toBeGreaterThan(WALL_MAX_LANES);
+    expect(() => walls.setSports(five)).toThrow(/lanes/);
+  });
+
+  it('merges the lane attributes with the rest', () => {
+    const a = buildTrailWalls('a', bend, bare, toScene);
+    const b = buildTrailWalls('b', bend, bare, toScene);
+    a.setSports(['hike']);
+    b.setSports(['nordic-classic', 'nordic-skate']);
+    const merged = mergeWalls([a, b]);
+    const n = wallVertexCount(bend.length);
+    for (const name of ['lane', 'laneCount', 'laneColor1', 'laneColor2', 'laneColor3']) {
+      expect(merged.getAttribute(name).count).toBe(2 * n);
+    }
+    expect(merged.getAttribute('laneCount').getX(0)).toBe(1);
+    expect(merged.getAttribute('laneCount').getX(n)).toBe(2);
+  });
+
+  it('chains the lane select after the radial fade and before the horizon blend, in one program', () => {
+    const m = createWallMaterial();
+    applyRadialFade(m, { centre: { east: 0, north: 0 } });
+    applyWallLanes(m);
+    applyHorizonBlend(m, createHorizonUniforms(0x000000));
+    const shader = {
+      uniforms: {},
+      vertexShader: ShaderLib.standard.vertexShader,
+      fragmentShader: ShaderLib.standard.fragmentShader,
+    } as unknown as WebGLProgramParametersWithUniforms;
+    m.onBeforeCompile(shader, {} as never);
+    expect(shader.vertexShader).toContain('attribute float lane;');
+    expect(shader.vertexShader).toContain('vFadeXZ');
+    expect(shader.vertexShader).toContain('vHorizonPos');
+    expect(shader.fragmentShader).toContain('vWallLane');
+    expect(shader.fragmentShader).not.toContain('#include <color_fragment>');
+    expect(shader.fragmentShader).toContain('fadeInner');
+    expect(shader.fragmentShader).toContain('uHorizonDist');
+    expect(m.customProgramCacheKey()).toBe('radial-fade+wall-lanes+horizon');
+    // Idempotent: a second call does not stack another patch.
+    applyWallLanes(m);
+    expect(m.customProgramCacheKey()).toBe('radial-fade+wall-lanes+horizon');
   });
 });
 
@@ -414,6 +630,8 @@ describe('area layer with walls (#64, #67)', () => {
     expect(layer.wallMaterials).toHaveLength(1);
     expect(layer.wallMaterials.every((m) => m.depthWrite && m.side === FrontSide)).toBe(true);
     expect(layer.wallMesh?.material).toBe(layer.wallMaterials[0]);
+    // The lane select (#73) chains after the radial fade; the caller adds the horizon blend on top.
+    expect(layer.wallMaterials[0]?.customProgramCacheKey()).toBe('radial-fade+wall-lanes');
     layer.setWallFadeCentre({ east: 1, north: 2 });
   });
 });
