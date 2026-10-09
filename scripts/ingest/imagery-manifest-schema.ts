@@ -17,6 +17,28 @@ export function imageHeightFor(bbox: GridBbox, width: number): number {
 }
 
 /**
+ * @displayName ImageServer export echo
+ * @strategicPurpose The exportImage f=image response carries no georeference, so this is the only place the service says which box it actually rendered; parsing it lets the imagery ingests refuse a raster that is not the box they asked for (#75).
+ * @tacticalObjective Validates the f=json body of an ArcGIS ImageServer exportImage call: href, pixel width and height, and the rendered extent with its spatial reference. Unknown keys (scale) pass through untouched.
+ */
+export const ExportImageEchoSchema = z.object({
+  href: z.string().min(1),
+  width: z.number().int().positive(),
+  height: z.number().int().positive(),
+  extent: z.object({
+    xmin: z.number(),
+    ymin: z.number(),
+    xmax: z.number(),
+    ymax: z.number(),
+    spatialReference: z.object({
+      wkid: z.number().int(),
+      latestWkid: z.number().int().optional(),
+    }),
+  }),
+});
+export type ExportImageEcho = z.infer<typeof ExportImageEchoSchema>;
+
+/**
  * @displayName Imagery manifest
  * @strategicPurpose Pins what was asked of the NAIP ImageServer and what came back, so the terrain texture is a verifiable raw input and its extent is provably the heightfield's extent.
  * @tacticalObjective Validates data/raw/imagery-manifest.json: request URL and params, status, content type, fetch time, sha256, byte length, the EPSG:26915 bbox, pixel size, and that height keeps the box aspect and metresPerPixel agrees with bbox and width.

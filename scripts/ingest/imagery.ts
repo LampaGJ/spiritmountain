@@ -5,8 +5,11 @@ import { parseArgs } from 'node:util';
 import type { Progress, ProgressOptions } from '../progress';
 import { IngestError, USER_AGENT, requestWithRetry } from './fetch';
 import {
+  ExportImageEchoSchema,
   ImageryManifestSchema,
   imageHeightFor,
+  type ExportImageEcho,
+  type GridBbox,
   type ImageryManifest,
 } from './imagery-manifest-schema';
 import { ManifestSchema } from './manifest-schema';
@@ -67,6 +70,73 @@ export function jpegSize(bytes: Uint8Array): { width: number; height: number } {
   throw new IngestError('ImageryNotJpeg', 'no start-of-frame marker found');
 }
 
+/**
+ * Throws ImageryExtentMismatch unless the service rendered the requested box at the requested size. fetch.ts checks the
+ * 3DEP GeoTIFF's own georeference the same way; a jpg has none, so the check reads the f=json echo instead. Tolerance is
+ * half a pixel per edge: the service squares its pixels by widening one axis (0.12 m a side for the pinned base, #75),
+ * and anything larger would misplace the photo on the terrain.
+ */
+export function checkExportExtent(
+  echo: ExportImageEcho,
+  requested: GridBbox,
+  width: number,
+  height: number,
+): void {
+  const sr = echo.extent.spatialReference;
+  if (sr.wkid !== 26915 && sr.latestWkid !== 26915) {
+    throw new IngestError(
+      'ImageryExtentMismatch',
+      `returned spatial reference ${sr.wkid}, requested 26915`,
+    );
+  }
+  if (echo.width !== width || echo.height !== height) {
+    throw new IngestError(
+      'ImageryExtentMismatch',
+      `returned ${echo.width}x${echo.height}, requested ${width}x${height}`,
+    );
+  }
+  const tolerance =
+    0.5 *
+    Math.min((requested.xmax - requested.xmin) / width, (requested.ymax - requested.ymin) / height);
+  for (const edge of ['xmin', 'ymin', 'xmax', 'ymax'] as const) {
+    const delta = echo.extent[edge] - requested[edge];
+    if (Math.abs(delta) > tolerance) {
+      throw new IngestError(
+        'ImageryExtentMismatch',
+        `returned ${edge} ${echo.extent[edge]} is ${delta.toFixed(3)} m from requested ${requested[edge]} (tolerance ${tolerance.toFixed(3)} m)`,
+      );
+    }
+  }
+}
+
+/** Asks the service, with f=json and otherwise identical params, which raster it would render, and validates it. */
+export async function fetchCheckedExtent(
+  baseUrl: string,
+  params: Record<string, string>,
+  requested: GridBbox,
+  size: { width: number; height: number },
+  request: (url: string) => Promise<Response>,
+): Promise<ExportImageEcho> {
+  const url = `${baseUrl}?${new URLSearchParams({ ...params, f: 'json' }).toString()}`;
+  const res = await request(url);
+  const text = await res.text();
+  let body: unknown;
+  try {
+    body = JSON.parse(text) as unknown;
+  } catch {
+    body = undefined;
+  }
+  const parsed = ExportImageEchoSchema.safeParse(body);
+  if (!parsed.success) {
+    throw new IngestError(
+      'ImageryExtentMismatch',
+      `not an exportImage echo: body starts "${text.slice(0, 120)}"`,
+    );
+  }
+  checkExportExtent(parsed.data, requested, size.width, size.height);
+  return parsed.data;
+}
+
 function writeAtomic(file: string, data: string | Uint8Array) {
   mkdirSync(path.dirname(file), { recursive: true });
   const tmp = `${file}.tmp`;
@@ -83,6 +153,8 @@ export interface ImageryRunOptions {
   dataDir?: string;
   progressDir?: string;
   progressFactory?: ProgressFactory;
+  /** Ask f=json first and refuse a rendered extent off the requested box (checkExportExtent). The CLI always sets it. */
+  checkExtent?: boolean;
 }
 
 /** Requests one export for the terrain box, validates it in memory, then writes the jpg and the manifest. */
@@ -96,6 +168,7 @@ export async function runImagery(opts: ImageryRunOptions = {}): Promise<ImageryM
     dataDir = path.join(REPO_ROOT, 'data'),
     progressDir = 'reports/.progress',
     progressFactory = noopProgress,
+    checkExtent = false,
   } = opts;
   if (!userAgent.trim()) throw new IngestError('MissingUserAgent', 'a User-Agent is required');
 
@@ -132,10 +205,10 @@ export async function runImagery(opts: ImageryRunOptions = {}): Promise<ImageryM
   );
   let res: Response;
   let bytes: Uint8Array;
-  try {
-    res = await requestWithRetry(
+  const request = (u: string) =>
+    requestWithRetry(
       () =>
-        fetchImpl(url, {
+        fetchImpl(u, {
           headers: { 'User-Agent': userAgent },
           signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
         }),
@@ -148,6 +221,11 @@ export async function runImagery(opts: ImageryRunOptions = {}): Promise<ImageryM
       },
       { http: 'ImageryHttpError', blocked: 'ImageryBlocked' },
     );
+  try {
+    if (checkExtent) {
+      await fetchCheckedExtent(NAIP_URL, params, bbox, { width, height }, request);
+    }
+    res = await request(url);
     bytes = new Uint8Array(await res.arrayBuffer());
   } finally {
     clearInterval(beat);
@@ -209,7 +287,7 @@ async function main() {
   }
   const started = performance.now();
   try {
-    const m = await runImagery({ force: values.force, progressFactory });
+    const m = await runImagery({ force: values.force, progressFactory, checkExtent: true });
     const seconds = ((performance.now() - started) / 1000).toFixed(1);
     console.log(
       `pinned naip ${m.width}x${m.height}, ${m.byteLength} bytes, ${m.metresPerPixel} m/px, ${seconds} s`,
