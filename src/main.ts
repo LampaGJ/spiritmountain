@@ -663,6 +663,13 @@ if (!('error' in areaLayer)) {
       billboardLayer?.redrape(activeSurface());
     },
   });
+  // The walls carry the sport colours (#74); the coloured lines over them are off unless asked for.
+  registerDebugToggle({
+    id: 'trail-lines',
+    label: 'Trail lines',
+    value: false,
+    onChange: (on) => lines.setTrailLinesVisible(on),
+  });
   registerDebugControl({
     id: 'wall-height',
     label: 'Wall height x',
@@ -739,6 +746,7 @@ export const annotationsReady: Promise<AnnotationsHandle> =
     : wireAnnotations({
         scene: handle,
         registry: areaLayer.registry,
+        setWallHighlight: (ids) => areaLayer.setWallHighlight(ids),
         annotationsUrl,
         panelRoot,
         tooltipRoot,

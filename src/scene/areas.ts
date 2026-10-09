@@ -31,6 +31,7 @@ import {
 import { applyRadialFade, setFadeCentre, type RadialFadeUniforms } from './fade';
 import type { MeshSurface } from './heightfield';
 import { buildLiftLoop, type LiftLoop } from './lifts';
+import { HIDDEN_LINE_LAYER } from './pick';
 import { SPORT_COLOR } from './palette';
 import { sportForArea, type Activity } from './sport-routing';
 import type { CullWall } from './trees';
@@ -248,6 +249,14 @@ export interface AreaLayer {
   setWallsOn(on: boolean): void;
   /** DEBUG: thickness of one sport's wall in metres (1 to 10, default WALL_THICKNESS_M); rebuilds every wall. */
   setWallThickness(metres: number): void;
+  /**
+   * DEBUG: whether the coloured lines draw over the walls (default false, #74). Off moves the Line2 of every walled
+   * non-lift LineString to HIDDEN_LINE_LAYER: not drawn, still picked, filter visibility untouched. Lifts and polygons always draw.
+   */
+  readonly trailLinesVisible: boolean;
+  setTrailLinesVisible(on: boolean): void;
+  /** Brightens the walls of these area ids (1 in the highlight attribute of their merged range) and dims all others. */
+  setWallHighlight(ids: ReadonlySet<string>): void;
   /** Every trail's wall centreline and full-set half-width, for the tree cull. Empty without walls. */
   wallLines(): CullWall[];
   /** Height of the wall top at a plan point (bare earth plus canopy), or -Infinity with walls off or absent. */
@@ -410,6 +419,40 @@ export function buildAreaLayer(
     walls.setSports([sportForArea(area, undefined, new Set())]);
     return walls;
   };
+  /** Whether the coloured lines draw over the walls (DEBUG, #74). Off by default: the walls carry the sport colours. */
+  let linesShown = false;
+  /** Area ids whose walls are brightened (hover and selection). */
+  let highlightIds: ReadonlySet<string> = new Set();
+  /**
+   * A walled non-lift LineString draws no line while its walls are on and the lines are off (#74). The line moves to
+   * HIDDEN_LINE_LAYER instead of taking visible = false: the filter owns `visible` and pickArea skips invisible lines,
+   * while the raycaster enables the hidden layer, so the hidden line is still picked.
+   */
+  const syncLineLayer = (area: Area, line: Line2): void => {
+    const walled = wallMesh !== null && area.kind !== 'lift' && area.geometry.type === 'LineString';
+    line.layers.set(walled && wallsOn && !linesShown ? HIDDEN_LINE_LAYER : 0);
+  };
+  const syncLineLayers = (): void => {
+    for (const { area, lines } of registry.values()) {
+      for (const line of lines) syncLineLayer(area, line);
+    }
+  };
+  /** Writes the highlight attribute of the merged wall mesh in place: 1 over the range of each highlighted area. */
+  const paintHighlight = (): void => {
+    if (!wallMesh) return;
+    const attribute = wallMesh.geometry.getAttribute('highlight');
+    if (attribute === undefined) return;
+    const marks = attribute.array as Float32Array;
+    marks.fill(0);
+    let offset = 0;
+    for (const [areaId, { walls }] of registry) {
+      if (!walls || !walls.visible || walls.geometry.index === null) continue;
+      const count = walls.geometry.getAttribute('position').count;
+      if (highlightIds.has(areaId)) marks.fill(1, offset, offset + count);
+      offset += count;
+    }
+    attribute.needsUpdate = true;
+  };
   const makeLine = (area: Area, positions: number[], sport: Activity): Line2 => {
     const geometry = new LineGeometry();
     geometry.setPositions(positions);
@@ -417,6 +460,7 @@ export function buildAreaLayer(
     line.name = area.id;
     line.userData['areaId'] = area.id;
     line.userData['baseMaterial'] = materials[sport];
+    syncLineLayer(area, line);
     group.add(line);
     return line;
   };
@@ -466,6 +510,7 @@ export function buildAreaLayer(
     const sets = [...registry.values()].flatMap((e) => (e.walls ? [e.walls] : []));
     wallMesh.geometry = mergeWalls(sets);
     wallMesh.visible = wallsOn;
+    paintHighlight();
   };
   if (wallMesh) {
     group.add(wallMesh);
@@ -571,8 +616,17 @@ export function buildAreaLayer(
     }
     refreshWalls();
   };
+  const setTrailLinesVisible = (on: boolean): void => {
+    linesShown = on;
+    syncLineLayers();
+  };
+  const setWallHighlight = (ids: ReadonlySet<string>): void => {
+    highlightIds = ids;
+    paintHighlight();
+  };
   const setWallsOn = (on: boolean): void => {
     wallsOn = wallsBuilt && on;
+    syncLineLayers();
     rebuildAll();
   };
   return {
@@ -601,6 +655,11 @@ export function buildAreaLayer(
       rebuildAll();
     },
     setWallsOn,
+    get trailLinesVisible() {
+      return linesShown;
+    },
+    setTrailLinesVisible,
+    setWallHighlight,
     setWallThickness(metres) {
       wallThicknessM = metres;
       for (const entry of registry.values()) entry.walls?.setThickness(metres);
